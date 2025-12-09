@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
-// POST /api/upload -> upload ảnh, trả về URL lưu trong thư mục public/uploads
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -12,14 +11,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Không có file để upload" }, { status: 400 });
     }
 
-    const bytes = await (file as File).arrayBuffer();
+    const fileObj = file as File;
+    
+    // Kiểm tra loại file (chỉ cho phép ảnh)
+    if (!fileObj.type.startsWith("image/")) {
+      return NextResponse.json({ message: "Chỉ cho phép upload file ảnh" }, { status: 400 });
+    }
+
+    // Kiểm tra kích thước file (tối đa 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (fileObj.size > maxSize) {
+      return NextResponse.json({ message: "Kích thước file không được vượt quá 5MB" }, { status: 400 });
+    }
+
+    const bytes = await fileObj.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
 
-    const ext = (file as File).type.split("/")[1] || "png";
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    // Lấy extension từ tên file hoặc từ MIME type
+    const originalName = fileObj.name;
+    const fileExt = originalName.split(".").pop()?.toLowerCase() || fileObj.type.split("/")[1] || "png";
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
     const filePath = path.join(uploadsDir, fileName);
 
     await fs.writeFile(filePath, buffer);

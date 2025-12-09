@@ -3,7 +3,7 @@ import { connectDB } from "@/utils/mongodb";
 import { Event } from "@/models/Event";
 import { requireAdmin } from "@/utils/auth";
 
-// GET /api/events  -> lấy danh sách sự kiện
+
 export async function GET() {
   try {
     await connectDB();
@@ -19,7 +19,6 @@ export async function GET() {
   }
 }
 
-// POST /api/events  -> tạo sự kiện mới (chỉ admin)
 export async function POST(req: NextRequest) {
   try {
     const auth = requireAdmin(req);

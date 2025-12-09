@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE } from "../utils/api";
+import { API_BASE, uploadImage } from "../utils/api";
 
 interface EventItem {
   _id: string;
@@ -11,9 +11,6 @@ interface EventItem {
   imageUrl?: string;
 }
 
-// Cấu hình Cloudinary dùng trực tiếp. Hãy đảm bảo bạn đã tạo một unsigned upload preset với tên này.
-const CLOUDINARY_CLOUD_NAME = "dzdecqejr";
-const CLOUDINARY_UPLOAD_PRESET = "ticketfast_unsigned";
 
 export const AdminEvents: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
@@ -28,29 +25,13 @@ export const AdminEvents: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<Partial<EventItem>>({});
   const [creatingImageFile, setCreatingImageFile] = useState<File | null>(null);
+  const [creatingImagePreview, setCreatingImagePreview] = useState<string | null>(null);
+  const [creatingImageInputKey, setCreatingImageInputKey] = useState(0);
   const [editingImageFile, setEditingImageFile] = useState<File | null>(null);
+  const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
-
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error?.message || "Upload ảnh lên Cloudinary thất bại");
-    }
-    return data.secure_url as string;
-  };
 
   const loadEvents = async () => {
     try {
@@ -65,7 +46,7 @@ export const AdminEvents: React.FC = () => {
 
   useEffect(() => {
     loadEvents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -77,7 +58,11 @@ export const AdminEvents: React.FC = () => {
 
       let finalImageUrl = imageUrl;
       if (creatingImageFile) {
-        finalImageUrl = await uploadImageToCloudinary(creatingImageFile);
+        try {
+          finalImageUrl = await uploadImage(creatingImageFile);
+        } catch (uploadError: any) {
+          throw new Error(`Upload ảnh thất bại: ${uploadError.message}`);
+        }
       }
 
       const res = await fetch(`${API_BASE}/events`, {
@@ -104,6 +89,8 @@ export const AdminEvents: React.FC = () => {
       setPrice("");
       setImageUrl("");
       setCreatingImageFile(null);
+      setCreatingImagePreview(null);
+      setCreatingImageInputKey((prev) => prev + 1); // Reset file input
       await loadEvents();
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra");
@@ -146,6 +133,7 @@ export const AdminEvents: React.FC = () => {
     setEditingId(null);
     setEditingEvent({});
     setEditingImageFile(null);
+    setEditingImagePreview(null);
   };
 
   const saveEdit = async () => {
@@ -157,7 +145,7 @@ export const AdminEvents: React.FC = () => {
 
       let finalImageUrl = editingEvent.imageUrl || "";
       if (editingImageFile) {
-        finalImageUrl = await uploadImageToCloudinary(editingImageFile);
+        finalImageUrl = await uploadImage(editingImageFile);
       }
 
       const res = await fetch(`${API_BASE}/events/${editingId}`, {
@@ -223,15 +211,40 @@ export const AdminEvents: React.FC = () => {
         <div className="form-group">
           <label>Hình ảnh sự kiện</label>
           <input
+            key={creatingImageInputKey}
             type="file"
             accept="image/*"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) {
                 setCreatingImageFile(file);
+                // Tạo preview cho ảnh
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setCreatingImagePreview(reader.result as string);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                setCreatingImageFile(null);
+                setCreatingImagePreview(null);
               }
             }}
           />
+          {creatingImagePreview && (
+            <div style={{ marginTop: 8 }}>
+              <img
+                src={creatingImagePreview}
+                alt="Preview"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "150px",
+                  objectFit: "cover",
+                  borderRadius: 6,
+                  border: "1px solid #ddd",
+                }}
+              />
+            </div>
+          )}
         </div>
         <button className="btn primary full-width" type="submit" disabled={loading}>
           {loading ? "Đang tạo..." : "Tạo sự kiện"}
@@ -285,9 +298,32 @@ export const AdminEvents: React.FC = () => {
                               const file = e.target.files?.[0];
                               if (file) {
                                 setEditingImageFile(file);
+                                // Tạo preview cho ảnh mới
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setEditingImagePreview(reader.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                              } else {
+                                setEditingImageFile(null);
+                                setEditingImagePreview(null);
                               }
                             }}
                           />
+                          {editingImagePreview && (
+                            <img
+                              src={editingImagePreview}
+                              alt="Preview"
+                              style={{
+                                maxWidth: "100px",
+                                maxHeight: "75px",
+                                objectFit: "cover",
+                                borderRadius: 6,
+                                border: "1px solid #ddd",
+                                marginTop: 4,
+                              }}
+                            />
+                          )}
                         </div>
                       ) : row.imageUrl ? (
                         <img

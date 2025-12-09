@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, UserInfo } from "../utils/types";
 import { login, register } from "../utils/api";
 
+
 interface AuthFormProps {
   mode: "login" | "register";
   setView: (v: View) => void;
@@ -9,6 +10,7 @@ interface AuthFormProps {
   setError: (e: string | null) => void;
   setLoading: (v: boolean) => void;
 }
+
 
 export const AuthForm: React.FC<AuthFormProps> = ({
   mode,
@@ -22,10 +24,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
 
     try {
       if (mode === "register") {
@@ -44,10 +48,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         }
       }
 
+
       const authResponse =
         mode === "login"
           ? await login(email, password)
           : await register(name.trim(), email, password);
+
 
       // Trường hợp backend yêu cầu xác minh email
       if (authResponse.requireEmailVerification) {
@@ -55,6 +61,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         if (email) {
           localStorage.setItem("pendingEmailVerify", email);
         }
+
 
         if (authResponse.message) {
           setError(authResponse.message);
@@ -66,9 +73,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           );
         }
 
+
         setView("verifyEmail");
         return;
       }
+
 
       // Trường hợp login/register bình thường (đã verify email)
       if (authResponse.token && authResponse.user) {
@@ -88,6 +97,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
       setLoading(false);
     }
   };
+
 
   return (
     <section className="auth-section">

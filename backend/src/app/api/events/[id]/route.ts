@@ -4,12 +4,12 @@ import { connectDB } from "@/utils/mongodb";
 import { Event } from "@/models/Event";
 import { requireAdmin } from "@/utils/auth";
 
-// Next app router truyền params dạng Promise trong context
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-// GET /api/events/[id] -> lấy chi tiết 1 sự kiện
+
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
@@ -73,7 +73,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
   }
 }
 
-// DELETE /api/events/[id] -> xoá sự kiện
+
 export async function DELETE(req: NextRequest, context: RouteContext) {
   try {
     const auth = requireAdmin(req);
