@@ -4,7 +4,7 @@ import { connectDB } from "@/utils/mongodb";
 import { User } from "@/models/User";
 import { requireUser } from "@/utils/auth";
 
-// POST /api/auth/change-password
+ 
 export async function POST(req: NextRequest) {
   try {
     const auth = requireUser(req);

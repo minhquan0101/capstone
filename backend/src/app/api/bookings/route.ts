@@ -3,7 +3,7 @@ import { connectDB } from "@/utils/mongodb";
 import { Booking } from "@/models/Booking";
 import { requireUser } from "@/utils/auth";
 
-// POST /api/bookings -> tạo đặt vé + thanh toán (mock)
+
 export async function POST(req: NextRequest) {
   try {
     const auth = requireUser(req);
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       eventName,
       quantity,
       paymentMethod,
-      status: "paid", // demo: coi như thanh toán thành công
+      status: "paid", 
     });
 
     const res = NextResponse.json({ booking }, { status: 201 });

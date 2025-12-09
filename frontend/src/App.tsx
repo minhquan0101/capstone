@@ -12,6 +12,7 @@ import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage"; // 💡 thêm mới
+import { getCurrentUser } from "./utils/api";
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>("home");
@@ -19,20 +20,20 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
 
-  // Khi load lại trang, nếu trong localStorage vẫn còn token hợp lệ thì tự khôi phục trạng thái đăng nhập.
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    
     try {
       const [, payloadBase64] = token.split(".");
-      if (!payloadBase64) return;
+      if (!payloadBase64) {
+        localStorage.removeItem("token");
+        return;
+      }
 
       const payloadJson = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
       const payload = JSON.parse(payloadJson) as {
-        email?: string;
-        name?: string;
-        role?: "user" | "admin";
         exp?: number;
       };
 
@@ -41,14 +42,27 @@ const App: React.FC = () => {
         localStorage.removeItem("token");
         return;
       }
-
-      if (payload.email && payload.name) {
-        setUser({ name: payload.name, email: payload.email, role: payload.role || "user" });
-      }
     } catch {
-      // Token không hợp lệ thì xoá.
+  
       localStorage.removeItem("token");
+      return;
     }
+
+    
+    getCurrentUser()
+      .then((data) => {
+        if (data.user) {
+          setUser({
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role || "user",
+          });
+        }
+      })
+      .catch(() => {
+        
+        localStorage.removeItem("token");
+      });
   }, []);
 
   const handleLogout = () => {
@@ -75,7 +89,6 @@ const App: React.FC = () => {
         )}
         {view === "admin" && user && user.role === "admin" && <AdminPage />}
         {view === "profile" && <ProfilePage user={user} />}
-
         {view === "login" && (
           <AuthForm
             mode="login"

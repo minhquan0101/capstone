@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import * as nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -9,13 +9,12 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS,
   },
   tls: {
-    // ⚠ Chỉ nên dùng khi DEV local, bỏ kiểm tra cert để tránh lỗi
-    // "self-signed certificate in certificate chain"
+    
     rejectUnauthorized: false,
   },
 });
 
-// Kiểm tra kết nối SMTP khi server khởi động
+
 transporter.verify((error, success) => {
   if (error) {
     console.error("SMTP connection error:", error);
@@ -46,5 +45,32 @@ export async function sendVerificationEmail(to: string, code: string) {
     console.log("Verification email sent to", to);
   } catch (err) {
     console.error("Send verification email error:", err);
+  }
+}
+
+export async function sendResetPasswordEmail(to: string, code: string) {
+  const appName = process.env.APP_NAME || "Capstone App";
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER || "";
+
+  const text = `Mã xác minh để đặt lại mật khẩu của bạn là: ${code}. Mã có hiệu lực trong 15 phút.`;
+  const html = `
+    <p>Xin chào,</p>
+    <p>Bạn đã yêu cầu đặt lại mật khẩu.</p>
+    <p>Mã xác minh của bạn là: <b>${code}</b></p>
+    <p>Mã có hiệu lực trong 15 phút.</p>
+    <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: `"${appName}" <${from}>`,
+      to,
+      subject: "Mã xác minh đặt lại mật khẩu",
+      text,
+      html,
+    });
+    console.log("Reset password email sent to", to);
+  } catch (err) {
+    console.error("Send reset password email error:", err);
   }
 }

@@ -1,8 +1,8 @@
 export type View =
   | "home"
   | "login"
-  | "register"
   | "verifyEmail"
+  | "register"
   | "showbiz"
   | "blogs"
   | "booking"

@@ -3,7 +3,7 @@ import { connectDB } from "@/utils/mongodb";
 import { Post } from "@/models/Post";
 import { requireAdmin } from "@/utils/auth";
 
-// GET /api/posts -> danh sách tất cả bài đăng (showbiz + blog)
+
 export async function GET() {
   try {
     await connectDB();
@@ -15,7 +15,6 @@ export async function GET() {
   }
 }
 
-// POST /api/posts -> tạo bài đăng (chỉ admin)
 export async function POST(req: NextRequest) {
   try {
     const auth = requireAdmin(req);
