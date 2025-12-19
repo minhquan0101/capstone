@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:blogs": "tsx scripts/seed-blogs.ts",
+    "seed:showbiz": "tsx scripts/seed-showbiz.ts"
   },
   "dependencies": {
     "@types/nodemailer": "^7.0.4",
@@ -27,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

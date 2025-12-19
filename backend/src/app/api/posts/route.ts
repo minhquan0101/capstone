@@ -8,7 +8,11 @@ export async function GET() {
   try {
     await connectDB();
     const posts = await Post.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ posts }, { status: 200 });
+    const res = NextResponse.json({ posts }, { status: 200 });
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    return res;
   } catch (error) {
     console.error("Get posts error", error);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
@@ -21,12 +25,12 @@ export async function POST(req: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     await connectDB();
-    const { title, content, type } = await req.json();
+    const { title, content, type, imageUrl } = await req.json();
     if (!title || !content || !type) {
       return NextResponse.json({ message: "Thiếu tiêu đề, nội dung hoặc loại bài" }, { status: 400 });
     }
 
-    const post = await Post.create({ title, content, type });
+    const post = await Post.create({ title, content, type, imageUrl });
 
     const res = NextResponse.json({ post }, { status: 201 });
     res.headers.set("Access-Control-Allow-Origin", "*");

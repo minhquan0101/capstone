@@ -22,7 +22,11 @@ export async function GET(_req: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: "Không tìm thấy bài đăng" }, { status: 404 });
     }
 
-    return NextResponse.json({ post }, { status: 200 });
+    const res = NextResponse.json({ post }, { status: 200 });
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.headers.set("Access-Control-Allow-Methods", "GET, PUT, DELETE, OPTIONS");
+    return res;
   } catch (error) {
     console.error("Get post detail error", error);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
@@ -41,11 +45,12 @@ export async function PUT(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 });
     }
 
-    const { title, content, type } = await req.json();
+    const { title, content, type, imageUrl } = await req.json();
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
     if (content !== undefined) update.content = content;
     if (type !== undefined) update.type = type;
+    if (imageUrl !== undefined) update.imageUrl = imageUrl;
 
     const post = await Post.findByIdAndUpdate(id, update, {
       new: true,

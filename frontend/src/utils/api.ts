@@ -141,3 +141,47 @@ export async function uploadImage(file: File): Promise<string> {
   // Backend đã trả về đường dẫn tương đối, giữ nguyên để lưu vào DB
   return data.url;
 }
+
+export interface Post {
+  _id: string;
+  title: string;
+  content: string;
+  type: "showbiz" | "blog";
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Lấy danh sách posts
+export async function getPosts(): Promise<Post[]> {
+  const res = await fetch(`${API_BASE}/posts`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Lấy danh sách bài đăng thất bại");
+  }
+
+  return data.posts || [];
+}
+
+// Lấy chi tiết một post
+export async function getPost(id: string): Promise<Post> {
+  const res = await fetch(`${API_BASE}/posts/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Lấy chi tiết bài đăng thất bại");
+  }
+
+  return data.post;
+}
