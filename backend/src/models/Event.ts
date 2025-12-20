@@ -6,6 +6,11 @@ export interface IEvent extends Document {
   location?: string;
   date?: Date;
   price?: number;
+
+  ticketsTotal?: number; // tổng vé
+  ticketsSold?: number;  // đã bán
+  ticketsHeld?: number;  // đang giữ (pending)
+
   imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -18,14 +23,16 @@ const EventSchema: Schema<IEvent> = new Schema(
     location: { type: String },
     date: { type: Date },
     price: { type: Number },
+
+    ticketsTotal: { type: Number, default: 100, min: 0 },
+    ticketsSold: { type: Number, default: 0, min: 0 },
+    ticketsHeld: { type: Number, default: 0, min: 0 },
+
     imageUrl: { type: String },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 export const Event: Model<IEvent> =
-  (mongoose.models.Event as Model<IEvent>) || mongoose.model<IEvent>("Event", EventSchema);
-
-
+  (mongoose.models.Event as Model<IEvent>) ||
+  mongoose.model<IEvent>("Event", EventSchema);
