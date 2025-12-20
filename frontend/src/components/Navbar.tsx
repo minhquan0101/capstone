@@ -31,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="navbar-left" onClick={() => setView("home")}>
           <span className="logo-text">ticketfast</span>
         </div>
+
         <nav className="navbar-right">
           <button
             className={`nav-link ${currentView === "home" ? "active" : ""}`}
@@ -38,18 +39,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             Trang chủ
           </button>
+
           <button
             className={`nav-link ${currentView === "showbiz" ? "active" : ""}`}
             onClick={() => setView("showbiz")}
           >
             ShowBiz
           </button>
+
           <button
             className={`nav-link ${currentView === "blogs" ? "active" : ""}`}
             onClick={() => setView("blogs")}
           >
             Blogs / News
           </button>
+
           {!user ? (
             <button
               className={`btn outline ${currentView === "login" ? "active" : ""}`}
@@ -58,14 +62,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               đăng nhập
             </button>
           ) : (
-            <div className="user-menu" onBlur={() => setMenuOpen(false)} tabIndex={0}>
-              <button className="user-menu-button" type="button" onClick={handleMenuClick}>
+            <div
+              className="user-menu"
+              tabIndex={0}
+              onBlur={(e) => {
+                const next = e.relatedTarget as Node | null;
+                // Chỉ đóng menu khi focus đi ra ngoài hẳn user-menu
+                if (!next || !e.currentTarget.contains(next)) {
+                  setMenuOpen(false);
+                }
+              }}
+            >
+              <button
+                className="user-menu-button"
+                type="button"
+                onClick={handleMenuClick}
+              >
                 <div className="user-avatar">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="user-menu-label">Tài khoản</span>
                 <span className="user-menu-caret">▾</span>
               </button>
+
               {menuOpen && (
                 <div className="user-menu-dropdown">
                   <button
@@ -76,6 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span className="user-menu-icon"></span>
                     <span>Vé của tôi</span>
                   </button>
+
                   <button
                     type="button"
                     className="user-menu-item"
@@ -84,6 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span className="user-menu-icon"></span>
                     <span>Sự kiện của tôi</span>
                   </button>
+
                   <button
                     type="button"
                     className="user-menu-item"
@@ -92,6 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span className="user-menu-icon"></span>
                     <span>Tài khoản của tôi</span>
                   </button>
+
                   {user.role === "admin" && (
                     <button
                       type="button"
@@ -102,6 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}
+
                   <button
                     type="button"
                     className="user-menu-item user-menu-item-danger"
@@ -119,6 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </nav>
       </header>
+
       {currentView === "home" && (
         <nav className="category-nav">
           <button className="category-link">nhạc sống</button>
@@ -130,5 +154,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </>
   );
 };
-
-
