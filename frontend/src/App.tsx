@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -75,12 +76,31 @@ const App: React.FC = () => {
     setView("home");
   };
 
+  // Các view không hiển thị navbar
+  const hideNavbarViews: View[] = ["login", "register", "verifyEmail"];
+  const shouldShowNavbar = !hideNavbarViews.includes(view);
+
   return (
     <div className="app-root">
-      <Navbar currentView={view} setView={setView} user={user} onLogout={handleLogout} />
+      {shouldShowNavbar && (
+        <Navbar 
+          currentView={view} 
+          setView={setView} 
+          user={user} 
+          onLogout={handleLogout}
+          onSearchClick={() => setSearchModalOpen(true)}
+        />
+      )}
 
       <main className="main-content">
-        {view === "home" && <Home user={user} setView={setView} />}
+        {view === "home" && (
+          <Home 
+            user={user} 
+            setView={setView}
+            searchModalOpen={searchModalOpen}
+            onSearchModalClose={() => setSearchModalOpen(false)}
+          />
+        )}
         {view === "showbiz" && (
           <ShowbizPage
             onPostClick={(postId) => {

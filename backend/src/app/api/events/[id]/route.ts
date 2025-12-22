@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     }
 
     const body = await req.json();
-    const { title, description, location, date, price, imageUrl } = body;
+    const { title, description, location, date, price, imageUrl, isFeatured, isTrending } = body;
 
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
@@ -52,6 +52,8 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     if (date !== undefined) update.date = date ? new Date(date) : null;
     if (price !== undefined) update.price = price;
     if (imageUrl !== undefined) update.imageUrl = imageUrl;
+    if (isFeatured !== undefined) update.isFeatured = isFeatured === true;
+    if (isTrending !== undefined) update.isTrending = isTrending === true;
 
     const event = await Event.findByIdAndUpdate(id, update, {
       new: true,

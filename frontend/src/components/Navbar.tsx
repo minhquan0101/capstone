@@ -6,6 +6,7 @@ interface NavbarProps {
   setView: (v: View) => void;
   user: UserInfo | null;
   onLogout: () => void;
+  onSearchClick?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setView,
   user,
   onLogout,
+  onSearchClick,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -31,25 +33,36 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="navbar-left" onClick={() => setView("home")}>
           <span className="logo-text">ticketfast</span>
         </div>
+        
+        {/* Search Bar in Center */}
+        {onSearchClick && (
+          <div className="navbar-search">
+            <div className="search-bar-wrapper" onClick={onSearchClick}>
+              <span className="search-bar-placeholder">Bạn tìm gì hôm nay?</span>
+              <button className="search-bar-button" type="button">
+                Tìm kiếm
+              </button>
+            </div>
+          </div>
+        )}
+
         <nav className="navbar-right">
-          <button
-            className={`nav-link ${currentView === "home" ? "active" : ""}`}
-            onClick={() => setView("home")}
-          >
-            Trang chủ
-          </button>
-          <button
-            className={`nav-link ${currentView === "showbiz" ? "active" : ""}`}
-            onClick={() => setView("showbiz")}
-          >
-            ShowBiz
-          </button>
-          <button
-            className={`nav-link ${currentView === "blogs" ? "active" : ""}`}
-            onClick={() => setView("blogs")}
-          >
-            Blogs / News
-          </button>
+          {user && user.role === "admin" && (
+            <button
+              className="btn-create-event"
+              onClick={() => setView("admin")}
+            >
+              Tạo sự kiện
+            </button>
+          )}
+          {user && (
+            <button
+              className="nav-ticket-button"
+              onClick={() => handleNavigate("booking")}
+            >
+              <span className="ticket-text">Vé của tôi</span>
+            </button>
+          )}
           {!user ? (
             <button
               className={`btn outline ${currentView === "login" ? "active" : ""}`}
@@ -64,7 +77,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="user-menu-label">Tài khoản</span>
-                <span className="user-menu-caret">▾</span>
               </button>
               {menuOpen && (
                 <div className="user-menu-dropdown">
@@ -73,7 +85,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="user-menu-item"
                     onClick={() => handleNavigate("booking")}
                   >
-                    <span className="user-menu-icon"></span>
                     <span>Vé của tôi</span>
                   </button>
                   <button
@@ -81,7 +92,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="user-menu-item"
                     onClick={() => handleNavigate("home")}
                   >
-                    <span className="user-menu-icon"></span>
                     <span>Sự kiện của tôi</span>
                   </button>
                   <button
@@ -89,7 +99,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="user-menu-item"
                     onClick={() => handleNavigate("profile")}
                   >
-                    <span className="user-menu-icon"></span>
                     <span>Tài khoản của tôi</span>
                   </button>
                   {user.role === "admin" && (
@@ -98,7 +107,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="user-menu-item"
                       onClick={() => handleNavigate("admin")}
                     >
-                      <span className="user-menu-icon"></span>
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}
@@ -110,7 +118,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onLogout();
                     }}
                   >
-                    <span className="user-menu-icon">↪</span>
                     <span>Đăng xuất</span>
                   </button>
                 </div>

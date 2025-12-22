@@ -9,6 +9,8 @@ interface EventItem {
   date?: string;
   price?: number;
   imageUrl?: string;
+  isFeatured?: boolean;
+  isTrending?: boolean;
 }
 
 
@@ -20,6 +22,8 @@ export const AdminEvents: React.FC = () => {
   const [date, setDate] = useState("");
   const [price, setPrice] = useState<number | "">("");
   const [imageUrl, setImageUrl] = useState("");
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isTrending, setIsTrending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,6 +82,8 @@ export const AdminEvents: React.FC = () => {
           date: date ? new Date(date).toISOString() : null,
           price: price === "" ? undefined : Number(price),
           imageUrl: finalImageUrl,
+          isFeatured,
+          isTrending,
         }),
       });
       const data = await res.json();
@@ -88,6 +94,8 @@ export const AdminEvents: React.FC = () => {
       setDate("");
       setPrice("");
       setImageUrl("");
+      setIsFeatured(false);
+      setIsTrending(false);
       setCreatingImageFile(null);
       setCreatingImagePreview(null);
       setCreatingImageInputKey((prev) => prev + 1); // Reset file input
@@ -126,6 +134,8 @@ export const AdminEvents: React.FC = () => {
       date: ev.date,
       price: ev.price,
       imageUrl: ev.imageUrl,
+      isFeatured: ev.isFeatured || false,
+      isTrending: ev.isTrending || false,
     });
   };
 
@@ -162,6 +172,8 @@ export const AdminEvents: React.FC = () => {
               : Number(editingEvent.price),
           imageUrl: finalImageUrl,
           date: editingEvent.date ? new Date(editingEvent.date).toISOString() : undefined,
+          isFeatured: editingEvent.isFeatured === true,
+          isTrending: editingEvent.isTrending === true,
         }),
       });
       const data = await res.json();
@@ -246,6 +258,24 @@ export const AdminEvents: React.FC = () => {
             </div>
           )}
         </div>
+        <div className="form-group" style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+            />
+            <span>Sự kiện đặc biệt</span>
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={isTrending}
+              onChange={(e) => setIsTrending(e.target.checked)}
+            />
+            <span>Sự kiện xu hướng</span>
+          </label>
+        </div>
         <button className="btn primary full-width" type="submit" disabled={loading}>
           {loading ? "Đang tạo..." : "Tạo sự kiện"}
         </button>
@@ -263,6 +293,7 @@ export const AdminEvents: React.FC = () => {
                 <th style={{ padding: 8, textAlign: "left" }}>Địa điểm</th>
                 <th style={{ padding: 8, textAlign: "left" }}>Ngày</th>
                 <th style={{ padding: 8, textAlign: "left" }}>Giá vé (VNĐ)</th>
+                <th style={{ padding: 8, textAlign: "left" }}>Đặc biệt/Xu hướng</th>
                 <th style={{ padding: 8 }}></th>
               </tr>
             </thead>
@@ -403,6 +434,38 @@ export const AdminEvents: React.FC = () => {
                         <span className="event-meta">
                           {ev.price ? ev.price.toLocaleString("vi-VN") : "Chưa đặt"}
                         </span>
+                      )}
+                    </td>
+                    <td style={{ padding: 8 }}>
+                      {isEditing ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                            <input
+                              type="checkbox"
+                              checked={row.isFeatured || false}
+                              onChange={(e) =>
+                                setEditingEvent((prev) => ({ ...prev, isFeatured: e.target.checked }))
+                              }
+                            />
+                            <span>Đặc biệt</span>
+                          </label>
+                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                            <input
+                              type="checkbox"
+                              checked={row.isTrending || false}
+                              onChange={(e) =>
+                                setEditingEvent((prev) => ({ ...prev, isTrending: e.target.checked }))
+                              }
+                            />
+                            <span>Xu hướng</span>
+                          </label>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2, fontSize: 12 }}>
+                          {ev.isFeatured && <span style={{ color: "#10b981" }}>⭐ Đặc biệt</span>}
+                          {ev.isTrending && <span style={{ color: "#f59e0b" }}>🔥 Xu hướng</span>}
+                          {!ev.isFeatured && !ev.isTrending && <span className="event-meta">-</span>}
+                        </div>
                       )}
                     </td>
                     <td style={{ padding: 8, whiteSpace: "nowrap" }}>

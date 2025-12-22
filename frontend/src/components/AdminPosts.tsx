@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { API_BASE } from "../utils/api";
+import { API_BASE, uploadImage } from "../utils/api";
 
 interface PostItem {
   _id: string;
   title: string;
   content: string;
   type: "showbiz" | "blog";
+  imageUrl?: string;
 }
 
 export const AdminPosts: React.FC = () => {
@@ -15,8 +16,12 @@ export const AdminPosts: React.FC = () => {
   const [type, setType] = useState<"showbiz" | "blog">("showbiz");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageInputKey, setImageInputKey] = useState(0);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
   const loadPosts = async () => {
     try {
@@ -40,19 +45,37 @@ export const AdminPosts: React.FC = () => {
     setLoading(true);
     try {
       if (!token) throw new Error("Thiếu token admin");
+
+      let finalImageUrl = "";
+      if (imageFile) {
+        try {
+          finalImageUrl = await uploadImage(imageFile);
+        } catch (uploadError: any) {
+          throw new Error(`Upload ảnh thất bại: ${uploadError.message}`);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, content, type }),
+        body: JSON.stringify({ 
+          title, 
+          content, 
+          type,
+          imageUrl: finalImageUrl || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Tạo bài đăng thất bại");
       setTitle("");
       setContent("");
       setType("showbiz");
+      setImageFile(null);
+      setImagePreview(null);
+      setImageInputKey((prev) => prev + 1); // Reset file input
       await loadPosts();
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra");
@@ -104,6 +127,44 @@ export const AdminPosts: React.FC = () => {
             required
           />
         </div>
+        <div className="form-group">
+          <label>Hình ảnh bài đăng</label>
+          <input
+            key={imageInputKey}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setImageFile(file);
+                // Tạo preview cho ảnh
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setImagePreview(reader.result as string);
+                };
+                reader.readAsDataURL(file);
+              } else {
+                setImageFile(null);
+                setImagePreview(null);
+              }
+            }}
+          />
+          {imagePreview && (
+            <div style={{ marginTop: 8 }}>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "150px",
+                  objectFit: "cover",
+                  borderRadius: 6,
+                  border: "1px solid #ddd",
+                }}
+              />
+            </div>
+          )}
+        </div>
         <button className="btn primary full-width" type="submit" disabled={loading}>
           {loading ? "Đang tạo..." : "Tạo bài đăng"}
         </button>
@@ -118,18 +179,37 @@ export const AdminPosts: React.FC = () => {
               key={p._id}
               style={{
                 borderBottom: "1px solid #e5e7eb",
-                padding: "8px 0",
+                padding: "12px 0",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                gap: 8,
+                gap: 16,
               }}
             >
-              <div>
-                <strong>
-                  [{p.type === "showbiz" ? "ShowBiz" : "Blog"}] {p.title}
-                </strong>
-                <div className="event-meta">{p.content.slice(0, 100)}...</div>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1 }}>
+                {p.imageUrl && (
+                  <img
+                    src={
+                      p.imageUrl.startsWith("http")
+                        ? p.imageUrl
+                        : `${backendBase}${p.imageUrl}`
+                    }
+                    alt={p.title}
+                    style={{
+                      width: 80,
+                      height: 60,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                )}
+                <div>
+                  <strong>
+                    [{p.type === "showbiz" ? "ShowBiz" : "Blog"}] {p.title}
+                  </strong>
+                  <div className="event-meta">{p.content.slice(0, 100)}...</div>
+                </div>
               </div>
               <button className="btn outline" type="button" onClick={() => handleDelete(p._id)}>
                 Xoá

@@ -7,6 +7,8 @@ export interface IEvent extends Document {
   date?: Date;
   price?: number;
   imageUrl?: string;
+  isFeatured?: boolean;
+  isTrending?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +21,8 @@ const EventSchema: Schema<IEvent> = new Schema(
     date: { type: Date },
     price: { type: Number },
     imageUrl: { type: String },
+    isFeatured: { type: Boolean, default: false },
+    isTrending: { type: Boolean, default: false },
   },
   {
     timestamps: true,
