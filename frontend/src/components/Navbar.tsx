@@ -6,6 +6,7 @@ interface NavbarProps {
   setView: (v: View) => void;
   user: UserInfo | null;
   onLogout: () => void;
+  onSearchClick?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setView,
   user,
   onLogout,
+  onSearchClick,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -28,11 +30,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <header className="navbar">
+        {/* Left: Logo */}
         <div className="navbar-left" onClick={() => setView("home")}>
           <span className="logo-text">ticketfast</span>
         </div>
 
+        {/* Center: Search Bar (from khanh branch) */}
+        {onSearchClick && (
+          <div className="navbar-search">
+            <div className="search-bar-wrapper" onClick={onSearchClick}>
+              <span className="search-bar-placeholder">Bạn tìm gì hôm nay?</span>
+              <button className="search-bar-button" type="button">
+                Tìm kiếm
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Right: Navigation & User Menu */}
         <nav className="navbar-right">
+          {/* Main Links (from main branch) */}
           <button
             className={`nav-link ${currentView === "home" ? "active" : ""}`}
             onClick={() => setView("home")}
@@ -54,7 +71,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             Blogs / News
           </button>
 
+          {/* Conditional Admin/User Buttons */}
+          {user && user.role === "admin" && (
+            <button
+              className="btn-create-event"
+              onClick={() => setView("admin")}
+            >
+              Tạo sự kiện
+            </button>
+          )}
+
           {!user ? (
+            /* Login Button for guests */
             <button
               className={`btn outline ${currentView === "login" ? "active" : ""}`}
               onClick={() => setView("login")}
@@ -62,12 +90,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               đăng nhập
             </button>
           ) : (
+            /* User Menu Dropdown */
             <div
               className="user-menu"
               tabIndex={0}
               onBlur={(e) => {
                 const next = e.relatedTarget as Node | null;
-                // Chỉ đóng menu khi focus đi ra ngoài hẳn user-menu
                 if (!next || !e.currentTarget.contains(next)) {
                   setMenuOpen(false);
                 }
@@ -82,7 +110,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="user-menu-label">Tài khoản</span>
-                <span className="user-menu-caret">▾</span>
               </button>
 
               {menuOpen && (
@@ -92,17 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="user-menu-item"
                     onClick={() => handleNavigate("booking")}
                   >
-                    <span className="user-menu-icon"></span>
                     <span>Vé của tôi</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="user-menu-item"
-                    onClick={() => handleNavigate("home")}
-                  >
-                    <span className="user-menu-icon"></span>
-                    <span>Sự kiện của tôi</span>
                   </button>
 
                   <button
@@ -110,7 +127,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     className="user-menu-item"
                     onClick={() => handleNavigate("profile")}
                   >
-                    <span className="user-menu-icon"></span>
                     <span>Tài khoản của tôi</span>
                   </button>
 
@@ -120,7 +136,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="user-menu-item"
                       onClick={() => handleNavigate("admin")}
                     >
-                      <span className="user-menu-icon"></span>
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}
@@ -133,7 +148,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onLogout();
                     }}
                   >
-                    <span className="user-menu-icon">↪</span>
                     <span>Đăng xuất</span>
                   </button>
                 </div>
@@ -143,6 +157,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
       </header>
 
+      {/* Category Sub-nav (Only on Home) */}
       {currentView === "home" && (
         <nav className="category-nav">
           <button className="category-link">nhạc sống</button>

@@ -41,7 +41,6 @@ export async function GET(_req: NextRequest, context: RouteContext) {
   }
 }
 
-// PUT /api/events/[id] -> cập nhật sự kiện (+ ticketTypes)
 export async function PUT(req: NextRequest, context: RouteContext) {
   try {
     const auth = requireAdmin(req);
@@ -55,16 +54,21 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     }
 
     const body = await req.json();
-    const {
-      title,
-      description,
-      location,
-      date,
-      price,
-      imageUrl,
+    
+    // --- RESOLVED CONFLICT HERE ---
+    const { 
+      title, 
+      description, 
+      location, 
+      date, 
+      price, 
+      imageUrl, 
+      isFeatured, 
+      isTrending,
       ticketsTotal,
-      ticketTypes, // ✅ thêm
+      ticketTypes 
     } = body;
+    // ------------------------------
 
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
@@ -72,10 +76,10 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     if (location !== undefined) update.location = location;
     if (date !== undefined) update.date = date ? new Date(date) : null;
     if (imageUrl !== undefined) update.imageUrl = imageUrl;
+    if (isFeatured !== undefined) update.isFeatured = isFeatured === true;
+    if (isTrending !== undefined) update.isTrending = isTrending === true;
 
-    // ✅ Nếu admin gửi ticketTypes -> update theo hạng vé
     if (Array.isArray(ticketTypes)) {
-      // validate ticketTypes
       const cleaned = ticketTypes
         .map((t: any) => ({
           name: String(t?.name || "").trim(),
@@ -98,7 +102,6 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         );
       }
 
-      // ⚠️ tránh mất dữ liệu sold/held: không cho thay đổi khi đã có bán/giữ
       const existingTypes = await TicketType.find({ eventId: id }).lean();
       const hasSoldOrHeld = existingTypes.some(
         (t: any) => Number(t.sold ?? 0) > 0 || Number(t.held ?? 0) > 0
@@ -113,7 +116,6 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         );
       }
 
-      // replace ticket types
       await TicketType.deleteMany({ eventId: id });
       await TicketType.insertMany(
         cleaned.map((t: any) => ({
@@ -124,20 +126,15 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         }))
       );
 
-      // ✅ tự tính lại tổng vé & giá hiển thị (minPrice)
       const computedTotal = cleaned.reduce((s: number, x: any) => s + x.total, 0);
       const minPrice = cleaned.reduce((m: number, x: any) => Math.min(m, x.price), Infinity);
 
       update.ticketsTotal = computedTotal;
       update.price = Number.isFinite(minPrice) ? minPrice : 0;
     } else {
-      // ✅ Không dùng ticketTypes -> dùng price + ticketsTotal theo event như cũ
       if (price !== undefined) update.price = Number(price);
-
       if (ticketsTotal !== undefined) {
         const newTotal = Number(ticketsTotal);
-
-        // optional: chặn giảm tổng vé thấp hơn sold+held
         const current = await Event.findById(id).select("ticketsSold ticketsHeld").lean();
         const sold = Number((current as any)?.ticketsSold ?? 0);
         const held = Number((current as any)?.ticketsHeld ?? 0);
@@ -147,7 +144,6 @@ export async function PUT(req: NextRequest, context: RouteContext) {
             { status: 400 }
           );
         }
-
         update.ticketsTotal = newTotal;
       }
     }
@@ -189,7 +185,6 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
       return NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 });
     }
 
-    // ✅ xoá luôn ticketTypes của event
     await TicketType.deleteMany({ eventId: id });
 
     return withCors(NextResponse.json({ message: "Đã xoá sự kiện" }, { status: 200 }));

@@ -6,7 +6,9 @@ import { AuthForm } from "./components/AuthForm";
 import { Home } from "./components/Home";
 import { AdminPage } from "./components/AdminPage";
 import { ShowbizPage } from "./pages/ShowbizPage";
+import { ShowbizDetailPage } from "./pages/ShowbizDetailPage";
 import { BlogsPage } from "./pages/BlogsPage";
+import { BlogDetailPage } from "./pages/BlogDetailPage";
 import { BookingPage } from "./pages/BookingPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
@@ -19,6 +21,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -72,14 +76,65 @@ const App: React.FC = () => {
     setView("home");
   };
 
+  // Các view không hiển thị navbar
+  const hideNavbarViews: View[] = ["login", "register", "verifyEmail"];
+  const shouldShowNavbar = !hideNavbarViews.includes(view);
+
   return (
     <div className="app-root">
-      <Navbar currentView={view} setView={setView} user={user} onLogout={handleLogout} />
+      {shouldShowNavbar && (
+        <Navbar 
+          currentView={view} 
+          setView={setView} 
+          user={user} 
+          onLogout={handleLogout}
+          onSearchClick={() => setSearchModalOpen(true)}
+        />
+      )}
 
       <main className="main-content">
-        {view === "home" && <Home user={user} setView={setView} />}
-        {view === "showbiz" && <ShowbizPage />}
-        {view === "blogs" && <BlogsPage />}
+        {view === "home" && (
+          <Home 
+            user={user} 
+            setView={setView}
+            searchModalOpen={searchModalOpen}
+            onSearchModalClose={() => setSearchModalOpen(false)}
+          />
+        )}
+        {view === "showbiz" && (
+          <ShowbizPage
+            onPostClick={(postId) => {
+              setSelectedPostId(postId);
+              setView("showbizDetail");
+            }}
+          />
+        )}
+        {view === "showbizDetail" && selectedPostId && (
+          <ShowbizDetailPage
+            postId={selectedPostId}
+            onBack={() => {
+              setSelectedPostId(null);
+              setView("showbiz");
+            }}
+          />
+        )}
+        {view === "blogs" && (
+          <BlogsPage
+            onPostClick={(postId) => {
+              setSelectedPostId(postId);
+              setView("blogDetail");
+            }}
+          />
+        )}
+        {view === "blogDetail" && selectedPostId && (
+          <BlogDetailPage
+            postId={selectedPostId}
+            onBack={() => {
+              setSelectedPostId(null);
+              setView("blogs");
+            }}
+          />
+        )}
         {view === "booking" && <BookingPage user={user} />}
         {view === "changePassword" && (
           <ChangePasswordPage setError={setError} setLoading={setLoading} />

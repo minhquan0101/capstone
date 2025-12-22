@@ -11,12 +11,22 @@ function withCors(res: NextResponse) {
   return res;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const events = await Event.find().sort({ date: 1, createdAt: -1 }).lean();
+    
+    // --- RESOLVED: Filtering Logic ---
+    const { searchParams } = new URL(req.url);
+    const featured = searchParams.get("featured") === "true";
+    const trending = searchParams.get("trending") === "true";
 
-    // ✅ Lấy ticketTypes theo event
+    let query: any = {};
+    if (featured) query.isFeatured = true;
+    if (trending) query.isTrending = true;
+
+    const events = await Event.find(query).sort({ date: 1, createdAt: -1 }).lean();
+
+    // --- RESOLVED: Ticket Type Aggregation ---
     const eventIds = events.map((e) => e._id);
     const types = await TicketType.find({ eventId: { $in: eventIds } }).lean();
 
@@ -27,7 +37,6 @@ export async function GET() {
       byEvent.get(key)!.push(t);
     }
 
-    // ✅ Gắn ticketTypes vào event + tổng hợp lại số liệu để FE dùng
     const eventsWithTypes = events.map((e: any) => {
       const ticketTypes = byEvent.get(String(e._id)) || [];
 
@@ -49,7 +58,6 @@ export async function GET() {
           price: Number.isFinite(minPrice) ? minPrice : e.price,
         };
       }
-
       return { ...e, ticketTypes };
     });
 
@@ -68,22 +76,25 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const body = await req.json();
 
-    const {
-      title,
-      description,
-      location,
-      date,
-      price,
-      imageUrl,
-      ticketsTotal,
-      ticketTypes, // ✅ nhận thêm hạng vé
+    // --- RESOLVED: Destructuring all fields ---
+    const { 
+      title, 
+      description, 
+      location, 
+      date, 
+      price, 
+      imageUrl, 
+      isFeatured, 
+      isTrending, 
+      ticketsTotal, 
+      ticketTypes 
     } = body;
 
     if (!title) {
       return NextResponse.json({ message: "Thiếu tiêu đề sự kiện" }, { status: 400 });
     }
 
-    // ✅ nếu có ticketTypes thì chuẩn hoá dữ liệu
+    // Clean and validate ticket types
     let cleanedTicketTypes: { name: string; price: number; total: number }[] = [];
     if (Array.isArray(ticketTypes) && ticketTypes.length > 0) {
       cleanedTicketTypes = ticketTypes
@@ -106,21 +117,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ✅ Nếu có ticketTypes -> tự tính ticketsTotal và price (minPrice)
+    // Compute derived values
     const computedTotal =
       cleanedTicketTypes.length > 0
         ? cleanedTicketTypes.reduce((s, x) => s + x.total, 0)
-        : ticketsTotal !== undefined
-          ? Number(ticketsTotal)
-          : undefined;
+        : ticketsTotal !== undefined ? Number(ticketsTotal) : undefined;
 
     const computedMinPrice =
       cleanedTicketTypes.length > 0
         ? cleanedTicketTypes.reduce((m, x) => Math.min(m, x.price), Infinity)
-        : price !== undefined
-          ? Number(price)
-          : undefined;
+        : price !== undefined ? Number(price) : undefined;
 
+    // --- RESOLVED: Creating event with all merged fields ---
     const event = await Event.create({
       title,
       description,
@@ -128,11 +136,12 @@ export async function POST(req: NextRequest) {
       date: date ? new Date(date) : undefined,
       price: computedMinPrice,
       imageUrl,
+      isFeatured: isFeatured === true,
+      isTrending: isTrending === true,
       ticketsTotal: computedTotal,
-      // ticketsSold, ticketsHeld default theo schema
     });
 
-    // ✅ Tạo hạng vé theo event
+    // Create ticket types if applicable
     if (cleanedTicketTypes.length > 0) {
       await TicketType.insertMany(
         cleanedTicketTypes.map((t) => ({

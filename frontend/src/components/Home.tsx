@@ -1,140 +1,177 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { UserInfo, View } from "../utils/types";
-import { API_BASE } from "../utils/api";
-
-interface ApiEvent {
-  _id: string;
-  title: string;
-  location?: string;
-  date?: string;
-  price?: number;
-  imageUrl?: string;
-
-  // nếu backend có trả kèm ticketTypes/ticketsTotal thì không sao, không bắt buộc dùng ở Home
-  ticketsTotal?: number;
-  ticketsSold?: number;
-  ticketsHeld?: number;
-  ticketTypes?: any[];
-}
+import { API_BASE, getBanner, getEvents, Event } from "../utils/api";
+import { SearchModal } from "./SearchModal";
 
 interface HomeProps {
   user: UserInfo | null;
   setView: (v: View) => void;
+  searchModalOpen?: boolean;
+  onSearchModalClose?: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ user, setView }) => {
-  const [events, setEvents] = useState<ApiEvent[]>([]);
+export const Home: React.FC<HomeProps> = ({
+  user,
+  setView,
+  searchModalOpen = false,
+  onSearchModalClose,
+}) => {
+  const [banner, setBanner] = useState<string | null>(null);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Event[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
-  const loadEvents = async () => {
-    const res = await fetch(`${API_BASE}/events`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Không tải được danh sách sự kiện");
-    setEvents(data.events || []);
-  };
-
+  // Load Data
   useEffect(() => {
-    loadEvents().catch((e: any) => setError(e.message || "Có lỗi xảy ra"));
-  }, []);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const specialEvents = useMemo(() => events.slice(0, 4), [events]);
-  const trendingEvents = useMemo(() => events.slice(4, 14), [events]);
+        // Load banner & events in parallel
+        const [bannerData, eventsData] = await Promise.all([
+          getBanner(),
+          getEvents()
+        ]);
 
-  const getThumb = (ev: ApiEvent) => {
-    if (!ev.imageUrl) return "";
-    return ev.imageUrl.startsWith("http") ? ev.imageUrl : `${backendBase}${ev.imageUrl}`;
-  };
+        if (bannerData) {
+          const bannerUrl = bannerData.imageUrl.startsWith("http")
+            ? bannerData.imageUrl
+            : `${backendBase}${bannerData.imageUrl}`;
+          setBanner(bannerUrl);
+        }
 
-  const getTag = (ev: ApiEvent) => {
-    // bạn có thể đổi tag theo category sau, tạm để "Event"
-    if (Array.isArray(ev.ticketTypes) && ev.ticketTypes.length > 0) return "Ticket";
-    return "Event";
-  };
+        setAllEvents(eventsData || []);
+      } catch (err: any) {
+        console.error("Error loading home data:", err);
+        setError("Không thể tải dữ liệu trang chủ");
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    loadData();
+  }, [backendBase]);
+
+  // Derived State for Sections
+  const specialEvents = useMemo(() => allEvents.filter(e => e.isFeatured).slice(0, 4), [allEvents]);
+  const trendingEvents = useMemo(() => allEvents.slice(0, 10), [allEvents]);
+
+  // Search Logic
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+      const queryLower = searchQuery.toLowerCase();
+      const filtered = allEvents.filter((event) => 
+        event.title.toLowerCase().includes(queryLower) ||
+        event.location?.toLowerCase().includes(queryLower) ||
+        event.description?.toLowerCase().includes(queryLower)
+      );
+      setSearchResults(filtered);
+    } else {
+      setIsSearching(false);
+      setSearchResults([]);
+    }
+  }, [searchQuery, allEvents]);
+
+  // Helpers
   const handleGoBooking = (eventId: string) => {
-    // ✅ lưu eventId để BookingPage tự chọn đúng event
     localStorage.setItem("selectedEventId", eventId);
     setView("booking");
   };
 
+  const getImageUrl = (url?: string) => {
+    if (!url) return "https://via.placeholder.com/300x200?text=No+Image";
+    return url.startsWith("http") ? url : `${backendBase}${url}`;
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  if (loading) return <div className="loading-state"><p>Đang tải...</p></div>;
+
   return (
     <div className="home">
-      <div className="hero-banner" />
+      <div
+        className="hero-banner"
+        style={banner ? { backgroundImage: `url(${banner})`, backgroundSize: "cover" } : {}}
+      />
 
-      <section className="event-section special-events">
-        <div className="section-header">
-          <h2>sự kiện đặc biệt</h2>
-        </div>
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => onSearchModalClose?.()}
+        allEvents={allEvents}
+        onSearch={setSearchQuery}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
-        {error && <div className="global-message error">{error}</div>}
+      {error && <div className="global-message error">{error}</div>}
 
-        <div className="event-grid special-grid">
-          {specialEvents.map((ev) => (
-            <article key={ev._id} className="event-card special-card">
-              <div
-                className="event-thumb"
-                style={{
-                  backgroundImage: getThumb(ev) ? `url(${getThumb(ev)})` : undefined,
-                  backgroundColor: getThumb(ev) ? undefined : "#e5e7eb",
-                }}
-              >
-                <span className="event-tag">{getTag(ev)}</span>
+      <div className="content-wrapper">
+        {isSearching ? (
+          /* Search Results Section */
+          <section className="event-section search-results">
+            <h2>Kết quả tìm kiếm ({searchResults.length})</h2>
+            <div className="event-grid special-grid">
+              {searchResults.map(ev => (
+                <EventCard key={ev._id} event={ev} getImageUrl={getImageUrl} formatDate={formatDate} onBooking={handleGoBooking} />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* Featured Events */}
+            <section className="event-section special-events">
+              <div className="section-header"><h2>Sự kiện đặc biệt</h2></div>
+              <div className="event-grid special-grid">
+                {specialEvents.map(ev => (
+                  <EventCard key={ev._id} event={ev} getImageUrl={getImageUrl} formatDate={formatDate} onBooking={handleGoBooking} />
+                ))}
               </div>
+            </section>
 
-              <div className="event-body">
-                <h3>{ev.title}</h3>
-                <p className="event-meta">{ev.location || "-"}</p>
-                <p className="event-meta">
-                  {ev.date ? new Date(ev.date).toLocaleString("vi-VN") : "-"}
-                </p>
-
-                <button
-                  className="btn small full-width"
-                  type="button"
-                  onClick={() => handleGoBooking(ev._id)}
-                >
-                  Đặt vé ngay
-                </button>
+            {/* Trending Events */}
+            <section className="event-section trending-events">
+              <div className="section-header"><h2>Sự kiện xu hướng</h2></div>
+              <div className="event-grid trending-grid">
+                {trendingEvents.map((ev, idx) => (
+                  <article key={ev._id} className="event-card trending-card">
+                    <span className="event-number">{idx + 1}</span>
+                    <div className="event-thumb" style={{ backgroundImage: `url(${getImageUrl(ev.imageUrl)})` }} />
+                  </article>
+                ))}
               </div>
-            </article>
-          ))}
-
-          {specialEvents.length === 0 && (
-            <p className="subtitle">Chưa có sự kiện nào.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="event-section trending-events">
-        <div className="section-header">
-          <h2>sự kiện xu hướng</h2>
-        </div>
-
-        <div className="event-grid trending-grid">
-          {trendingEvents.slice(0, 10).map((ev, index) => (
-            <article key={ev._id} className="event-card trending-card">
-              <span className="event-number">{index + 1}</span>
-
-              <div
-                className="event-thumb trending-thumb"
-                style={{
-                  backgroundImage: getThumb(ev) ? `url(${getThumb(ev)})` : undefined,
-                  backgroundColor: getThumb(ev) ? undefined : "#e5e7eb",
-                }}
-                title={ev.title}
-              >
-                <span className="event-tag">{getTag(ev)}</span>
-              </div>
-            </article>
-          ))}
-
-          {trendingEvents.length === 0 && (
-            <p className="subtitle">Chưa có sự kiện xu hướng.</p>
-          )}
-        </div>
-      </section>
+            </section>
+          </>
+        )}
+      </div>
     </div>
   );
 };
+
+// Extracted Sub-component for clarity
+const EventCard = ({ event, getImageUrl, formatDate, onBooking }: any) => (
+  <article className="event-card special-card">
+    <div className="event-thumb" style={{ backgroundImage: `url(${getImageUrl(event.imageUrl)})` }}>
+      <span className="event-tag">Event</span>
+    </div>
+    <div className="event-body">
+      <h3>{event.title}</h3>
+      <p className="event-meta">{event.location}</p>
+      <p className="event-meta">{formatDate(event.date)}</p>
+      <button className="btn small full-width" onClick={() => onBooking(event._id)}>
+        Đặt vé ngay
+      </button>
+    </div>
+  </article>
+);

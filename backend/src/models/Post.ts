@@ -4,6 +4,7 @@ export interface IPost extends Document {
   title: string;
   content: string;
   type: "showbiz" | "blog";
+  imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,6 +14,7 @@ const PostSchema: Schema<IPost> = new Schema(
     title: { type: String, required: true, trim: true },
     content: { type: String, required: true },
     type: { type: String, enum: ["showbiz", "blog"], required: true },
+    imageUrl: { type: String },
   },
   {
     timestamps: true,

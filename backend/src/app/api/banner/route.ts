@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/utils/mongodb";
-import { Post } from "@/models/Post";
+import { Banner } from "@/models/Banner";
 import { requireAdmin } from "@/utils/auth";
-
 
 export async function GET() {
   try {
     await connectDB();
-    const posts = await Post.find().sort({ createdAt: -1 }).lean();
-    const res = NextResponse.json({ posts }, { status: 200 });
+    // Lấy banner mới nhất
+    const banner = await Banner.findOne().sort({ createdAt: -1 }).lean();
+    const res = NextResponse.json({ banner: banner || null }, { status: 200 });
     res.headers.set("Access-Control-Allow-Origin", "*");
     res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     return res;
   } catch (error) {
-    console.error("Get posts error", error);
+    console.error("Get banner error", error);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
   }
 }
@@ -25,20 +25,21 @@ export async function POST(req: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     await connectDB();
-    const { title, content, type, imageUrl } = await req.json();
-    if (!title || !content || !type) {
-      return NextResponse.json({ message: "Thiếu tiêu đề, nội dung hoặc loại bài" }, { status: 400 });
+    const { imageUrl } = await req.json();
+
+    if (!imageUrl) {
+      return NextResponse.json({ message: "Thiếu đường dẫn ảnh banner" }, { status: 400 });
     }
 
-    const post = await Post.create({ title, content, type, imageUrl });
+    const banner = await Banner.create({ imageUrl });
 
-    const res = NextResponse.json({ post }, { status: 201 });
+    const res = NextResponse.json({ banner }, { status: 201 });
     res.headers.set("Access-Control-Allow-Origin", "*");
     res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     return res;
   } catch (error) {
-    console.error("Create post error", error);
+    console.error("Create banner error", error);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
   }
 }
@@ -50,5 +51,4 @@ export function OPTIONS() {
   res.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   return res;
 }
-
 

@@ -127,17 +127,156 @@ export async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE}/upload`, {
-    method: "POST",
-    body: formData,
+  const uploadUrl = `${API_BASE}/upload`;
+  console.log("Upload URL:", uploadUrl);
+  console.log("API_BASE:", API_BASE);
+
+  try {
+    const res = await fetch(uploadUrl, {
+      method: "POST",
+      body: formData,
+      // Không set Content-Type header, browser sẽ tự động set với boundary cho FormData
+    });
+
+    console.log("Upload response status:", res.status);
+    console.log("Upload response ok:", res.ok);
+
+    // Kiểm tra nếu response không phải JSON
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error("Non-JSON response:", text);
+      throw new Error(`Server trả về lỗi: ${text || res.statusText}`);
+    }
+
+    const data = await res.json();
+    console.log("Upload response data:", data);
+    
+    if (!res.ok) {
+      throw new Error(data.message || `Upload ảnh thất bại: ${res.status} ${res.statusText}`);
+    }
+
+    if (!data.url) {
+      throw new Error("Server không trả về đường dẫn ảnh");
+    }
+
+    // Trả về đường dẫn tương đối để lưu vào DB (ví dụ: /uploads/filename.png)
+    return data.url;
+  } catch (error: any) {
+    console.error("Upload error details:", {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    });
+    
+    // Nếu là lỗi network hoặc fetch
+    if (error.name === "TypeError" || error.message.includes("fetch") || error.message.includes("Failed to fetch")) {
+      throw new Error(
+        `Không thể kết nối đến server tại ${uploadUrl}. ` +
+        `Vui lòng kiểm tra:\n` +
+        `1. Backend có đang chạy không?\n` +
+        `2. URL backend có đúng không? (Hiện tại: ${API_BASE})\n` +
+        `3. CORS có được cấu hình đúng không?`
+      );
+    }
+    // Nếu đã có message từ server
+    throw error;
+  }
+}
+
+export interface Post {
+  _id: string;
+  title: string;
+  content: string;
+  type: "showbiz" | "blog";
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Lấy danh sách posts
+export async function getPosts(): Promise<Post[]> {
+  const res = await fetch(`${API_BASE}/posts`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.message || "Upload ảnh thất bại");
+    throw new Error(data.message || "Lấy danh sách bài đăng thất bại");
   }
 
-  // Trả về đường dẫn tương đối để lưu vào DB (ví dụ: /uploads/filename.png)
-  // Backend đã trả về đường dẫn tương đối, giữ nguyên để lưu vào DB
-  return data.url;
+  return data.posts || [];
+}
+
+// Lấy chi tiết một post
+export async function getPost(id: string): Promise<Post> {
+  const res = await fetch(`${API_BASE}/posts/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Lấy chi tiết bài đăng thất bại");
+  }
+
+  return data.post;
+}
+
+export interface Event {
+  _id: string;
+  title: string;
+  description?: string;
+  location?: string;
+  date?: string;
+  price?: number;
+  imageUrl?: string;
+  isFeatured?: boolean;
+  isTrending?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Lấy banner
+export async function getBanner(): Promise<{ imageUrl: string } | null> {
+  const res = await fetch(`${API_BASE}/banner`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Lấy banner thất bại");
+  }
+
+  return data.banner;
+}
+
+// Lấy danh sách events
+export async function getEvents(featured?: boolean, trending?: boolean): Promise<Event[]> {
+  const params = new URLSearchParams();
+  if (featured) params.append("featured", "true");
+  if (trending) params.append("trending", "true");
+
+  const url = `${API_BASE}/events${params.toString() ? `?${params.toString()}` : ""}`;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || "Lấy danh sách sự kiện thất bại");
+  }
+
+  return data.events || [];
 }

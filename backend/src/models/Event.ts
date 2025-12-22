@@ -27,6 +27,8 @@ export interface IEvent extends Document {
   ticketTypes?: ITicketType[];
 
   imageUrl?: string;
+  isFeatured?: boolean;
+  isTrending?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,6 +60,8 @@ const EventSchema: Schema<IEvent> = new Schema(
     ticketTypes: { type: [TicketTypeSchema], default: [] },
 
     imageUrl: { type: String },
+    isFeatured: { type: Boolean, default: false },
+    isTrending: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
