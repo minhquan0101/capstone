@@ -1,5 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { API_BASE, uploadImage } from "../utils/api";
+
+interface TicketTypeItem {
+  _id?: string;
+  name: string;
+  price: number;
+  total: number;
+  sold?: number;
+  held?: number;
+}
 
 interface EventItem {
   _id: string;
@@ -9,10 +18,20 @@ interface EventItem {
   date?: string;
   price?: number;
   imageUrl?: string;
+  // Merged: Flags + Ticket Logic
   isFeatured?: boolean;
   isTrending?: boolean;
+  ticketsTotal?: number;
+  ticketsSold?: number;
+  ticketsHeld?: number;
+  ticketTypes?: TicketTypeItem[];
 }
 
+type TicketTypeDraft = {
+  name: string;
+  price: number | "";
+  total: number | "";
+};
 
 export const AdminEvents: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
@@ -21,16 +40,27 @@ export const AdminEvents: React.FC = () => {
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
   const [price, setPrice] = useState<number | "">("");
+  const [ticketsTotal, setTicketsTotal] = useState<number | "">("");
+
+  // Ticket Types Logic
+  const [useTicketTypes, setUseTicketTypes] = useState(false);
+  const [ticketTypes, setTicketTypes] = useState<TicketTypeDraft[]>([
+    { name: "Vé thường", price: "", total: "" },
+  ]);
+
   const [imageUrl, setImageUrl] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<Partial<EventItem>>({});
+
   const [creatingImageFile, setCreatingImageFile] = useState<File | null>(null);
   const [creatingImagePreview, setCreatingImagePreview] = useState<string | null>(null);
   const [creatingImageInputKey, setCreatingImageInputKey] = useState(0);
+
   const [editingImageFile, setEditingImageFile] = useState<File | null>(null);
   const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null);
 
@@ -50,23 +80,55 @@ export const AdminEvents: React.FC = () => {
 
   useEffect(() => {
     loadEvents();
-    
   }, []);
+
+  const createTicketTypesPayload = useMemo(() => {
+    if (!useTicketTypes) return undefined;
+    const cleaned = ticketTypes
+      .map((t) => ({
+        name: String(t.name || "").trim(),
+        price: t.price === "" ? undefined : Number(t.price),
+        total: t.total === "" ? undefined : Number(t.total),
+      }))
+      .filter((t) => t.name && t.price !== undefined && t.total !== undefined) as {
+      name: string;
+      price: number;
+      total: number;
+    }[];
+    return cleaned.length > 0 ? cleaned : [];
+  }, [useTicketTypes, ticketTypes]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
       if (!token) throw new Error("Thiếu token admin");
 
       let finalImageUrl = imageUrl;
       if (creatingImageFile) {
-        try {
-          finalImageUrl = await uploadImage(creatingImageFile);
-        } catch (uploadError: any) {
-          throw new Error(`Upload ảnh thất bại: ${uploadError.message}`);
+        finalImageUrl = await uploadImage(creatingImageFile);
+      }
+
+      const payload: any = {
+        title,
+        description,
+        location,
+        date: date ? new Date(date).toISOString() : null,
+        imageUrl: finalImageUrl,
+        isFeatured, // From khanh
+        isTrending, // From khanh
+      };
+
+      if (useTicketTypes) {
+        if (!createTicketTypesPayload || createTicketTypesPayload.length === 0) {
+          throw new Error("Vui lòng nhập đủ thông tin hạng vé.");
         }
+        payload.ticketTypes = createTicketTypesPayload;
+      } else {
+        payload.price = price === "" ? undefined : Number(price);
+        payload.ticketsTotal = ticketsTotal === "" ? undefined : Number(ticketsTotal);
       }
 
       const res = await fetch(`${API_BASE}/events`, {
@@ -75,30 +137,19 @@ export const AdminEvents: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title,
-          description,
-          location,
-          date: date ? new Date(date).toISOString() : null,
-          price: price === "" ? undefined : Number(price),
-          imageUrl: finalImageUrl,
-          isFeatured,
-          isTrending,
-        }),
+        body: JSON.stringify(payload),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Tạo sự kiện thất bại");
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setDate("");
-      setPrice("");
-      setImageUrl("");
-      setIsFeatured(false);
-      setIsTrending(false);
-      setCreatingImageFile(null);
-      setCreatingImagePreview(null);
-      setCreatingImageInputKey((prev) => prev + 1); // Reset file input
+
+      // Reset
+      setTitle(""); setDescription(""); setLocation(""); setDate(""); setPrice(""); setTicketsTotal("");
+      setUseTicketTypes(false); setTicketTypes([{ name: "Vé thường", price: "", total: "" }]);
+      setImageUrl(""); setIsFeatured(false); setIsTrending(false);
+      setCreatingImageFile(null); setCreatingImagePreview(null);
+      setCreatingImageInputKey((prev) => prev + 1);
+
       await loadEvents();
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra");
@@ -107,35 +158,11 @@ export const AdminEvents: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setError(null);
-    try {
-      if (!token) throw new Error("Thiếu token admin");
-      const res = await fetch(`${API_BASE}/events/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Xoá sự kiện thất bại");
-      await loadEvents();
-    } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra");
-    }
-  };
-
   const startEdit = (ev: EventItem) => {
     setEditingId(ev._id);
     setEditingEvent({
-      title: ev.title,
-      description: ev.description,
-      location: ev.location,
-      date: ev.date,
-      price: ev.price,
-      imageUrl: ev.imageUrl,
-      isFeatured: ev.isFeatured || false,
-      isTrending: ev.isTrending || false,
+      ...ev,
+      date: ev.date ? new Date(ev.date).toISOString().slice(0, 16) : "",
     });
   };
 
@@ -150,6 +177,7 @@ export const AdminEvents: React.FC = () => {
     if (!editingId) return;
     setError(null);
     setLoading(true);
+
     try {
       if (!token) throw new Error("Thiếu token admin");
 
@@ -158,26 +186,33 @@ export const AdminEvents: React.FC = () => {
         finalImageUrl = await uploadImage(editingImageFile);
       }
 
+      const hasTicketTypes = Array.isArray(editingEvent.ticketTypes) && editingEvent.ticketTypes.length > 0;
+
+      const payload: any = {
+        ...editingEvent,
+        imageUrl: finalImageUrl,
+        date: editingEvent.date ? new Date(editingEvent.date).toISOString() : undefined,
+      };
+
+      if (hasTicketTypes) {
+        delete payload.ticketsTotal;
+        delete payload.price;
+      }
+
       const res = await fetch(`${API_BASE}/events/${editingId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...editingEvent,
-          price:
-            editingEvent.price === undefined || editingEvent.price === null
-              ? undefined
-              : Number(editingEvent.price),
-          imageUrl: finalImageUrl,
-          date: editingEvent.date ? new Date(editingEvent.date).toISOString() : undefined,
-          isFeatured: editingEvent.isFeatured === true,
-          isTrending: editingEvent.isTrending === true,
-        }),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Cập nhật sự kiện thất bại");
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Cập nhật thất bại");
+      }
+
       await loadEvents();
       cancelEdit();
     } catch (err: any) {
@@ -187,335 +222,127 @@ export const AdminEvents: React.FC = () => {
     }
   };
 
+  const renderTicketTypesText = (ev: EventItem) => {
+    const types = ev.ticketTypes || [];
+    if (types.length === 0) return "—";
+    return types.map(t => `${t.name} (${t.price.toLocaleString()}đ)`).join(" | ");
+  };
+
   return (
-    <div style={{ display: "flex", gap: 24, flexDirection: "column" }}>
-      <form onSubmit={handleCreate} className="auth-form">
+    <div style={{ display: "flex", gap: 24, flexDirection: "column", padding: 20 }}>
+      {/* --- CREATE FORM --- */}
+      <form onSubmit={handleCreate} className="auth-form" style={{ border: '1px solid #ddd', padding: 20, borderRadius: 8 }}>
         <h2>Tạo sự kiện mới</h2>
         <div className="form-group">
           <label>Tiêu đề</label>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
         <div className="form-group">
-          <label>Mô tả</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-        <div className="form-group">
           <label>Địa điểm</label>
           <input value={location} onChange={(e) => setLocation(e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Ngày (YYYY-MM-DD)</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+          <label>Ngày</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
+
         <div className="form-group">
-          <label>Giá vé (VNĐ)</label>
-          <input
-            type="number"
-            min={0}
-            value={price}
-            onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
-          />
-        </div>
-        <div className="form-group">
-          <label>Hình ảnh sự kiện</label>
-          <input
-            key={creatingImageInputKey}
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setCreatingImageFile(file);
-                // Tạo preview cho ảnh
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  setCreatingImagePreview(reader.result as string);
-                };
-                reader.readAsDataURL(file);
-              } else {
-                setCreatingImageFile(null);
-                setCreatingImagePreview(null);
-              }
-            }}
-          />
-          {creatingImagePreview && (
-            <div style={{ marginTop: 8 }}>
-              <img
-                src={creatingImagePreview}
-                alt="Preview"
-                style={{
-                  maxWidth: "200px",
-                  maxHeight: "150px",
-                  objectFit: "cover",
-                  borderRadius: 6,
-                  border: "1px solid #ddd",
-                }}
-              />
-            </div>
-          )}
-        </div>
-        <div className="form-group" style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-            />
-            <span>Sự kiện đặc biệt</span>
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              checked={isTrending}
-              onChange={(e) => setIsTrending(e.target.checked)}
-            />
-            <span>Sự kiện xu hướng</span>
+          <label>
+            <input type="checkbox" checked={useTicketTypes} onChange={(e) => setUseTicketTypes(e.target.checked)} />
+             Chia hạng vé
           </label>
         </div>
-        <button className="btn primary full-width" type="submit" disabled={loading}>
-          {loading ? "Đang tạo..." : "Tạo sự kiện"}
-        </button>
+
+        {!useTicketTypes ? (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input type="number" placeholder="Giá vé" value={price} onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))} />
+            <input type="number" placeholder="Tổng vé" value={ticketsTotal} onChange={(e) => setTicketsTotal(e.target.value === "" ? "" : Number(e.target.value))} />
+          </div>
+        ) : (
+          <div>
+            {ticketTypes.map((t, idx) => (
+              <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input placeholder="Tên hạng" value={t.name} onChange={(e) => setTicketTypes(prev => prev.map((x, i) => i === idx ? { ...x, name: e.target.value } : x))} />
+                <input type="number" placeholder="Giá" value={t.price} onChange={(e) => setTicketTypes(prev => prev.map((x, i) => i === idx ? { ...x, price: e.target.value === "" ? "" : Number(e.target.value) } : x))} />
+                <input type="number" placeholder="Số vé" value={t.total} onChange={(e) => setTicketTypes(prev => prev.map((x, i) => i === idx ? { ...x, total: e.target.value === "" ? "" : Number(e.target.value) } : x))} />
+              </div>
+            ))}
+            <button type="button" onClick={() => setTicketTypes([...ticketTypes, { name: "", price: "", total: "" }])}>+ Thêm</button>
+          </div>
+        )}
+
+        <div className="form-group" style={{ marginTop: 15 }}>
+          <label>Banner</label>
+          <input type="file" onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setCreatingImageFile(file);
+              setCreatingImagePreview(URL.createObjectURL(file));
+            }
+          }} />
+        </div>
+
+        {/* --- KHANH BRANCH FLAGS --- */}
+        <div style={{ display: "flex", gap: 16, margin: "15px 0" }}>
+          <label><input type="checkbox" checked={isFeatured} onChange={e => setIsFeatured(e.target.checked)} /> Đặc biệt</label>
+          <label><input type="checkbox" checked={isTrending} onChange={e => setIsTrending(e.target.checked)} /> Xu hướng</label>
+        </div>
+
+        <button className="btn primary full-width" type="submit" disabled={loading}>Tạo sự kiện</button>
       </form>
 
+      {/* --- EVENTS TABLE --- */}
       <div>
         <h2>Danh sách sự kiện</h2>
-        {error && <div className="global-message error">{error}</div>}
-        <div style={{ overflowX: "auto", marginTop: 12 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-            <thead>
-              <tr style={{ backgroundColor: "#f3f4f6" }}>
-                <th style={{ padding: 8, textAlign: "left" }}>Hình ảnh</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Tên sự kiện</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Địa điểm</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Ngày</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Giá vé (VNĐ)</th>
-                <th style={{ padding: 8, textAlign: "left" }}>Đặc biệt/Xu hướng</th>
-                <th style={{ padding: 8 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map((ev) => {
-                const isEditing = editingId === ev._id;
-                const row = isEditing ? editingEvent : ev;
-                return (
-                  <tr key={ev._id} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          {row.imageUrl && (
-                            <img
-                              src={
-                                row.imageUrl?.startsWith("http")
-                                  ? row.imageUrl
-                                  : `${backendBase}${row.imageUrl}`
-                              }
-                              alt={row.title}
-                              style={{
-                                width: 64,
-                                height: 40,
-                                objectFit: "cover",
-                                borderRadius: 6,
-                              }}
-                            />
-                          )}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                setEditingImageFile(file);
-                                // Tạo preview cho ảnh mới
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setEditingImagePreview(reader.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                              } else {
-                                setEditingImageFile(null);
-                                setEditingImagePreview(null);
-                              }
-                            }}
-                          />
-                          {editingImagePreview && (
-                            <img
-                              src={editingImagePreview}
-                              alt="Preview"
-                              style={{
-                                maxWidth: "100px",
-                                maxHeight: "75px",
-                                objectFit: "cover",
-                                borderRadius: 6,
-                                border: "1px solid #ddd",
-                                marginTop: 4,
-                              }}
-                            />
-                          )}
-                        </div>
-                      ) : row.imageUrl ? (
-                        <img
-                          src={
-                            row.imageUrl.startsWith("http")
-                              ? row.imageUrl
-                              : `${backendBase}${row.imageUrl}`
-                          }
-                          alt={row.title}
-                          style={{ width: 64, height: 40, objectFit: "cover", borderRadius: 6 }}
-                        />
-                      ) : (
-                        <span className="event-meta">Không có</span>
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={row.title || ""}
-                          onChange={(e) =>
-                            setEditingEvent((prev) => ({ ...prev, title: e.target.value }))
-                          }
-                        />
-                      ) : (
-                        <strong>{ev.title}</strong>
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={row.location || ""}
-                          onChange={(e) =>
-                            setEditingEvent((prev) => ({ ...prev, location: e.target.value }))
-                          }
-                        />
-                      ) : (
-                        ev.location && <span className="event-meta">{ev.location}</span>
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <input
-                          type="datetime-local"
-                          value={
-                            row.date
-                              ? new Date(row.date).toISOString().slice(0, 16)
-                              : ""
-                          }
-                          onChange={(e) =>
-                            setEditingEvent((prev) => ({ ...prev, date: e.target.value }))
-                          }
-                        />
-                      ) : (
-                        ev.date && (
-                          <span className="event-meta">
-                            {new Date(ev.date).toLocaleString("vi-VN")}
-                          </span>
-                        )
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          min={0}
-                          value={row.price ?? ""}
-                          onChange={(e) =>
-                            setEditingEvent((prev) => ({
-                              ...prev,
-                              price: e.target.value === "" ? undefined : Number(e.target.value),
-                            }))
-                          }
-                        />
-                      ) : (
-                        <span className="event-meta">
-                          {ev.price ? ev.price.toLocaleString("vi-VN") : "Chưa đặt"}
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: 8 }}>
-                      {isEditing ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                            <input
-                              type="checkbox"
-                              checked={row.isFeatured || false}
-                              onChange={(e) =>
-                                setEditingEvent((prev) => ({ ...prev, isFeatured: e.target.checked }))
-                              }
-                            />
-                            <span>Đặc biệt</span>
-                          </label>
-                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                            <input
-                              type="checkbox"
-                              checked={row.isTrending || false}
-                              onChange={(e) =>
-                                setEditingEvent((prev) => ({ ...prev, isTrending: e.target.checked }))
-                              }
-                            />
-                            <span>Xu hướng</span>
-                          </label>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2, fontSize: 12 }}>
-                          {ev.isFeatured && <span style={{ color: "#10b981" }}>⭐ Đặc biệt</span>}
-                          {ev.isTrending && <span style={{ color: "#f59e0b" }}>🔥 Xu hướng</span>}
-                          {!ev.isFeatured && !ev.isTrending && <span className="event-meta">-</span>}
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: 8, whiteSpace: "nowrap" }}>
-                      {isEditing ? (
-                        <>
-                          <button
-                            className="btn small primary"
-                            type="button"
-                            onClick={saveEdit}
-                            style={{ marginRight: 8 }}
-                          >
-                            Lưu
-                          </button>
-                          <button
-                            className="btn small outline"
-                            type="button"
-                            onClick={cancelEdit}
-                          >
-                            Hủy
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="btn small outline"
-                            type="button"
-                            onClick={() => startEdit(ev)}
-                            style={{ marginRight: 8 }}
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            className="btn small outline"
-                            type="button"
-                            onClick={() => handleDelete(ev._id)}
-                          >
-                            Xoá
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#eee" }}>
+              <th>Ảnh</th>
+              <th>Tên</th>
+              <th>Giá</th>
+              <th>Kho (Còn/Tổng)</th>
+              <th>Hạng vé</th>
+              <th>Flags</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map((ev) => {
+              const isEditing = editingId === ev._id;
+              const row = isEditing ? editingEvent : ev;
+              
+              return (
+                <tr key={ev._id} style={{ borderBottom: "1px solid #ddd" }}>
+                  <td><img src={row.imageUrl?.startsWith("http") ? row.imageUrl : `${backendBase}${row.imageUrl}`} width={50} /></td>
+                  <td>
+                    {isEditing ? <input value={row.title} onChange={e => setEditingEvent({...row, title: e.target.value})} /> : row.title}
+                  </td>
+                  <td>{row.price?.toLocaleString()}đ</td>
+                  <td>{Number(row.ticketsTotal ?? 0) - Number(row.ticketsSold ?? 0)} / {row.ticketsTotal}</td>
+                  <td>{renderTicketTypesText(row as EventItem)}</td>
+                  <td>
+                    {isEditing ? (
+                      <>
+                        <input type="checkbox" checked={row.isFeatured} onChange={e => setEditingEvent({...row, isFeatured: e.target.checked})} /> ⭐
+                        <input type="checkbox" checked={row.isTrending} onChange={e => setEditingEvent({...row, isTrending: e.target.checked})} /> 🔥
+                      </>
+                    ) : (
+                      <>{ev.isFeatured && "⭐"} {ev.isTrending && "🔥"}</>
+                    )}
+                  </td>
+                  <td>
+                    {isEditing ? (
+                      <button onClick={saveEdit}>Lưu</button>
+                    ) : (
+                      <button onClick={() => startEdit(ev)}>Sửa</button>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
-
-

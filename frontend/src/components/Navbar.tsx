@@ -30,11 +30,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       <header className="navbar">
+        {/* Left: Logo */}
         <div className="navbar-left" onClick={() => setView("home")}>
           <span className="logo-text">ticketfast</span>
         </div>
-        
-        {/* Search Bar in Center */}
+
+        {/* Center: Search Bar (from khanh branch) */}
         {onSearchClick && (
           <div className="navbar-search">
             <div className="search-bar-wrapper" onClick={onSearchClick}>
@@ -46,7 +47,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         )}
 
+        {/* Right: Navigation & User Menu */}
         <nav className="navbar-right">
+          {/* Main Links (from main branch) */}
+          <button
+            className={`nav-link ${currentView === "home" ? "active" : ""}`}
+            onClick={() => setView("home")}
+          >
+            Trang chủ
+          </button>
+
+          <button
+            className={`nav-link ${currentView === "showbiz" ? "active" : ""}`}
+            onClick={() => setView("showbiz")}
+          >
+            ShowBiz
+          </button>
+
+          <button
+            className={`nav-link ${currentView === "blogs" ? "active" : ""}`}
+            onClick={() => setView("blogs")}
+          >
+            Blogs / News
+          </button>
+
+          {/* Conditional Admin/User Buttons */}
           {user && user.role === "admin" && (
             <button
               className="btn-create-event"
@@ -55,15 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               Tạo sự kiện
             </button>
           )}
-          {user && (
-            <button
-              className="nav-ticket-button"
-              onClick={() => handleNavigate("booking")}
-            >
-              <span className="ticket-text">Vé của tôi</span>
-            </button>
-          )}
+
           {!user ? (
+            /* Login Button for guests */
             <button
               className={`btn outline ${currentView === "login" ? "active" : ""}`}
               onClick={() => setView("login")}
@@ -71,13 +90,28 @@ export const Navbar: React.FC<NavbarProps> = ({
               đăng nhập
             </button>
           ) : (
-            <div className="user-menu" onBlur={() => setMenuOpen(false)} tabIndex={0}>
-              <button className="user-menu-button" type="button" onClick={handleMenuClick}>
+            /* User Menu Dropdown */
+            <div
+              className="user-menu"
+              tabIndex={0}
+              onBlur={(e) => {
+                const next = e.relatedTarget as Node | null;
+                if (!next || !e.currentTarget.contains(next)) {
+                  setMenuOpen(false);
+                }
+              }}
+            >
+              <button
+                className="user-menu-button"
+                type="button"
+                onClick={handleMenuClick}
+              >
                 <div className="user-avatar">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <span className="user-menu-label">Tài khoản</span>
               </button>
+
               {menuOpen && (
                 <div className="user-menu-dropdown">
                   <button
@@ -87,13 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <span>Vé của tôi</span>
                   </button>
-                  <button
-                    type="button"
-                    className="user-menu-item"
-                    onClick={() => handleNavigate("home")}
-                  >
-                    <span>Sự kiện của tôi</span>
-                  </button>
+
                   <button
                     type="button"
                     className="user-menu-item"
@@ -101,6 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <span>Tài khoản của tôi</span>
                   </button>
+
                   {user.role === "admin" && (
                     <button
                       type="button"
@@ -110,6 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}
+
                   <button
                     type="button"
                     className="user-menu-item user-menu-item-danger"
@@ -126,6 +156,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </nav>
       </header>
+
+      {/* Category Sub-nav (Only on Home) */}
       {currentView === "home" && (
         <nav className="category-nav">
           <button className="category-link">nhạc sống</button>
@@ -137,5 +169,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </>
   );
 };
-
-

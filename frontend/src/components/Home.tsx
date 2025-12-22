@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { UserInfo, View } from "../utils/types";
 import { API_BASE, getBanner, getEvents, Event } from "../utils/api";
 import { SearchModal } from "./SearchModal";
@@ -10,18 +10,17 @@ interface HomeProps {
   onSearchModalClose?: () => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ 
-  user, 
-  setView, 
+export const Home: React.FC<HomeProps> = ({
+  user,
+  setView,
   searchModalOpen = false,
   onSearchModalClose,
 }) => {
   const [banner, setBanner] = useState<string | null>(null);
-  const [specialEvents, setSpecialEvents] = useState<Event[]>([]);
-  const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
   const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [error, setError] = useState<string | null>(null);
+
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Event[]>([]);
@@ -29,12 +28,19 @@ export const Home: React.FC<HomeProps> = ({
 
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
+  // Load Data
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        // Load banner
-        const bannerData = await getBanner();
+        setError(null);
+
+        // Load banner & events in parallel
+        const [bannerData, eventsData] = await Promise.all([
+          getBanner(),
+          getEvents()
+        ]);
+
         if (bannerData) {
           const bannerUrl = bannerData.imageUrl.startsWith("http")
             ? bannerData.imageUrl
@@ -42,19 +48,10 @@ export const Home: React.FC<HomeProps> = ({
           setBanner(bannerUrl);
         }
 
-        // Load featured events
-        const featured = await getEvents(true, false);
-        setSpecialEvents(featured);
-
-        // Load trending events
-        const trending = await getEvents(false, true);
-        setTrendingEvents(trending);
-
-        // Load all events for search
-        const all = await getEvents();
-        setAllEvents(all);
-      } catch (error) {
-        console.error("Error loading home data:", error);
+        setAllEvents(eventsData || []);
+      } catch (err: any) {
+        console.error("Error loading home data:", err);
+        setError("Không thể tải dữ liệu trang chủ");
       } finally {
         setLoading(false);
       }
@@ -63,219 +60,118 @@ export const Home: React.FC<HomeProps> = ({
     loadData();
   }, [backendBase]);
 
-  // Handle search
-  const handleSearch = (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
-    }
+  // Derived State for Sections
+  const specialEvents = useMemo(() => allEvents.filter(e => e.isFeatured).slice(0, 4), [allEvents]);
+  const trendingEvents = useMemo(() => allEvents.slice(0, 10), [allEvents]);
 
-    setIsSearching(true);
-    const filtered = allEvents.filter((event) => {
-      const queryLower = query.toLowerCase();
-      const titleMatch = event.title.toLowerCase().includes(queryLower);
-      const locationMatch = event.location?.toLowerCase().includes(queryLower);
-      const descriptionMatch = event.description?.toLowerCase().includes(queryLower);
-      
-      return titleMatch || locationMatch || descriptionMatch;
-    });
-
-    setSearchResults(filtered);
-  };
-
+  // Search Logic
   useEffect(() => {
-    if (searchQuery) {
-      handleSearch(searchQuery);
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+      const queryLower = searchQuery.toLowerCase();
+      const filtered = allEvents.filter((event) => 
+        event.title.toLowerCase().includes(queryLower) ||
+        event.location?.toLowerCase().includes(queryLower) ||
+        event.description?.toLowerCase().includes(queryLower)
+      );
+      setSearchResults(filtered);
     } else {
-      setSearchResults([]);
       setIsSearching(false);
+      setSearchResults([]);
     }
   }, [searchQuery, allEvents]);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
+  // Helpers
+  const handleGoBooking = (eventId: string) => {
+    localStorage.setItem("selectedEventId", eventId);
+    setView("booking");
   };
 
-  const getEventTag = (event: Event) => {
-    // Có thể thêm logic để xác định tag dựa trên description hoặc title
-    if (event.description?.toLowerCase().includes("music") || event.title.toLowerCase().includes("concert")) {
-      return "Music";
-    }
-    if (event.description?.toLowerCase().includes("sport") || event.title.toLowerCase().includes("bóng")) {
-      return "Sports";
-    }
-    if (event.description?.toLowerCase().includes("theater") || event.title.toLowerCase().includes("kịch")) {
-      return "Theater";
-    }
-    return "Event";
+  const getImageUrl = (url?: string) => {
+    if (!url) return "https://via.placeholder.com/300x200?text=No+Image";
+    return url.startsWith("http") ? url : `${backendBase}${url}`;
   };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
+  if (loading) return <div className="loading-state"><p>Đang tải...</p></div>;
 
   return (
     <div className="home">
       <div
         className="hero-banner"
-        style={
-          banner
-            ? {
-                backgroundImage: `url(${banner})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }
-            : {}
-        }
+        style={banner ? { backgroundImage: `url(${banner})`, backgroundSize: "cover" } : {}}
       />
 
-      {/* Search Modal */}
       <SearchModal
         isOpen={searchModalOpen}
-        onClose={() => {
-          onSearchModalClose?.();
-        }}
+        onClose={() => onSearchModalClose?.()}
         allEvents={allEvents}
-        onSearch={handleSearch}
+        onSearch={setSearchQuery}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />
 
-      {loading ? (
-        <div style={{ padding: "40px", textAlign: "center" }}>
-          <p>Đang tải...</p>
-        </div>
-      ) : (
-        <>
-          {/* Search Results */}
-          {isSearching && (
-            <section className="event-section search-results">
-              <div className="section-header">
-                <h2>
-                  Kết quả tìm kiếm {searchResults.length > 0 && `(${searchResults.length})`}
-                </h2>
-              </div>
-              {searchResults.length > 0 ? (
-                <div className="event-grid special-grid">
-                  {searchResults.map((event) => {
-                    const imageUrl = event.imageUrl
-                      ? event.imageUrl.startsWith("http")
-                        ? event.imageUrl
-                        : `${backendBase}${event.imageUrl}`
-                      : "https://via.placeholder.com/300x200?text=No+Image";
-                    return (
-                      <article key={event._id} className="event-card special-card">
-                        <div
-                          className="event-thumb"
-                          style={{ backgroundImage: `url(${imageUrl})` }}
-                        >
-                          <span className="event-tag">{getEventTag(event)}</span>
-                        </div>
-                        <div className="event-body">
-                          <h3>{event.title}</h3>
-                          {event.location && <p className="event-meta">{event.location}</p>}
-                          {event.date && <p className="event-meta">{formatDate(event.date)}</p>}
-                          <button
-                            className="btn small full-width"
-                            onClick={() => setView("booking")}
-                          >
-                            Đặt vé ngay
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-                  Không tìm thấy sự kiện nào phù hợp với tiêu chí tìm kiếm
-                </p>
-              )}
-            </section>
-          )}
+      {error && <div className="global-message error">{error}</div>}
 
-          {/* Featured Events - Only show when not searching */}
-          {!isSearching && (
+      <div className="content-wrapper">
+        {isSearching ? (
+          /* Search Results Section */
+          <section className="event-section search-results">
+            <h2>Kết quả tìm kiếm ({searchResults.length})</h2>
+            <div className="event-grid special-grid">
+              {searchResults.map(ev => (
+                <EventCard key={ev._id} event={ev} getImageUrl={getImageUrl} formatDate={formatDate} onBooking={handleGoBooking} />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* Featured Events */}
             <section className="event-section special-events">
-            <div className="section-header">
-              <h2>sự kiện đặc biệt</h2>
-            </div>
-            {specialEvents.length > 0 ? (
+              <div className="section-header"><h2>Sự kiện đặc biệt</h2></div>
               <div className="event-grid special-grid">
-                {specialEvents.map((event) => {
-                  const imageUrl = event.imageUrl
-                    ? event.imageUrl.startsWith("http")
-                      ? event.imageUrl
-                      : `${backendBase}${event.imageUrl}`
-                    : "https://via.placeholder.com/300x200?text=No+Image";
-                  return (
-                    <article key={event._id} className="event-card special-card">
-                      <div
-                        className="event-thumb"
-                        style={{ backgroundImage: `url(${imageUrl})` }}
-                      >
-                        <span className="event-tag">{getEventTag(event)}</span>
-                      </div>
-                      <div className="event-body">
-                        <h3>{event.title}</h3>
-                        {event.location && <p className="event-meta">{event.location}</p>}
-                        {event.date && <p className="event-meta">{formatDate(event.date)}</p>}
-                        <button
-                          className="btn small full-width"
-                          onClick={() => setView("booking")}
-                        >
-                          Đặt vé ngay
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
+                {specialEvents.map(ev => (
+                  <EventCard key={ev._id} event={ev} getImageUrl={getImageUrl} formatDate={formatDate} onBooking={handleGoBooking} />
+                ))}
               </div>
-            ) : (
-              <p style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-                Chưa có sự kiện đặc biệt nào
-              </p>
-            )}
-          </section>
-          )}
+            </section>
 
-          {/* Trending Events - Only show when not searching */}
-          {!isSearching && (
+            {/* Trending Events */}
             <section className="event-section trending-events">
-            <div className="section-header">
-              <h2>sự kiện xu hướng</h2>
-            </div>
-            {trendingEvents.length > 0 ? (
+              <div className="section-header"><h2>Sự kiện xu hướng</h2></div>
               <div className="event-grid trending-grid">
-                {trendingEvents.slice(0, 10).map((event, index) => {
-                  const imageUrl = event.imageUrl
-                    ? event.imageUrl.startsWith("http")
-                      ? event.imageUrl
-                      : `${backendBase}${event.imageUrl}`
-                    : "https://via.placeholder.com/300x200?text=No+Image";
-                  return (
-                    <article key={event._id} className="event-card trending-card">
-                      <span className="event-number">{index + 1}</span>
-                      <div
-                        className="event-thumb trending-thumb"
-                        style={{ backgroundImage: `url(${imageUrl})` }}
-                      >
-                        <span className="event-tag">{getEventTag(event)}</span>
-                      </div>
-                    </article>
-                  );
-                })}
+                {trendingEvents.map((ev, idx) => (
+                  <article key={ev._id} className="event-card trending-card">
+                    <span className="event-number">{idx + 1}</span>
+                    <div className="event-thumb" style={{ backgroundImage: `url(${getImageUrl(ev.imageUrl)})` }} />
+                  </article>
+                ))}
               </div>
-            ) : (
-              <p style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-                Chưa có sự kiện xu hướng nào
-              </p>
-            )}
-          </section>
-          )}
-        </>
-      )}
+            </section>
+          </>
+        )}
+      </div>
     </div>
   );
 };
 
-
+// Extracted Sub-component for clarity
+const EventCard = ({ event, getImageUrl, formatDate, onBooking }: any) => (
+  <article className="event-card special-card">
+    <div className="event-thumb" style={{ backgroundImage: `url(${getImageUrl(event.imageUrl)})` }}>
+      <span className="event-tag">Event</span>
+    </div>
+    <div className="event-body">
+      <h3>{event.title}</h3>
+      <p className="event-meta">{event.location}</p>
+      <p className="event-meta">{formatDate(event.date)}</p>
+      <button className="btn small full-width" onClick={() => onBooking(event._id)}>
+        Đặt vé ngay
+      </button>
+    </div>
+  </article>
+);
