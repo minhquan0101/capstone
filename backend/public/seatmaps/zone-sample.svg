@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="1200" height="700">
+  <rect x="0" y="0" width="1200" height="700" fill="#0b0f14" />
+
+  <!-- STAGE -->
+  <rect x="420" y="40" width="360" height="120" rx="12" fill="#cbd5e1" opacity="0.9"/>
+  <text x="600" y="115" text-anchor="middle" font-size="48" font-family="Arial" fill="#0b0f14" font-weight="700">STAGE</text>
+
+  <!-- VIP A1 -->
+  <g data-seat-id="ZONE-VIP-A1" data-ticket-type-id="695afd94e5942d83a1cd1780">
+    <rect x="250" y="190" width="260" height="170" rx="14" fill="#ef4444"/>
+    <text x="380" y="285" text-anchor="middle" font-size="44" font-family="Arial" fill="#ffffff" font-weight="700">VIP A1</text>
+  </g>
+
+  <!-- VIP A2 -->
+  <g data-seat-id="ZONE-VIP-A2" data-ticket-type-id="695afd94e5942d83a1cd1781">
+    <rect x="690" y="190" width="260" height="170" rx="14" fill="#ef4444"/>
+    <text x="820" y="285" text-anchor="middle" font-size="44" font-family="Arial" fill="#ffffff" font-weight="700">VIP A2</text>
+  </g>
+
+  <!-- VIP B1 -->
+  <g data-seat-id="ZONE-VIP-B1" data-ticket-type-id="695afd94e5942d83a1cd1782">
+    <rect x="70" y="190" width="150" height="300" rx="14" fill="#fb923c"/>
+    <text x="145" y="315" text-anchor="middle" font-size="36" font-family="Arial" fill="#ffffff" font-weight="700">VIP B1</text>
+  </g>
+
+  <!-- VIP B2 -->
+  <g data-seat-id="ZONE-VIP-B2" data-ticket-type-id="695afd94e5942d83a1cd1783">
+    <rect x="980" y="190" width="150" height="300" rx="14" fill="#fb923c"/>
+    <text x="1055" y="315" text-anchor="middle" font-size="36" font-family="Arial" fill="#ffffff" font-weight="700">VIP B2</text>
+  </g>
+
+  <!-- STANDING -->
+  <g data-seat-id="ZONE-STANDING" data-ticket-type-id="695afd94e5942d83a1cd1784">
+    <rect x="260" y="410" width="680" height="240" rx="18" fill="#fda4af"/>
+    <text x="600" y="520" text-anchor="middle" font-size="54" font-family="Arial" fill="#111827" font-weight="800">STANDING</text>
+    <text x="600" y="580" text-anchor="middle" font-size="42" font-family="Arial" fill="#111827" font-weight="800">ZONE</text>
+  </g>
+
+  <!-- Hint -->
+  <text x="20" y="680" font-size="16" font-family="Arial" fill="#94a3b8">
+    Click vào khu vực để chọn vé
+  </text>
+</svg>

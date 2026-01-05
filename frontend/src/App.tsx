@@ -13,22 +13,165 @@ import { BookingPage } from "./pages/BookingPage";
 import { ChangePasswordPage } from "./pages/ChangePasswordPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { VerifyEmailPage } from "./pages/VerifyEmailPage"; // 💡 thêm mới
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { getCurrentUser } from "./utils/api";
+import { SeatSelectPage } from "./pages/SeatSelectPage";
+
+
+// ✅ TRANG CHI TIẾT SỰ KIỆN
+import { EventDetail } from "./components/EventDetail";
+
+// ✅ THÊM TRANG THANH TOÁN
+import { PaymentPage } from "./pages/PaymentPage";
+
+type NavState = { view: View; selectedPostId: string | null };
 
 const App: React.FC = () => {
-  const [view, setView] = useState<View>("home");
+  const [view, _setView] = useState<View>("home");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
+  // ===== Helpers for URL <-> View =====
+  const pathFor = (v: View, postId: string | null) => {
+    const safe = (s?: string | null) => (s ? encodeURIComponent(s) : "");
+    const eventId =
+      typeof window !== "undefined" ? localStorage.getItem("selectedEventId") : null;
+
+    switch (v) {
+      case "home":
+        return "/";
+      case "showbiz":
+        return "/showbiz";
+      case "showbizDetail":
+        return postId ? `/showbiz/${safe(postId)}` : "/showbiz";
+      case "blogs":
+        return "/blogs";
+      case "blogDetail":
+        return postId ? `/blogs/${safe(postId)}` : "/blogs";
+      case "event_detail":
+        return eventId ? `/event/${safe(eventId)}` : "/event";
+      case "booking":
+        return eventId ? `/booking/${safe(eventId)}` : "/booking";
+      case "payment":
+        return "/payment";
+      case "profile":
+        return "/profile";
+      case "admin":
+        return "/admin";
+      case "login":
+        return "/login";
+      case "register":
+        return "/register";
+      case "verifyEmail":
+        return "/verify-email";
+      case "forgotPassword":
+        return "/forgot-password";
+      case "changePassword":
+        return "/change-password";
+      default:
+        return "/";
+    }
+  };
+
+  const parsePath = (pathname: string): NavState => {
+    const p = pathname.split("?")[0].split("#")[0];
+    const parts = p.split("/").filter(Boolean);
+
+    if (parts.length === 0) return { view: "home", selectedPostId: null };
+
+    // /showbiz or /showbiz/:id
+    if (parts[0] === "showbiz") {
+      if (parts[1]) return { view: "showbizDetail", selectedPostId: decodeURIComponent(parts[1]) };
+      return { view: "showbiz", selectedPostId: null };
+    }
+
+    // /blogs or /blogs/:id
+    if (parts[0] === "blogs") {
+      if (parts[1]) return { view: "blogDetail", selectedPostId: decodeURIComponent(parts[1]) };
+      return { view: "blogs", selectedPostId: null };
+    }
+
+    // /event/:id
+    if (parts[0] === "event") {
+      const id = parts[1] ? decodeURIComponent(parts[1]) : null;
+      if (id && typeof window !== "undefined") localStorage.setItem("selectedEventId", id);
+      return { view: "event_detail", selectedPostId: null };
+    }
+
+    // /booking/:id
+    if (parts[0] === "booking") {
+      const id = parts[1] ? decodeURIComponent(parts[1]) : null;
+      if (id && typeof window !== "undefined") localStorage.setItem("selectedEventId", id);
+      return { view: "booking", selectedPostId: null };
+    }
+
+    if (parts[0] === "payment") return { view: "payment", selectedPostId: null };
+    if (parts[0] === "profile") return { view: "profile", selectedPostId: null };
+    if (parts[0] === "admin") return { view: "admin", selectedPostId: null };
+    if (parts[0] === "login") return { view: "login", selectedPostId: null };
+    if (parts[0] === "register") return { view: "register", selectedPostId: null };
+    if (parts[0] === "verify-email") return { view: "verifyEmail", selectedPostId: null };
+    if (parts[0] === "forgot-password") return { view: "forgotPassword", selectedPostId: null };
+    if (parts[0] === "change-password") return { view: "changePassword", selectedPostId: null };
+
+    return { view: "home", selectedPostId: null };
+  };
+
+  const pushHistory = (nextView: View, nextPostId: string | null) => {
+    if (typeof window === "undefined") return;
+    const url = pathFor(nextView, nextPostId);
+    const state: NavState = { view: nextView, selectedPostId: nextPostId };
+    window.history.pushState(state, "", url);
+  };
+
+  // ✅ setView giữ nguyên signature để không phải sửa component con
+  const setView = (next: View) => {
+    _setView(next);
+    // dùng selectedPostId hiện tại
+    pushHistory(next, selectedPostId);
+  };
+
+  // ===== Init: sync view from URL (để refresh vẫn đúng trang) =====
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const init = parsePath(window.location.pathname);
+    setSelectedPostId(init.selectedPostId);
+    _setView(init.view);
+
+    // đảm bảo history.state có format chuẩn
+    window.history.replaceState(
+      { view: init.view, selectedPostId: init.selectedPostId } as NavState,
+      "",
+      window.location.pathname
+    );
+
+    const onPopState = (e: PopStateEvent) => {
+      const st = (e.state || null) as NavState | null;
+
+      if (st?.view) {
+        setSelectedPostId(st.selectedPostId ?? null);
+        _setView(st.view);
+      } else {
+        // fallback parse URL
+        const parsed = parsePath(window.location.pathname);
+        setSelectedPostId(parsed.selectedPostId);
+        _setView(parsed.view);
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  // ===== Auth restore =====
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    
     try {
       const [, payloadBase64] = token.split(".");
       if (!payloadBase64) {
@@ -37,22 +180,17 @@ const App: React.FC = () => {
       }
 
       const payloadJson = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
-      const payload = JSON.parse(payloadJson) as {
-        exp?: number;
-      };
+      const payload = JSON.parse(payloadJson) as { exp?: number };
 
-      // Nếu token đã hết hạn thì xoá luôn.
       if (payload.exp && payload.exp * 1000 < Date.now()) {
         localStorage.removeItem("token");
         return;
       }
     } catch {
-  
       localStorage.removeItem("token");
       return;
     }
 
-    
     getCurrentUser()
       .then((data) => {
         if (data.user) {
@@ -64,29 +202,65 @@ const App: React.FC = () => {
         }
       })
       .catch(() => {
-        
         localStorage.removeItem("token");
       });
   }, []);
 
+  // ✅ AUTO đóng search modal khi rời trang home
+  useEffect(() => {
+    if (view !== "home") setSearchModalOpen(false);
+  }, [view]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("pendingEmailVerify"); // xoá luôn email đang chờ verify (nếu có)
+    localStorage.removeItem("pendingEmailVerify");
+    localStorage.removeItem("paymentBookingId");
     setUser(null);
-    setView("home");
+    setSelectedPostId(null);
+
+    // về home + cập nhật URL để back không quay lại trang protected
+    _setView("home");
+    if (typeof window !== "undefined") {
+      window.history.pushState({ view: "home", selectedPostId: null } as NavState, "", "/");
+    }
   };
 
   // Các view không hiển thị navbar
   const hideNavbarViews: View[] = ["login", "register", "verifyEmail"];
   const shouldShowNavbar = !hideNavbarViews.includes(view);
 
+  // ===== helper điều hướng detail để push history đúng postId =====
+  const openShowbizDetail = (postId: string) => {
+    setSelectedPostId(postId);
+    _setView("showbizDetail");
+    pushHistory("showbizDetail", postId);
+  };
+
+  const backToShowbiz = () => {
+    setSelectedPostId(null);
+    _setView("showbiz");
+    pushHistory("showbiz", null);
+  };
+
+  const openBlogDetail = (postId: string) => {
+    setSelectedPostId(postId);
+    _setView("blogDetail");
+    pushHistory("blogDetail", postId);
+  };
+
+  const backToBlogs = () => {
+    setSelectedPostId(null);
+    _setView("blogs");
+    pushHistory("blogs", null);
+  };
+
   return (
     <div className="app-root">
       {shouldShowNavbar && (
-        <Navbar 
-          currentView={view} 
-          setView={setView} 
-          user={user} 
+        <Navbar
+          currentView={view}
+          setView={setView}
+          user={user}
           onLogout={handleLogout}
           onSearchClick={() => setSearchModalOpen(true)}
         />
@@ -94,56 +268,61 @@ const App: React.FC = () => {
 
       <main className="main-content">
         {view === "home" && (
-          <Home 
-            user={user} 
+          <Home
+            user={user}
             setView={setView}
             searchModalOpen={searchModalOpen}
             onSearchModalClose={() => setSearchModalOpen(false)}
           />
         )}
-        {view === "showbiz" && (
-          <ShowbizPage
-            onPostClick={(postId) => {
-              setSelectedPostId(postId);
-              setView("showbizDetail");
-            }}
-          />
-        )}
+
+        {/* ✅ TRANG CHI TIẾT SỰ KIỆN */}
+        {view === "event_detail" && <EventDetail user={user} setView={setView} />}
+
+        {view === "seatmap" && <SeatSelectPage user={user} setView={setView} />}
+
+
+        {/* ✅ TRANG THANH TOÁN */}
+        {view === "payment" && <PaymentPage setView={setView} />}
+
+        {view === "showbiz" && <ShowbizPage onPostClick={openShowbizDetail} />}
+
         {view === "showbizDetail" && selectedPostId && (
-          <ShowbizDetailPage
-            postId={selectedPostId}
-            onBack={() => {
-              setSelectedPostId(null);
-              setView("showbiz");
-            }}
-          />
-        )}
-        {view === "blogs" && (
-          <BlogsPage
-            onPostClick={(postId) => {
-              setSelectedPostId(postId);
-              setView("blogDetail");
-            }}
-          />
-        )}
+  <ShowbizDetailPage
+    postId={selectedPostId}
+    onBack={() => {
+      setSelectedPostId(null);
+      setView("showbiz");
+    }}
+    onOpenPost={(id) => {
+      setSelectedPostId(id);
+      setView("showbizDetail");
+    }}
+  />
+)}
+
+
+        {view === "blogs" && <BlogsPage onPostClick={openBlogDetail} />}
+
         {view === "blogDetail" && selectedPostId && (
-          <BlogDetailPage
-            postId={selectedPostId}
-            onBack={() => {
-              setSelectedPostId(null);
-              setView("blogs");
-            }}
-          />
+          <BlogDetailPage postId={selectedPostId} onBack={backToBlogs} />
         )}
-        {view === "booking" && <BookingPage user={user} />}
+
+        {/* ✅ QUAN TRỌNG: truyền setView vào BookingPage */}
+        {view === "booking" && <BookingPage user={user} setView={setView} />}
+
         {view === "changePassword" && (
           <ChangePasswordPage setError={setError} setLoading={setLoading} />
         )}
+
         {view === "forgotPassword" && (
           <ForgotPasswordPage setError={setError} setLoading={setLoading} setView={setView} />
         )}
+
         {view === "admin" && user && user.role === "admin" && <AdminPage />}
+
         {view === "profile" && <ProfilePage user={user} />}
+
         {view === "login" && (
           <AuthForm
             mode="login"

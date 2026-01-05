@@ -9,26 +9,59 @@ export interface ITicketType {
   held?: number;
 }
 
+export type SeatMapMode = "none" | "seat" | "zone";
+export type SeatMapType = "svg" | "json";
+
+export interface ISeatMapJsonSeat {
+  seatId: string; // "A1-01"
+  x: number;
+  y: number;
+  ticketTypeId: string; // ObjectId string of TicketType
+  label?: string;
+}
+
+export interface ISeatMapJsonZone {
+  zoneId: string; // "VIP-A"
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  ticketTypeId: string; // ObjectId string of TicketType
+  label?: string;
+}
+
+export interface ISeatMapJson {
+  width: number;
+  height: number;
+  seats?: ISeatMapJsonSeat[];
+  zones?: ISeatMapJsonZone[];
+  backgroundUrl?: string;
+}
+
 export interface IEvent extends Document {
   title: string;
   description?: string;
   location?: string;
   date?: Date;
 
-  // giá hiển thị chung (có thể = min price nếu có ticketTypes)
   price?: number;
 
-  // tổng vé chung (có thể = sum total nếu có ticketTypes)
   ticketsTotal?: number;
   ticketsSold?: number;
   ticketsHeld?: number;
 
-  // ✅ hạng vé
   ticketTypes?: ITicketType[];
 
   imageUrl?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
+
+  // ✅ seatmap
+  seatMapMode?: SeatMapMode;
+  seatMapType?: SeatMapType;
+  seatMapUrl?: string;
+  seatMapJson?: ISeatMapJson;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,28 +77,73 @@ const TicketTypeSchema = new Schema<ITicketType>(
   { _id: true }
 );
 
+const SeatMapJsonSeatSchema = new Schema<ISeatMapJsonSeat>(
+  {
+    seatId: { type: String, required: true, trim: true },
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    ticketTypeId: { type: String, required: true, trim: true },
+    label: { type: String },
+  },
+  { _id: false }
+);
+
+const SeatMapJsonZoneSchema = new Schema<ISeatMapJsonZone>(
+  {
+    zoneId: { type: String, required: true, trim: true },
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
+    ticketTypeId: { type: String, required: true, trim: true },
+    label: { type: String },
+  },
+  { _id: false }
+);
+
+const SeatMapJsonSchema = new Schema<ISeatMapJson>(
+  {
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
+    seats: { type: [SeatMapJsonSeatSchema], default: undefined },
+    zones: { type: [SeatMapJsonZoneSchema], default: undefined },
+    backgroundUrl: { type: String },
+  },
+  { _id: false }
+);
+
 const EventSchema: Schema<IEvent> = new Schema(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String },
     location: { type: String },
     date: { type: Date },
+
     price: { type: Number, default: 0 },
 
     ticketsTotal: { type: Number, default: 100, min: 0 },
     ticketsSold: { type: Number, default: 0, min: 0 },
     ticketsHeld: { type: Number, default: 0, min: 0 },
 
-    // ✅ nếu event có chia hạng vé thì lưu tại đây
     ticketTypes: { type: [TicketTypeSchema], default: [] },
 
     imageUrl: { type: String },
     isFeatured: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
+
+    // ✅ seatmap config
+    seatMapMode: { type: String, enum: ["none", "seat", "zone"], default: "none" },
+    seatMapType: { type: String, enum: ["svg", "json"], default: "svg" },
+    seatMapUrl: { type: String },
+    seatMapJson: { type: SeatMapJsonSchema },
   },
   { timestamps: true }
 );
 
-export const Event: Model<IEvent> =
+// ✅ Export BOTH named + default để VSCode import kiểu nào cũng không lỗi
+const Event =
   (mongoose.models.Event as Model<IEvent>) ||
   mongoose.model<IEvent>("Event", EventSchema);
+
+export { Event };
+export default Event;

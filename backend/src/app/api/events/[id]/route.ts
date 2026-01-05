@@ -16,59 +16,114 @@ function withCors(res: NextResponse) {
   return res;
 }
 
+function computeEventComputed(event: any, ticketTypes: any[]) {
+  let ticketsTotal = Number(event?.ticketsTotal ?? 0);
+  let ticketsSold = Number(event?.ticketsSold ?? 0);
+  let ticketsHeld = Number(event?.ticketsHeld ?? 0);
+
+  // event.price trong DB có thể là "giá từ" hoặc "giá đơn" tuỳ event
+  let priceFrom = Number(event?.price ?? 0);
+
+  if (Array.isArray(ticketTypes) && ticketTypes.length > 0) {
+    ticketsTotal = ticketTypes.reduce((s, x) => s + Number(x?.total ?? 0), 0);
+    ticketsSold = ticketTypes.reduce((s, x) => s + Number(x?.sold ?? 0), 0);
+    ticketsHeld = ticketTypes.reduce((s, x) => s + Number(x?.held ?? 0), 0);
+
+    const minPrice = ticketTypes.reduce(
+      (m, x) => Math.min(m, Number(x?.price ?? Infinity)),
+      Infinity
+    );
+    priceFrom = Number.isFinite(minPrice) ? minPrice : 0;
+  }
+
+  const ticketsRemaining = Math.max(0, ticketsTotal - ticketsSold - ticketsHeld);
+
+  const eventComputed = {
+    ...event,
+    // Giữ backward-compat: FE đang dùng event.price => để nó là "giá từ"
+    price: priceFrom,
+    // Field mới rõ nghĩa
+    priceFrom,
+    ticketsTotal,
+    ticketsSold,
+    ticketsHeld,
+    ticketsRemaining,
+  };
+
+  return {
+    eventComputed,
+    tickets: {
+      total: ticketsTotal,
+      sold: ticketsSold,
+      held: ticketsHeld,
+      remaining: ticketsRemaining,
+    },
+  };
+}
+
 export async function GET(_req: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 });
+      return withCors(
+        NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 })
+      );
     }
 
     const event = await Event.findById(id).lean();
     if (!event) {
-      return NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 });
+      return withCors(
+        NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 })
+      );
     }
 
     const ticketTypes = await TicketType.find({ eventId: id })
       .sort({ createdAt: 1 })
       .lean();
 
-    return withCors(NextResponse.json({ event, ticketTypes }, { status: 200 }));
+    const { eventComputed, tickets } = computeEventComputed(event, ticketTypes);
+
+    return withCors(
+      NextResponse.json({ event: eventComputed, ticketTypes, tickets }, { status: 200 })
+    );
   } catch (error) {
     console.error("Get event detail error", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+    return withCors(
+      NextResponse.json({ message: "Lỗi server" }, { status: 500 })
+    );
   }
 }
 
 export async function PUT(req: NextRequest, context: RouteContext) {
   try {
     const auth = requireAdmin(req);
-    if (auth instanceof NextResponse) return auth;
+    if (auth instanceof NextResponse) return withCors(auth);
 
     const { id } = await context.params;
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 });
+      return withCors(
+        NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 })
+      );
     }
 
     const body = await req.json();
-    
-    // --- RESOLVED CONFLICT HERE ---
-    const { 
-      title, 
-      description, 
-      location, 
-      date, 
-      price, 
-      imageUrl, 
-      isFeatured, 
+
+    const {
+      title,
+      description,
+      location,
+      date,
+      price,
+      imageUrl,
+      isFeatured,
       isTrending,
       ticketsTotal,
-      ticketTypes 
+      ticketTypes,
     } = body;
-    // ------------------------------
 
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
@@ -96,9 +151,11 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         );
 
       if (cleaned.length === 0) {
-        return NextResponse.json(
-          { message: "ticketTypes không hợp lệ (phải có name, price, total)" },
-          { status: 400 }
+        return withCors(
+          NextResponse.json(
+            { message: "ticketTypes không hợp lệ (phải có name, price, total)" },
+            { status: 400 }
+          )
         );
       }
 
@@ -107,12 +164,14 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         (t: any) => Number(t.sold ?? 0) > 0 || Number(t.held ?? 0) > 0
       );
       if (hasSoldOrHeld) {
-        return NextResponse.json(
-          {
-            message:
-              "Không thể thay đổi hạng vé vì sự kiện đã có vé bán/đang giữ. Hãy tạo sự kiện mới hoặc làm chức năng chỉnh từng hạng vé riêng.",
-          },
-          { status: 400 }
+        return withCors(
+          NextResponse.json(
+            {
+              message:
+                "Không thể thay đổi hạng vé vì sự kiện đã có vé bán/đang giữ. Hãy tạo sự kiện mới hoặc làm chức năng chỉnh từng hạng vé riêng.",
+            },
+            { status: 400 }
+          )
         );
       }
 
@@ -126,63 +185,97 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         }))
       );
 
+      // Update Event.price và ticketsTotal để list hiển thị nhanh (nhưng GET/PUT vẫn aggregate lại cho chắc)
       const computedTotal = cleaned.reduce((s: number, x: any) => s + x.total, 0);
       const minPrice = cleaned.reduce((m: number, x: any) => Math.min(m, x.price), Infinity);
 
       update.ticketsTotal = computedTotal;
       update.price = Number.isFinite(minPrice) ? minPrice : 0;
     } else {
+      // Nếu event đang có TicketType, không cho set price/ticketsTotal thủ công để tránh lệch
+      const existingCount = await TicketType.countDocuments({ eventId: id });
+      if (existingCount > 0 && (price !== undefined || ticketsTotal !== undefined)) {
+        return withCors(
+          NextResponse.json(
+            {
+              message:
+                "Sự kiện đang dùng hạng vé (ticketTypes). Vui lòng chỉnh bằng ticketTypes, không chỉnh price/ticketsTotal trực tiếp.",
+            },
+            { status: 400 }
+          )
+        );
+      }
+
       if (price !== undefined) update.price = Number(price);
+
       if (ticketsTotal !== undefined) {
         const newTotal = Number(ticketsTotal);
         const current = await Event.findById(id).select("ticketsSold ticketsHeld").lean();
         const sold = Number((current as any)?.ticketsSold ?? 0);
         const held = Number((current as any)?.ticketsHeld ?? 0);
+
         if (Number.isFinite(newTotal) && newTotal < sold + held) {
-          return NextResponse.json(
-            { message: "Tổng vé không được nhỏ hơn số vé đã bán/đang giữ" },
-            { status: 400 }
+          return withCors(
+            NextResponse.json(
+              { message: "Tổng vé không được nhỏ hơn số vé đã bán/đang giữ" },
+              { status: 400 }
+            )
           );
         }
         update.ticketsTotal = newTotal;
       }
     }
 
-    const event = await Event.findByIdAndUpdate(id, update, {
+    const updatedEvent = await Event.findByIdAndUpdate(id, update, {
       new: true,
       runValidators: true,
     }).lean();
 
-    if (!event) {
-      return NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 });
+    if (!updatedEvent) {
+      return withCors(
+        NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 })
+      );
     }
 
     const updatedTicketTypes = await TicketType.find({ eventId: id })
       .sort({ createdAt: 1 })
       .lean();
 
-    return withCors(NextResponse.json({ event, ticketTypes: updatedTicketTypes }, { status: 200 }));
+    const { eventComputed, tickets } = computeEventComputed(updatedEvent, updatedTicketTypes);
+
+    return withCors(
+      NextResponse.json(
+        { event: eventComputed, ticketTypes: updatedTicketTypes, tickets },
+        { status: 200 }
+      )
+    );
   } catch (error) {
     console.error("Update event error", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+    return withCors(
+      NextResponse.json({ message: "Lỗi server" }, { status: 500 })
+    );
   }
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
   try {
     const auth = requireAdmin(req);
-    if (auth instanceof NextResponse) return auth;
+    if (auth instanceof NextResponse) return withCors(auth);
 
     const { id } = await context.params;
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 });
+      return withCors(
+        NextResponse.json({ message: "ID không hợp lệ" }, { status: 400 })
+      );
     }
 
     const result = await Event.findByIdAndDelete(id).lean();
     if (!result) {
-      return NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 });
+      return withCors(
+        NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 })
+      );
     }
 
     await TicketType.deleteMany({ eventId: id });
@@ -190,7 +283,9 @@ export async function DELETE(req: NextRequest, context: RouteContext) {
     return withCors(NextResponse.json({ message: "Đã xoá sự kiện" }, { status: 200 }));
   } catch (error) {
     console.error("Delete event error", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+    return withCors(
+      NextResponse.json({ message: "Lỗi server" }, { status: 500 })
+    );
   }
 }
 
