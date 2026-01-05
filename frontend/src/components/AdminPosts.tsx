@@ -1,36 +1,169 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+
 import { API_BASE, uploadImage } from "../utils/api";
 
-interface PostItem {
+type PostType = "showbiz" | "blog";
+type PostRegion = "vn" | "asia" | "us_eu";
+type PostSection = "news" | "photo";
+
+interface AdminPostItem {
   _id: string;
   title: string;
-  content: string;
-  type: "showbiz" | "blog";
+  content: string; // HTML string
+  type: PostType;
   imageUrl?: string;
+
+  region?: PostRegion;
+  section?: PostSection;
+  summary?: string;
+  isFeatured?: boolean;
+  views?: number;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const AdminPosts: React.FC = () => {
-  const [posts, setPosts] = useState<PostItem[]>([]);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [type, setType] = useState<"showbiz" | "blog">("showbiz");
+  const [posts, setPosts] = useState<AdminPostItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ====== Create form state ======
+  const [title, setTitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [content, setContent] = useState<string>(""); // ✅ HTML
+  const [type, setType] = useState<PostType>("showbiz");
+
+  const [region, setRegion] = useState<PostRegion>("vn");
+  const [section, setSection] = useState<PostSection>("news");
+  const [isFeatured, setIsFeatured] = useState(false);
+
+  // Cover image (ảnh đại diện)
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageInputKey, setImageInputKey] = useState(0);
 
+  // ====== Edit state ======
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editSummary, setEditSummary] = useState("");
+  const [editContent, setEditContent] = useState<string>(""); // ✅ HTML
+  const [editType, setEditType] = useState<PostType>("showbiz");
+  const [editRegion, setEditRegion] = useState<PostRegion>("vn");
+  const [editSection, setEditSection] = useState<PostSection>("news");
+  const [editIsFeatured, setEditIsFeatured] = useState(false);
+
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const backendBase = API_BASE.replace(/\/api\/?$/, "");
+
+  const backendBase = useMemo(() => API_BASE.replace(/\/api\/?$/, ""), []);
+  const resolveImage = (url?: string) => {
+    if (!url) return "";
+    return url.startsWith("http") ? url : `${backendBase}${url}`;
+  };
+
+  const regionLabel = (r?: PostRegion) => {
+    const rr = r || "vn";
+    if (rr === "vn") return "Việt Nam";
+    if (rr === "asia") return "Châu Á";
+    return "Âu Mỹ";
+  };
+  const sectionLabel = (s?: PostSection) => ((s || "news") === "photo" ? "Ảnh sao" : "Tin");
+
+  // ✅ remove hidden break chars (zero-width / soft-hyphen)
+  const cleanHidden = (s: string) =>
+  (s || "")
+    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "") // zero-width / soft-hyphen
+    .replace(/&nbsp;/g, " ")                     // entity
+    .replace(/\u00A0/g, " ");                    // NBSP char
+
+
+  // ====== QUILL refs + inline image upload ======
+  const quillCreateRef = useRef<any>(null);
+  const quillEditRef = useRef<any>(null);
+
+  const inlineCreateInputRef = useRef<HTMLInputElement | null>(null);
+  const inlineEditInputRef = useRef<HTMLInputElement | null>(null);
+
+  const toolbarContainer = useMemo(
+    () => [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["blockquote", "link", "image"],
+      ["clean"],
+    ],
+    []
+  );
+
+  const createModules = useMemo(
+    () => ({
+      toolbar: {
+        container: toolbarContainer,
+        handlers: {
+          image: () => inlineCreateInputRef.current?.click(),
+        },
+      },
+    }),
+    [toolbarContainer]
+  );
+
+  const editModules = useMemo(
+    () => ({
+      toolbar: {
+        container: toolbarContainer,
+        handlers: {
+          image: () => inlineEditInputRef.current?.click(),
+        },
+      },
+    }),
+    [toolbarContainer]
+  );
+
+  // ✅ Insert image inline (không xuống dòng dư + fix TS setSelection)
+  const insertImageToEditor = async (file: File, target: "create" | "edit") => {
+    const uploadedPath = await uploadImage(file); // "/uploads/xx.jpg" hoặc full url
+    const src = uploadedPath;
+
+    const ref = target === "create" ? quillCreateRef.current : quillEditRef.current;
+    const editor = ref?.getEditor?.();
+    if (!editor) return;
+
+    const range = editor.getSelection(true);
+    const index = range ? range.index : editor.getLength();
+
+    editor.insertEmbed(index, "image", src, "user");
+    editor.insertText(index + 1, "\n", "user"); // ✅ chỉ 1 lần
+    editor.setSelection({ index: index + 2, length: 0 });
+  };
 
   const loadPosts = async () => {
     try {
-      const res = await fetch(`${API_BASE}/posts`);
+      setError(null);
+      const res = await fetch(`${API_BASE}/posts?sort=new&limit=200`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Không tải được danh sách bài đăng");
-      setPosts(data.posts || []);
+
+      const list: AdminPostItem[] = (data.posts || []).map((p: AdminPostItem) => ({
+        ...p,
+        region: (p.region || "vn") as PostRegion,
+        section: (p.section || "news") as PostSection,
+        views: typeof p.views === "number" ? p.views : 0,
+        isFeatured: !!p.isFeatured,
+        summary: p.summary || "",
+        content: p.content || "",
+      }));
+
+      list.sort((a, b) => +new Date(b.createdAt || 0) - +new Date(a.createdAt || 0));
+      setPosts(list);
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra");
+      setError(err?.message || "Có lỗi xảy ra");
     }
   };
 
@@ -39,20 +172,73 @@ export const AdminPosts: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const resetCreateForm = () => {
+    setTitle("");
+    setSummary("");
+    setContent("");
+    setType("showbiz");
+    setRegion("vn");
+    setSection("news");
+    setIsFeatured(false);
+
+    setImageFile(null);
+    setImagePreview(null);
+    setImageInputKey((k) => k + 1);
+  };
+
+  const beginEdit = (p: AdminPostItem) => {
+    setEditingId(p._id);
+    setEditTitle(p.title || "");
+    setEditSummary(p.summary || "");
+    setEditContent(p.content || "");
+    setEditType(p.type || "showbiz");
+    setEditRegion((p.region || "vn") as PostRegion);
+    setEditSection((p.section || "news") as PostSection);
+    setEditIsFeatured(!!p.isFeatured);
+
+    setEditImageFile(null);
+    setEditImagePreview(p.imageUrl ? resolveImage(p.imageUrl) : null);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditTitle("");
+    setEditSummary("");
+    setEditContent("");
+    setEditType("showbiz");
+    setEditRegion("vn");
+    setEditSection("news");
+    setEditIsFeatured(false);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
       if (!token) throw new Error("Thiếu token admin");
 
       let finalImageUrl = "";
       if (imageFile) {
-        try {
-          finalImageUrl = await uploadImage(imageFile);
-        } catch (uploadError: any) {
-          throw new Error(`Upload ảnh thất bại: ${uploadError.message}`);
-        }
+        finalImageUrl = await uploadImage(imageFile);
+      }
+
+      const payload: any = {
+        title: cleanHidden(title).trim(),
+        content: cleanHidden(content), // ✅ clean hidden chars trước khi lưu
+        type,
+        imageUrl: finalImageUrl || undefined,
+      };
+
+      if (summary.trim()) payload.summary = cleanHidden(summary).trim();
+
+      if (type === "showbiz") {
+        payload.region = region;
+        payload.section = section;
+        payload.isFeatured = !!isFeatured;
       }
 
       const res = await fetch(`${API_BASE}/posts`, {
@@ -61,24 +247,66 @@ export const AdminPosts: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          title, 
-          content, 
-          type,
-          imageUrl: finalImageUrl || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Tạo bài đăng thất bại");
-      setTitle("");
-      setContent("");
-      setType("showbiz");
-      setImageFile(null);
-      setImagePreview(null);
-      setImageInputKey((prev) => prev + 1); // Reset file input
+
+      resetCreateForm();
       await loadPosts();
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra");
+      setError(err?.message || "Có lỗi xảy ra");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (id: string) => {
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!token) throw new Error("Thiếu token admin");
+
+      let finalImageUrl: string | undefined = undefined;
+      if (editImageFile) {
+        finalImageUrl = await uploadImage(editImageFile);
+      }
+
+      const payload: any = {
+        title: cleanHidden(editTitle).trim(),
+        content: cleanHidden(editContent), // ✅ clean hidden chars trước khi lưu
+        type: editType,
+      };
+
+      if (finalImageUrl) payload.imageUrl = finalImageUrl;
+
+      if (editSummary.trim()) payload.summary = cleanHidden(editSummary).trim();
+      else payload.summary = undefined;
+
+      if (editType === "showbiz") {
+        payload.region = editRegion;
+        payload.section = editSection;
+        payload.isFeatured = !!editIsFeatured;
+      }
+
+      const res = await fetch(`${API_BASE}/posts/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Cập nhật bài đăng thất bại");
+
+      cancelEdit();
+      await loadPosts();
+    } catch (err: any) {
+      setError(err?.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }
@@ -86,140 +314,373 @@ export const AdminPosts: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     setError(null);
+
     try {
       if (!token) throw new Error("Thiếu token admin");
+
+      const ok = window.confirm("Bạn chắc chắn muốn xóa bài này?");
+      if (!ok) return;
+
       const res = await fetch(`${API_BASE}/posts/${id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Xoá bài đăng thất bại");
+      if (!res.ok) throw new Error(data.message || "Xóa bài đăng thất bại");
+
+      if (editingId === id) cancelEdit();
       await loadPosts();
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra");
+      setError(err?.message || "Có lỗi xảy ra");
     }
   };
 
   return (
     <div style={{ display: "flex", gap: 24, flexDirection: "column" }}>
+      {/* ===== CREATE ===== */}
       <form onSubmit={handleCreate} className="auth-form">
         <h2>Tạo bài đăng mới</h2>
+
+        {error && <div className="global-message error">{error}</div>}
+
         <div className="form-group">
-          <label>Tiêu đề</label>
+          <label>Tiêu đề (H1)</label>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
+
         <div className="form-group">
-          <label>Loại bài</label>
-          <select value={type} onChange={(e) => setType(e.target.value as "showbiz" | "blog")}>
-            <option value="showbiz">ShowBiz</option>
-            <option value="blog">Blog / Sự kiện</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Nội dung</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={4}
-            style={{ resize: "vertical", padding: 10, borderRadius: 10, border: "1px solid #d1d5db" }}
-            required
+          <label>Mô tả ngắn (Sapo/Summary)</label>
+          <input
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="Dòng mô tả ngắn hiển thị dưới tiêu đề (không bắt buộc)"
           />
         </div>
+
         <div className="form-group">
-          <label>Hình ảnh bài đăng</label>
+          <label>Loại bài</label>
+          <select value={type} onChange={(e) => setType(e.target.value as PostType)}>
+            <option value="showbiz">Showbiz</option>
+            <option value="blog">Blog</option>
+          </select>
+        </div>
+
+        {type === "showbiz" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="form-group">
+              <label>Khu vực (Tab)</label>
+              <select value={region} onChange={(e) => setRegion(e.target.value as PostRegion)}>
+                <option value="vn">Việt Nam</option>
+                <option value="asia">Châu Á</option>
+                <option value="us_eu">Âu Mỹ</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Chuyên mục</label>
+              <select value={section} onChange={(e) => setSection(e.target.value as PostSection)}>
+                <option value="news">Tin</option>
+                <option value="photo">Ảnh sao</option>
+              </select>
+            </div>
+
+            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                />
+                Đánh dấu nổi bật (Featured)
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* ✅ CONTENT EDITOR */}
+        <div className="form-group">
+          <label>Nội dung (bôi đen / in đậm / heading / chèn nhiều ảnh)</label>
+
+          {/* input ẩn để chèn ảnh inline trong content */}
+          <input
+            ref={inlineCreateInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              try {
+                setLoading(true);
+                await insertImageToEditor(file, "create");
+              } catch (err: any) {
+                setError(err?.message || "Upload ảnh trong bài thất bại");
+              } finally {
+                setLoading(false);
+              }
+            }}
+          />
+
+          <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb" }}>
+            <ReactQuill
+              ref={quillCreateRef}
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              modules={createModules}
+              placeholder="Soạn nội dung như Word… (bấm icon hình ảnh để chèn nhiều ảnh)"
+            />
+          </div>
+
+          <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
+            Gợi ý: Title là H1 (tự in đậm, to). Sapo dùng ô Summary. Ảnh đại diện dùng “Hình ảnh bài đăng”.
+          </div>
+        </div>
+
+        {/* COVER IMAGE */}
+        <div className="form-group">
+          <label>Hình ảnh bài đăng (Ảnh đại diện/hero)</label>
           <input
             key={imageInputKey}
             type="file"
             accept="image/*"
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setImageFile(file);
-                // Tạo preview cho ảnh
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  setImagePreview(reader.result as string);
-                };
-                reader.readAsDataURL(file);
-              } else {
-                setImageFile(null);
-                setImagePreview(null);
-              }
+              const file = e.target.files?.[0] || null;
+              setImageFile(file);
+              if (file) setImagePreview(URL.createObjectURL(file));
+              else setImagePreview(null);
             }}
           />
+
           {imagePreview && (
             <div style={{ marginTop: 8 }}>
               <img
                 src={imagePreview}
                 alt="Preview"
                 style={{
-                  maxWidth: "200px",
-                  maxHeight: "150px",
+                  maxWidth: 260,
+                  maxHeight: 170,
                   objectFit: "cover",
-                  borderRadius: 6,
+                  borderRadius: 10,
                   border: "1px solid #ddd",
                 }}
               />
             </div>
           )}
         </div>
+
         <button className="btn primary full-width" type="submit" disabled={loading}>
           {loading ? "Đang tạo..." : "Tạo bài đăng"}
         </button>
       </form>
 
+      {/* ===== LIST ===== */}
       <div>
-        <h2>Danh sách bài đăng</h2>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+          <h2>Danh sách bài đăng</h2>
+          <button className="btn outline" type="button" onClick={loadPosts} disabled={loading}>
+            Làm mới
+          </button>
+        </div>
+
         {error && <div className="global-message error">{error}</div>}
-        <ul style={{ listStyle: "none", paddingLeft: 0, marginTop: 12 }}>
-          {posts.map((p) => (
-            <li
-              key={p._id}
-              style={{
-                borderBottom: "1px solid #e5e7eb",
-                padding: "12px 0",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 16,
-              }}
-            >
-              <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1 }}>
-                {p.imageUrl && (
-                  <img
-                    src={
-                      p.imageUrl.startsWith("http")
-                        ? p.imageUrl
-                        : `${backendBase}${p.imageUrl}`
-                    }
-                    alt={p.title}
-                    style={{
-                      width: 80,
-                      height: 60,
-                      objectFit: "cover",
-                      borderRadius: 6,
-                      border: "1px solid #ddd",
-                    }}
-                  />
-                )}
-                <div>
-                  <strong>
-                    [{p.type === "showbiz" ? "ShowBiz" : "Blog"}] {p.title}
-                  </strong>
-                  <div className="event-meta">{p.content.slice(0, 100)}...</div>
+
+        <ul style={{ listStyle: "none", paddingLeft: 0, marginTop: 12, display: "grid", gap: 12 }}>
+          {posts.map((p) => {
+            const isEditing = editingId === p._id;
+
+            return (
+              <li
+                key={p._id}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 14,
+                  padding: 12,
+                  background: "#fff",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    {p.imageUrl && (
+                      <img
+                        src={resolveImage(p.imageUrl)}
+                        alt={p.title}
+                        style={{
+                          width: 96,
+                          height: 64,
+                          objectFit: "cover",
+                          borderRadius: 10,
+                          border: "1px solid #ddd",
+                        }}
+                      />
+                    )}
+
+                    <div>
+                      <strong style={{ display: "block", lineHeight: 1.35 }}>
+                        [{p.type === "showbiz" ? "Showbiz" : "Blog"}]
+                        {p.type === "showbiz" ? ` • ${regionLabel(p.region)} • ${sectionLabel(p.section)}` : ""}
+                        {p.isFeatured ? " • ⭐ Featured" : ""}{" "}
+                        {typeof p.views === "number" ? ` • 👁 ${p.views.toLocaleString()}` : ""}
+                        <br />
+                        {p.title}
+                      </strong>
+
+                      <div className="event-meta" style={{ marginTop: 6 }}>
+                        {(p.summary || "").trim() ? p.summary : "—"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                    {!isEditing ? (
+                      <>
+                        <button className="btn outline" type="button" onClick={() => beginEdit(p)}>
+                          Sửa
+                        </button>
+                        <button className="btn outline" type="button" onClick={() => handleDelete(p._id)}>
+                          Xoá
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="btn outline" type="button" onClick={cancelEdit}>
+                          Huỷ
+                        </button>
+                        <button className="btn primary" type="button" onClick={() => handleUpdate(p._id)} disabled={loading}>
+                          {loading ? "Đang lưu..." : "Lưu"}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <button className="btn outline" type="button" onClick={() => handleDelete(p._id)}>
-                Xoá
-              </button>
-            </li>
-          ))}
+
+                {isEditing && (
+                  <div style={{ marginTop: 12, borderTop: "1px dashed #e5e7eb", paddingTop: 12 }}>
+                    <div className="form-group">
+                      <label>Tiêu đề</label>
+                      <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Mô tả ngắn (Summary)</label>
+                      <input
+                        value={editSummary}
+                        onChange={(e) => setEditSummary(e.target.value)}
+                        placeholder="Không bắt buộc"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Loại bài</label>
+                      <select value={editType} onChange={(e) => setEditType(e.target.value as PostType)}>
+                        <option value="showbiz">Showbiz</option>
+                        <option value="blog">Blog</option>
+                      </select>
+                    </div>
+
+                    {editType === "showbiz" && (
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <div className="form-group">
+                          <label>Khu vực (Tab)</label>
+                          <select value={editRegion} onChange={(e) => setEditRegion(e.target.value as PostRegion)}>
+                            <option value="vn">Việt Nam</option>
+                            <option value="asia">Châu Á</option>
+                            <option value="us_eu">Âu Mỹ</option>
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label>Chuyên mục</label>
+                          <select value={editSection} onChange={(e) => setEditSection(e.target.value as PostSection)}>
+                            <option value="news">Tin</option>
+                            <option value="photo">Ảnh sao</option>
+                          </select>
+                        </div>
+
+                        <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <input
+                              type="checkbox"
+                              checked={editIsFeatured}
+                              onChange={(e) => setEditIsFeatured(e.target.checked)}
+                            />
+                            Đánh dấu nổi bật (Featured)
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    <input
+                      ref={inlineEditInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        try {
+                          setLoading(true);
+                          await insertImageToEditor(file, "edit");
+                        } catch (err: any) {
+                          setError(err?.message || "Upload ảnh trong bài thất bại");
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                    />
+
+                    <div className="form-group">
+                      <label>Nội dung</label>
+                      <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb" }}>
+                        <ReactQuill
+                          ref={quillEditRef}
+                          theme="snow"
+                          value={editContent}
+                          onChange={setEditContent}
+                          modules={editModules}
+                          placeholder="Sửa nội dung…"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Đổi ảnh đại diện (không bắt buộc)</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setEditImageFile(file);
+                          if (file) setEditImagePreview(URL.createObjectURL(file));
+                        }}
+                      />
+
+                      {editImagePreview && (
+                        <div style={{ marginTop: 8 }}>
+                          <img
+                            src={editImagePreview}
+                            alt="Edit preview"
+                            style={{
+                              maxWidth: 260,
+                              maxHeight: 170,
+                              objectFit: "cover",
+                              borderRadius: 10,
+                              border: "1px solid #ddd",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>
   );
 };
-
-

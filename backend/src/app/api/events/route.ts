@@ -11,23 +11,62 @@ function withCors(res: NextResponse) {
   return res;
 }
 
+function computeFromTicketTypes(event: any, ticketTypes: any[]) {
+  let ticketsTotal = Number(event?.ticketsTotal ?? 0);
+  let ticketsSold = Number(event?.ticketsSold ?? 0);
+  let ticketsHeld = Number(event?.ticketsHeld ?? 0);
+  let priceFrom = Number(event?.price ?? 0);
+
+  if (Array.isArray(ticketTypes) && ticketTypes.length > 0) {
+    ticketsTotal = ticketTypes.reduce((s, x) => s + Number(x?.total ?? 0), 0);
+    ticketsSold = ticketTypes.reduce((s, x) => s + Number(x?.sold ?? 0), 0);
+    ticketsHeld = ticketTypes.reduce((s, x) => s + Number(x?.held ?? 0), 0);
+
+    const minPrice = ticketTypes.reduce(
+      (m, x) => Math.min(m, Number(x?.price ?? Infinity)),
+      Infinity
+    );
+    priceFrom = Number.isFinite(minPrice) ? minPrice : 0;
+  }
+
+  const ticketsRemaining = Math.max(0, ticketsTotal - ticketsSold - ticketsHeld);
+
+  return {
+    eventComputed: {
+      ...event,
+      // backward: FE cũ dùng event.price -> cho nó là "giá từ"
+      price: priceFrom,
+      // field rõ nghĩa
+      priceFrom,
+      ticketsTotal,
+      ticketsSold,
+      ticketsHeld,
+      ticketsRemaining,
+    },
+    tickets: {
+      total: ticketsTotal,
+      sold: ticketsSold,
+      held: ticketsHeld,
+      remaining: ticketsRemaining,
+    },
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    
-    // --- RESOLVED: Filtering Logic ---
+
     const { searchParams } = new URL(req.url);
     const featured = searchParams.get("featured") === "true";
     const trending = searchParams.get("trending") === "true";
 
-    let query: any = {};
+    const query: any = {};
     if (featured) query.isFeatured = true;
     if (trending) query.isTrending = true;
 
     const events = await Event.find(query).sort({ date: 1, createdAt: -1 }).lean();
 
-    // --- RESOLVED: Ticket Type Aggregation ---
-    const eventIds = events.map((e) => e._id);
+    const eventIds = events.map((e: any) => e._id);
     const types = await TicketType.find({ eventId: { $in: eventIds } }).lean();
 
     const byEvent = new Map<string, any[]>();
@@ -37,61 +76,52 @@ export async function GET(req: NextRequest) {
       byEvent.get(key)!.push(t);
     }
 
-    const eventsWithTypes = events.map((e: any) => {
-      const ticketTypes = byEvent.get(String(e._id)) || [];
+    const eventsWithComputed = events.map((e: any) => {
+      const ticketTypes = (byEvent.get(String(e._id)) || []).sort(
+        (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+      );
 
-      if (ticketTypes.length > 0) {
-        const ticketsTotal = ticketTypes.reduce((s, x) => s + Number(x.total ?? 0), 0);
-        const ticketsSold = ticketTypes.reduce((s, x) => s + Number(x.sold ?? 0), 0);
-        const ticketsHeld = ticketTypes.reduce((s, x) => s + Number(x.held ?? 0), 0);
-        const minPrice = ticketTypes.reduce(
-          (m, x) => Math.min(m, Number(x.price ?? Infinity)),
-          Infinity
-        );
+      const { eventComputed, tickets } = computeFromTicketTypes(e, ticketTypes);
 
-        return {
-          ...e,
-          ticketTypes,
-          ticketsTotal,
-          ticketsSold,
-          ticketsHeld,
-          price: Number.isFinite(minPrice) ? minPrice : e.price,
-        };
-      }
-      return { ...e, ticketTypes };
+      return {
+        ...eventComputed,
+        ticketTypes,
+        tickets, // để FE muốn dùng cũng được
+      };
     });
 
-    return withCors(NextResponse.json({ events: eventsWithTypes }, { status: 200 }));
+    return withCors(NextResponse.json({ events: eventsWithComputed }, { status: 200 }));
   } catch (error) {
     console.error("Get events error", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+    return withCors(NextResponse.json({ message: "Lỗi server" }, { status: 500 }));
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const auth = requireAdmin(req);
-    if (auth instanceof NextResponse) return auth;
+    if (auth instanceof NextResponse) return withCors(auth);
 
     await connectDB();
     const body = await req.json();
 
-    // --- RESOLVED: Destructuring all fields ---
-    const { 
-      title, 
-      description, 
-      location, 
-      date, 
-      price, 
-      imageUrl, 
-      isFeatured, 
-      isTrending, 
-      ticketsTotal, 
-      ticketTypes 
+    const {
+      title,
+      description,
+      location,
+      date,
+      price,
+      imageUrl,
+      isFeatured,
+      isTrending,
+      ticketsTotal,
+      ticketTypes,
     } = body;
 
     if (!title) {
-      return NextResponse.json({ message: "Thiếu tiêu đề sự kiện" }, { status: 400 });
+      return withCors(
+        NextResponse.json({ message: "Thiếu tiêu đề sự kiện" }, { status: 400 })
+      );
     }
 
     // Clean and validate ticket types
@@ -99,9 +129,9 @@ export async function POST(req: NextRequest) {
     if (Array.isArray(ticketTypes) && ticketTypes.length > 0) {
       cleanedTicketTypes = ticketTypes
         .map((t: any) => ({
-          name: String(t.name || "").trim(),
-          price: Number(t.price),
-          total: Number(t.total),
+          name: String(t?.name || "").trim(),
+          price: Number(t?.price),
+          total: Number(t?.total),
         }))
         .filter(
           (t: any) =>
@@ -113,7 +143,9 @@ export async function POST(req: NextRequest) {
         );
 
       if (cleanedTicketTypes.length === 0) {
-        return NextResponse.json({ message: "ticketTypes không hợp lệ" }, { status: 400 });
+        return withCors(
+          NextResponse.json({ message: "ticketTypes không hợp lệ" }, { status: 400 })
+        );
       }
     }
 
@@ -121,31 +153,34 @@ export async function POST(req: NextRequest) {
     const computedTotal =
       cleanedTicketTypes.length > 0
         ? cleanedTicketTypes.reduce((s, x) => s + x.total, 0)
-        : ticketsTotal !== undefined ? Number(ticketsTotal) : undefined;
+        : ticketsTotal !== undefined && Number.isFinite(Number(ticketsTotal))
+          ? Number(ticketsTotal)
+          : 0;
 
     const computedMinPrice =
       cleanedTicketTypes.length > 0
         ? cleanedTicketTypes.reduce((m, x) => Math.min(m, x.price), Infinity)
-        : price !== undefined ? Number(price) : undefined;
+        : price !== undefined && Number.isFinite(Number(price))
+          ? Number(price)
+          : 0;
 
-    // --- RESOLVED: Creating event with all merged fields ---
-    const event = await Event.create({
+    const createdEvent = await Event.create({
       title,
       description,
       location,
       date: date ? new Date(date) : undefined,
-      price: computedMinPrice,
+      price: computedMinPrice,     // lưu "giá từ" (nếu có ticketTypes)
       imageUrl,
       isFeatured: isFeatured === true,
       isTrending: isTrending === true,
-      ticketsTotal: computedTotal,
+      ticketsTotal: computedTotal, // nếu có ticketTypes => là sum total
     });
 
     // Create ticket types if applicable
     if (cleanedTicketTypes.length > 0) {
       await TicketType.insertMany(
         cleanedTicketTypes.map((t) => ({
-          eventId: event._id,
+          eventId: createdEvent._id,
           name: t.name,
           price: t.price,
           total: t.total,
@@ -153,10 +188,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return withCors(NextResponse.json({ event }, { status: 201 }));
+    const createdTicketTypes = await TicketType.find({ eventId: createdEvent._id })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    const { eventComputed, tickets } = computeFromTicketTypes(createdEvent.toObject?.() ?? createdEvent, createdTicketTypes);
+
+    return withCors(
+      NextResponse.json(
+        { event: eventComputed, ticketTypes: createdTicketTypes, tickets },
+        { status: 201 }
+      )
+    );
   } catch (error) {
     console.error("Create event error", error);
-    return NextResponse.json({ message: "Lỗi server" }, { status: 500 });
+    return withCors(NextResponse.json({ message: "Lỗi server" }, { status: 500 }));
   }
 }
 

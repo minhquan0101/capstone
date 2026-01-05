@@ -1,0 +1,838 @@
+:root {
+  --ns-text: #1f2937;
+  --ns-muted: #6b7280;
+  --ns-line: #e5e7eb;
+  --ns-bg: #ffffff;
+  --ns-card: #ffffff;
+  --ns-chip: #f3f4f6;
+  --ns-hover: #b91c1c;
+  --ns-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --ns-radius: 14px;
+  --ns-max: 1280px;
+}
+
+.ns-page {
+  background: #f3f4f6; /* xám nhẹ kiểu báo */
+  color: var(--ns-text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.ns-container {
+  max-width: var(--ns-max);
+  margin: 16px auto 0;
+  padding: 18px 18px 52px;
+  background: #ffffff;              /* khối trắng */
+  border-radius: 16px;              /* bo góc */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+
+.ns-topline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--ns-line);
+}
+
+.ns-title {
+  margin: 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.2px;
+}
+
+.ns-subnav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 0 10px;
+}
+
+.ns-tab {
+  border: 1px solid var(--ns-line);
+  background: #fff;
+  color: var(--ns-text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 150ms ease;
+}
+
+.ns-tab:hover {
+  border-color: #cbd5e1;
+  color: var(--ns-hover);
+}
+
+.ns-tab.active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+
+/* ✅ Ảnh sao (horizontal) */
+.ns-photoWrap {
+  margin-top: 10px;
+  border-top: 1px solid var(--ns-line);
+  padding-top: 12px;
+}
+
+.ns-photoHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ns-photoTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: #111827;
+}
+
+.ns-photoRow {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 220px;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+}
+
+.ns-photoRow::-webkit-scrollbar { height: 8px; }
+.ns-photoRow::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 999px; }
+
+.ns-photoCard {
+  scroll-snap-align: start;
+  border: 1px solid var(--ns-line);
+  border-radius: var(--ns-radius);
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.ns-photoMedia {
+  aspect-ratio: 16 / 11;
+  background: #f3f4f6;
+}
+
+.ns-photoMedia img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 200ms ease;
+}
+
+.ns-photoCard:hover .ns-photoMedia img { transform: scale(1.03); }
+
+.ns-photoBody { padding: 10px 12px 12px; }
+
+.ns-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ns-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ns-dot {
+  width: 3px;
+  height: 3px;
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.ns-photoCardTitle {
+  margin: 6px 0 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1.28;
+}
+
+/* Layout */
+.ns-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 22px;
+  margin-top: 14px;
+}
+
+@media (max-width: 980px) {
+  .ns-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hero big + minis */
+.ns-hero {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 880px) {
+  .ns-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ns-card {
+  border: 1px solid var(--ns-line);
+  border-radius: var(--ns-radius);
+  background: var(--ns-card);
+  box-shadow: var(--ns-shadow);
+  overflow: hidden;
+}
+
+.ns-lead {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  cursor: pointer;
+}
+
+.ns-media {
+  position: relative;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.ns-media.r16x10 { aspect-ratio: 16 / 10; }
+.ns-media.r16x11 { aspect-ratio: 16 / 11; }
+
+.ns-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 200ms ease;
+}
+
+.ns-card:hover .ns-media img {
+  transform: scale(1.03);
+}
+
+.ns-badge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background: rgba(17, 24, 39, 0.92);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.ns-body {
+  padding: 12px 14px 14px;
+}
+
+.ns-lead-title {
+  margin: 8px 0 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1.22;
+  letter-spacing: -0.2px;
+}
+
+.ns-title-hover:hover { color: var(--ns-hover); }
+
+.ns-excerpt {
+  margin: 10px 0 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* minis */
+.ns-miniList {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 880px) {
+  .ns-miniList {
+    grid-template-rows: none;
+    grid-template-columns: 1fr;
+  }
+}
+
+.ns-mini {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--ns-line);
+  border-radius: var(--ns-radius);
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  cursor: pointer;
+}
+
+.ns-mini:hover .ns-mini-title { color: var(--ns-hover); }
+
+.ns-mini-thumb {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+  aspect-ratio: 16 / 12;
+}
+
+.ns-mini-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ns-mini-title {
+  margin: 6px 0 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+/* Feed */
+.ns-feed {
+  margin-top: 14px;
+  border-top: 1px solid var(--ns-line);
+  padding-top: 16px;
+}
+
+.ns-item {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ns-line);
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .ns-item {
+    grid-template-columns: 120px 1fr;
+  }
+}
+
+.ns-thumb {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+  aspect-ratio: 16 / 11;
+}
+
+.ns-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ns-item-title {
+  margin: 6px 0 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1.28;
+}
+
+.ns-item-excerpt {
+  margin: 8px 0 0;
+  color: #4b5563;
+  font-size: 13.5px;
+  line-height: 1.55;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ns-loadmore {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid var(--ns-line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ns-loadmore:hover {
+  border-color: #cbd5e1;
+  color: var(--ns-hover);
+}
+
+/* Sidebar */
+.ns-aside {
+  position: sticky;
+  top: 14px;
+  align-self: start;
+}
+
+@media (max-width: 980px) {
+  .ns-aside { position: static; }
+}
+
+.ns-box {
+  border: 1px solid var(--ns-line);
+  border-radius: var(--ns-radius);
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  overflow: hidden;
+}
+
+.ns-box-head {
+  display: flex;
+  gap: 8px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--ns-line);
+}
+
+.ns-box-tab {
+  border: 1px solid var(--ns-line);
+  background: var(--ns-chip);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ns-box-tab.active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+
+.ns-box-body { padding: 10px 12px 14px; }
+
+.ns-rank {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #e5e7eb;
+  cursor: pointer;
+}
+
+.ns-rank:last-child { border-bottom: 0; }
+
+.ns-rank-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: #111827;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.ns-rank-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.ns-rank-title:hover { color: var(--ns-hover); }
+
+/* Detail */
+.ns-article {
+  max-width: 820px;
+  margin: 0 auto;
+  padding-top: 6px;
+}
+
+.ns-back {
+  border: 1px solid var(--ns-line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.ns-back:hover {
+  color: var(--ns-hover);
+  border-color: #cbd5e1;
+}
+
+.ns-article h1 {
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  line-height: 1.2;
+  margin: 16px 0 10px;
+}
+
+.ns-heroImg {
+  margin-top: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.ns-heroImg img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ns-content {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.78;
+  color: #111827;
+}
+
+/* =========================
+   ARTICLE CONTENT (Quill HTML)
+   ========================= */
+
+.ns-content {
+  margin-top: 14px;
+  font-size: 17px;
+  line-height: 1.85;
+  color: #111827;
+}
+
+.ns-content p {
+  margin: 12px 0;
+}
+
+.ns-content strong {
+  font-weight: 800;
+}
+
+.ns-content em {
+  font-style: italic;
+}
+
+.ns-content a {
+  color: #0f172a;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ns-content a:hover {
+  color: var(--ns-hover);
+}
+
+.ns-content h1,
+.ns-content h2,
+.ns-content h3 {
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 18px 0 10px;
+  letter-spacing: -0.2px;
+}
+
+.ns-content h1 {
+  font-size: 28px;
+}
+
+.ns-content h2 {
+  font-size: 22px;
+}
+
+.ns-content h3 {
+  font-size: 18px;
+}
+
+.ns-content ul,
+.ns-content ol {
+  margin: 10px 0 14px 22px;
+  padding: 0;
+}
+
+.ns-content li {
+  margin: 6px 0;
+}
+
+.ns-content blockquote {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-left: 4px solid #111827;
+  background: #f9fafb;
+  border-radius: 10px;
+  color: #111827;
+  font-weight: 600;
+}
+
+.ns-content hr {
+  border: 0;
+  border-top: 1px solid var(--ns-line);
+  margin: 18px 0;
+}
+
+/* Images inside content */
+.ns-content img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  margin: 12px 0;
+  background: #f3f4f6;
+}
+
+/* If quill outputs a <p><img/></p>, keep spacing nice */
+.ns-content p > img {
+  margin: 10px 0;
+}
+
+/* Quill often wraps media with .ql-align-center */
+.ns-content .ql-align-center {
+  text-align: center;
+}
+
+.ns-content .ql-align-right {
+  text-align: right;
+}
+
+.ns-content .ql-align-justify {
+  text-align: justify;
+}
+
+/* Optional "caption" style: nếu bạn tự gõ caption dưới ảnh và bôi italic */
+.ns-content p em {
+  color: #374151;
+}
+
+/* Related section layout (nếu bạn chưa có) */
+.ns-related {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ns-line);
+}
+
+.ns-related h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+.ns-related-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .ns-related-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ns-related-item {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--ns-line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  cursor: pointer;
+}
+
+.ns-related-item:hover .ns-related-title {
+  color: var(--ns-hover);
+}
+
+.ns-related-thumb {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f3f4f6;
+  aspect-ratio: 16 / 11;
+}
+
+.ns-related-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ns-related-title {
+  margin: 6px 0 0;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1.28;
+}
+
+/* ====== Detail page: keep container wide but article readable ====== */
+.ns-article {
+  max-width: 820px;     /* độ rộng đọc chuẩn */
+  margin: 0 auto;       /* canh giữa trong container */
+}
+
+@media (max-width: 920px) {
+  .ns-article {
+    max-width: 100%;
+  }
+}
+
+/* Prevent overflow for long words/links */
+.ns-article,
+.ns-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ===== Detail layout: article + sidebar ===== */
+.ns-detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 820px) 340px;
+  gap: 26px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .ns-detailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Keep article readable (đỡ tràn chữ) */
+.ns-article {
+  max-width: 820px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 1080px) {
+  .ns-article {
+    max-width: 100%;
+  }
+}
+
+/* Summary (sapo) */
+.ns-sapo {
+  margin: 10px 0 10px;
+  font-size: 18px;
+  line-height: 1.7;
+  font-weight: 700;
+  color: #111827;
+  opacity: 0.9;
+}
+
+/* Sidebar */
+.ns-detailSide {
+  position: sticky;
+  top: 86px; /* chỉnh theo chiều cao navbar của bạn */
+  align-self: start;
+}
+
+@media (max-width: 1080px) {
+  .ns-detailSide {
+    position: static;
+    top: auto;
+  }
+}
+
+.ns-sideCard {
+  border: 1px solid var(--ns-line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  overflow: hidden;
+}
+
+.ns-sideTabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid var(--ns-line);
+  background: #fff;
+}
+
+.ns-sideTab {
+  border: 1px solid var(--ns-line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ns-sideTab.active {
+  border-color: #111827;
+  background: #111827;
+  color: #fff;
+}
+
+.ns-sideList {
+  padding: 6px;
+}
+
+.ns-sideItem {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+.ns-sideItem:hover {
+  background: #f9fafb;
+}
+
+.ns-sideRank {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+}
+
+.ns-sideMeta {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6b7280;
+}
+
+.ns-sideTitle {
+  margin-top: 4px;
+  font-family: Merriweather, Georgia, "Times New Roman", serif;
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+

@@ -190,41 +190,51 @@ export interface Post {
   content: string;
   type: "showbiz" | "blog";
   imageUrl?: string;
+
+  // ✅ thêm để giống Ngôi Sao
+  region?: "vn" | "asia" | "us_eu";
+  section?: "news" | "photo";
+  summary?: string;
+  isFeatured?: boolean;
+  views?: number;
+
   createdAt: string;
   updatedAt: string;
 }
 
 // Lấy danh sách posts
-export async function getPosts(): Promise<Post[]> {
-  const res = await fetch(`${API_BASE}/posts`, {
+export async function getPosts(params?: Record<string, string | number | undefined>): Promise<Post[]> {
+  const qs =
+    params && Object.keys(params).length > 0
+      ? "?" +
+        Object.entries(params)
+          .filter(([, v]) => v !== undefined && v !== null && `${v}` !== "")
+          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+          .join("&")
+      : "";
+
+  const res = await fetch(`${API_BASE}/posts${qs}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Lấy danh sách bài đăng thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Lấy danh sách bài đăng thất bại");
   return data.posts || [];
 }
 
 // Lấy chi tiết một post
-export async function getPost(id: string): Promise<Post> {
-  const res = await fetch(`${API_BASE}/posts/${id}`, {
+export async function getPost(id: string, incView: boolean = true): Promise<Post> {
+  const url = new URL(`${API_BASE}/posts/${id}`);
+  if (incView) url.searchParams.set("inc", "1");
+
+  const res = await fetch(url.toString(), {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Lấy chi tiết bài đăng thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Lấy chi tiết bài đăng thất bại");
   return data.post;
 }
 
