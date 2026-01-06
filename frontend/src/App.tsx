@@ -305,8 +305,19 @@ const App: React.FC = () => {
         {view === "blogs" && <BlogsPage onPostClick={openBlogDetail} />}
 
         {view === "blogDetail" && selectedPostId && (
-          <BlogDetailPage postId={selectedPostId} onBack={backToBlogs} />
-        )}
+  <BlogDetailPage
+    postId={selectedPostId}
+    onBack={() => {
+      setSelectedPostId(null);
+      setView("blogs");
+    }}
+    onOpenPost={(id) => {
+      setSelectedPostId(id);
+      setView("blogDetail");
+    }}
+  />
+)}
+
 
         {/* ✅ QUAN TRỌNG: truyền setView vào BookingPage */}
         {view === "booking" && <BookingPage user={user} setView={setView} />}

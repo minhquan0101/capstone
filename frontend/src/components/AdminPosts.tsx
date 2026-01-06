@@ -25,6 +25,22 @@ interface AdminPostItem {
   updatedAt?: string;
 }
 
+const regionLabel = (r?: PostRegion) => {
+  const rr = r || "vn";
+  if (rr === "vn") return "Việt Nam";
+  if (rr === "asia") return "Châu Á";
+  return "Âu Mỹ";
+};
+
+const sectionLabel = (s?: PostSection) => ((s || "news") === "photo" ? "Ảnh sao" : "Tin");
+
+// ✅ clean html/text: remove zero-width + NBSP (fix “d” xuống dòng rồi “âu”)
+const cleanHidden = (s: string) =>
+  (s || "")
+    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "") // zero-width + soft hyphen
+    .replace(/&nbsp;/g, " ")
+    .replace(/\u00A0/g, " ");
+
 export const AdminPosts: React.FC = () => {
   const [posts, setPosts] = useState<AdminPostItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,11 +52,14 @@ export const AdminPosts: React.FC = () => {
   const [content, setContent] = useState<string>(""); // ✅ HTML
   const [type, setType] = useState<PostType>("showbiz");
 
+  // showbiz fields
   const [region, setRegion] = useState<PostRegion>("vn");
   const [section, setSection] = useState<PostSection>("news");
+
+  // ✅ featured for BOTH showbiz + blog
   const [isFeatured, setIsFeatured] = useState(false);
 
-  // Cover image (ảnh đại diện)
+  // Cover image
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageInputKey, setImageInputKey] = useState(0);
@@ -51,6 +70,7 @@ export const AdminPosts: React.FC = () => {
   const [editSummary, setEditSummary] = useState("");
   const [editContent, setEditContent] = useState<string>(""); // ✅ HTML
   const [editType, setEditType] = useState<PostType>("showbiz");
+
   const [editRegion, setEditRegion] = useState<PostRegion>("vn");
   const [editSection, setEditSection] = useState<PostSection>("news");
   const [editIsFeatured, setEditIsFeatured] = useState(false);
@@ -66,25 +86,9 @@ export const AdminPosts: React.FC = () => {
     return url.startsWith("http") ? url : `${backendBase}${url}`;
   };
 
-  const regionLabel = (r?: PostRegion) => {
-    const rr = r || "vn";
-    if (rr === "vn") return "Việt Nam";
-    if (rr === "asia") return "Châu Á";
-    return "Âu Mỹ";
-  };
-  const sectionLabel = (s?: PostSection) => ((s || "news") === "photo" ? "Ảnh sao" : "Tin");
-
-  // ✅ remove hidden break chars (zero-width / soft-hyphen)
-  const cleanHidden = (s: string) =>
-  (s || "")
-    .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "") // zero-width / soft-hyphen
-    .replace(/&nbsp;/g, " ")                     // entity
-    .replace(/\u00A0/g, " ");                    // NBSP char
-
-
   // ====== QUILL refs + inline image upload ======
-  const quillCreateRef = useRef<any>(null);
-  const quillEditRef = useRef<any>(null);
+  const quillCreateRef = useRef<ReactQuill | null>(null);
+  const quillEditRef = useRef<ReactQuill | null>(null);
 
   const inlineCreateInputRef = useRef<HTMLInputElement | null>(null);
   const inlineEditInputRef = useRef<HTMLInputElement | null>(null);
@@ -126,21 +130,26 @@ export const AdminPosts: React.FC = () => {
     [toolbarContainer]
   );
 
-  // ✅ Insert image inline (không xuống dòng dư + fix TS setSelection)
+  // ✅ insert image into editor at cursor
   const insertImageToEditor = async (file: File, target: "create" | "edit") => {
-    const uploadedPath = await uploadImage(file); // "/uploads/xx.jpg" hoặc full url
-    const src = uploadedPath;
+    const uploadedPath = await uploadImage(file); // "/uploads/xxx.jpg" or full url
+    const src = uploadedPath; // keep relative if returned
 
     const ref = target === "create" ? quillCreateRef.current : quillEditRef.current;
-    const editor = ref?.getEditor?.();
+    const editor = ref?.getEditor();
     if (!editor) return;
 
     const range = editor.getSelection(true);
     const index = range ? range.index : editor.getLength();
 
     editor.insertEmbed(index, "image", src, "user");
-    editor.insertText(index + 1, "\n", "user"); // ✅ chỉ 1 lần
-    editor.setSelection({ index: index + 2, length: 0 });
+
+    // ✅ setSelection expects (index:number, length?:number) OR RangeStatic
+    editor.setSelection(index + 1, 0);
+
+    // ✅ add a newline after image so typing continues nicely
+    editor.insertText(index + 1, "\n", "user");
+    editor.setSelection(index + 2, 0);
   };
 
   const loadPosts = async () => {
@@ -188,12 +197,15 @@ export const AdminPosts: React.FC = () => {
 
   const beginEdit = (p: AdminPostItem) => {
     setEditingId(p._id);
+
     setEditTitle(p.title || "");
     setEditSummary(p.summary || "");
     setEditContent(p.content || "");
+
     setEditType(p.type || "showbiz");
     setEditRegion((p.region || "vn") as PostRegion);
     setEditSection((p.section || "news") as PostSection);
+
     setEditIsFeatured(!!p.isFeatured);
 
     setEditImageFile(null);
@@ -222,23 +234,27 @@ export const AdminPosts: React.FC = () => {
       if (!token) throw new Error("Thiếu token admin");
 
       let finalImageUrl = "";
-      if (imageFile) {
-        finalImageUrl = await uploadImage(imageFile);
-      }
+      if (imageFile) finalImageUrl = await uploadImage(imageFile);
 
       const payload: any = {
-        title: cleanHidden(title).trim(),
-        content: cleanHidden(content), // ✅ clean hidden chars trước khi lưu
+        title: title.trim(),
+        summary: summary.trim() || undefined,
+        content: cleanHidden(content), // ✅ clean before save
         type,
         imageUrl: finalImageUrl || undefined,
+
+        // ✅ featured for both
+        isFeatured: !!isFeatured,
       };
 
-      if (summary.trim()) payload.summary = cleanHidden(summary).trim();
-
+      // showbiz-only fields
       if (type === "showbiz") {
         payload.region = region;
         payload.section = section;
-        payload.isFeatured = !!isFeatured;
+      } else {
+        // blog: ensure no region/section
+        payload.region = undefined;
+        payload.section = undefined;
       }
 
       const res = await fetch(`${API_BASE}/posts`, {
@@ -270,25 +286,24 @@ export const AdminPosts: React.FC = () => {
       if (!token) throw new Error("Thiếu token admin");
 
       let finalImageUrl: string | undefined = undefined;
-      if (editImageFile) {
-        finalImageUrl = await uploadImage(editImageFile);
-      }
+      if (editImageFile) finalImageUrl = await uploadImage(editImageFile);
 
       const payload: any = {
-        title: cleanHidden(editTitle).trim(),
-        content: cleanHidden(editContent), // ✅ clean hidden chars trước khi lưu
+        title: editTitle.trim(),
+        summary: editSummary.trim() || undefined,
+        content: cleanHidden(editContent),
         type: editType,
+        isFeatured: !!editIsFeatured,
       };
 
       if (finalImageUrl) payload.imageUrl = finalImageUrl;
 
-      if (editSummary.trim()) payload.summary = cleanHidden(editSummary).trim();
-      else payload.summary = undefined;
-
       if (editType === "showbiz") {
         payload.region = editRegion;
         payload.section = editSection;
-        payload.isFeatured = !!editIsFeatured;
+      } else {
+        payload.region = undefined;
+        payload.section = undefined;
       }
 
       const res = await fetch(`${API_BASE}/posts/${id}`, {
@@ -366,6 +381,17 @@ export const AdminPosts: React.FC = () => {
           </select>
         </div>
 
+        {/* ✅ Featured for both */}
+        <div className="form-group">
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
+            Đánh dấu nổi bật (Featured)
+          </label>
+          <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginTop: 4 }}>
+            Blog: dùng để hiện strip “Nổi bật”. Showbiz: hiện ở tab/section tương ứng.
+          </div>
+        </div>
+
         {type === "showbiz" && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div className="form-group">
@@ -383,17 +409,6 @@ export const AdminPosts: React.FC = () => {
                 <option value="news">Tin</option>
                 <option value="photo">Ảnh sao</option>
               </select>
-            </div>
-
-            <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input
-                  type="checkbox"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                />
-                Đánh dấu nổi bật (Featured)
-              </label>
             </div>
           </div>
         )}
@@ -435,7 +450,7 @@ export const AdminPosts: React.FC = () => {
           </div>
 
           <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
-            Gợi ý: Title là H1 (tự in đậm, to). Sapo dùng ô Summary. Ảnh đại diện dùng “Hình ảnh bài đăng”.
+            Gợi ý: Title là H1. Sapo dùng ô Summary. Ảnh đại diện dùng “Hình ảnh bài đăng”.
           </div>
         </div>
 
@@ -501,6 +516,7 @@ export const AdminPosts: React.FC = () => {
                   background: "#fff",
                 }}
               >
+                {/* Header row */}
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
                   <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                     {p.imageUrl && (
@@ -556,6 +572,7 @@ export const AdminPosts: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Edit form */}
                 {isEditing && (
                   <div style={{ marginTop: 12, borderTop: "1px dashed #e5e7eb", paddingTop: 12 }}>
                     <div className="form-group">
@@ -565,11 +582,7 @@ export const AdminPosts: React.FC = () => {
 
                     <div className="form-group">
                       <label>Mô tả ngắn (Summary)</label>
-                      <input
-                        value={editSummary}
-                        onChange={(e) => setEditSummary(e.target.value)}
-                        placeholder="Không bắt buộc"
-                      />
+                      <input value={editSummary} onChange={(e) => setEditSummary(e.target.value)} placeholder="Không bắt buộc" />
                     </div>
 
                     <div className="form-group">
@@ -578,6 +591,17 @@ export const AdminPosts: React.FC = () => {
                         <option value="showbiz">Showbiz</option>
                         <option value="blog">Blog</option>
                       </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={editIsFeatured}
+                          onChange={(e) => setEditIsFeatured(e.target.checked)}
+                        />
+                        Đánh dấu nổi bật (Featured)
+                      </label>
                     </div>
 
                     {editType === "showbiz" && (
@@ -598,20 +622,10 @@ export const AdminPosts: React.FC = () => {
                             <option value="photo">Ảnh sao</option>
                           </select>
                         </div>
-
-                        <div className="form-group" style={{ gridColumn: "1 / -1" }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <input
-                              type="checkbox"
-                              checked={editIsFeatured}
-                              onChange={(e) => setEditIsFeatured(e.target.checked)}
-                            />
-                            Đánh dấu nổi bật (Featured)
-                          </label>
-                        </div>
                       </div>
                     )}
 
+                    {/* inline image input for edit */}
                     <input
                       ref={inlineEditInputRef}
                       type="file"
@@ -643,6 +657,9 @@ export const AdminPosts: React.FC = () => {
                           modules={editModules}
                           placeholder="Sửa nội dung…"
                         />
+                      </div>
+                      <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
+                        Chèn ảnh trong bài: bấm icon hình ảnh trên toolbar.
                       </div>
                     </div>
 

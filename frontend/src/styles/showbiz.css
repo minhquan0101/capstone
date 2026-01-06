@@ -836,3 +836,145 @@
   word-break: break-word;
 }
 
+/* ===== Detail 2-column layout (for Blog/Showbiz detail) ===== */
+.ns-detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 22px;
+  margin-top: 14px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .ns-detailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ns-detailMain {
+  min-width: 0; /* quan trọng để không bị tràn */
+}
+
+.ns-articleCard {
+  border: 1px solid var(--ns-line);
+  border-radius: var(--ns-radius);
+  background: #fff;
+  box-shadow: var(--ns-shadow);
+  padding: 18px 18px 22px;
+}
+
+.ns-sapo {
+  margin: 10px 0 12px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #374151;
+  font-weight: 700;
+}
+
+/* chống lỗi “tách chữ” + ảnh trong bài không tràn */
+.ns-content {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.ns-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 12px auto;
+  border-radius: 12px;
+}
+
+/* related list (nếu bạn chưa có) */
+.ns-related-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ns-related-item {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px;
+  border: 1px solid var(--ns-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.ns-related-item:hover .ns-related-title {
+  color: var(--ns-hover);
+}
+
+.ns-related-thumb {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  aspect-ratio: 16/11;
+}
+
+.ns-related-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ns-related-title {
+  margin: 6px 0 0;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+/* ===== Fix word break (tránh tách "d" + "âu") ===== */
+.ns-content,
+.ns-excerpt,
+.ns-item-excerpt,
+.ns-related-title,
+.ns-rank-title,
+.ns-mini-title,
+.ns-item-title {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  hyphens: none !important;
+  white-space: normal !important;
+}
+
+/* ===== Detail layout: article + sidebar ===== */
+.ns-detailGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.ns-aside-sticky {
+  position: sticky;
+  top: 88px;
+}
+
+@media (max-width: 980px) {
+  .ns-detailGrid {
+    grid-template-columns: 1fr;
+  }
+  .ns-aside-sticky {
+    position: static;
+  }
+}
+
+/* content typography */
+.ns-content {
+  font-size: 18px;
+  line-height: 1.75;
+}
+
+.ns-content p {
+  margin: 0 0 1em;
+}
+
+.ns-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  margin: 14px 0;
+}
