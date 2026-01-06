@@ -1,116 +1,202 @@
-import React, { useEffect, useState } from "react";
-import { getPost, Post } from "../utils/api";
-import "../styles/App.css";
+import React, { useEffect, useMemo, useState } from "react";
+import { API_BASE, getPost, getPosts, Post } from "../utils/api";
+import "../styles/showbiz.css";
 
 interface BlogDetailPageProps {
   postId: string;
   onBack: () => void;
+  onOpenPost?: (id: string) => void;
 }
 
-export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack }) => {
+type SideTab = "new" | "top";
+
+export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, onOpenPost }) => {
   const [post, setPost] = useState<Post | null>(null);
+  const [list, setList] = useState<Post[]>([]);
+  const [related, setRelated] = useState<Post[]>([]);
+  const [sideTab, setSideTab] = useState<SideTab>("new");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const backendBase = useMemo(() => API_BASE.replace(/\/api\/?$/, ""), []);
+
+  const getImageUrl = (imageUrl?: string) => {
+    if (!imageUrl) return "";
+    if (imageUrl.startsWith("http")) return imageUrl;
+    return `${backendBase}${imageUrl}`;
+  };
+
+  const fmtFull = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   useEffect(() => {
-    const fetchPost = async () => {
+    const run = async () => {
       try {
         setLoading(true);
-        const data = await getPost(postId);
-        setPost(data);
+
+        // tăng view khi mở detail
+        const p = await getPost(postId, true);
+
+        const all = await getPosts({ type: "blog", sort: "new", limit: 200 });
+
+        setPost(p);
+        setList(all || []);
+
+        const rel = (all || [])
+          .filter((x) => x._id !== postId)
+          .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+          .slice(0, 8);
+
+        setRelated(rel);
         setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Không thể tải bài viết");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Không thể tải bài viết");
       } finally {
         setLoading(false);
       }
     };
 
-    if (postId) {
-      fetchPost();
-    }
+    run();
   }, [postId]);
+
+  // ✅ fix ảnh trong content nếu src là "/uploads/..."
+  const html = useMemo(() => {
+    if (!post) return "";
+    const raw = post.content || "";
+
+    const isHtmlLike = /<\/?[a-z][\s\S]*>/i.test(raw);
+    const base = raw;
+
+    const normalized = isHtmlLike ? base : base.replace(/\n/g, "<br/>");
+
+    return normalized.replace(
+      /src=(["'])(\/uploads\/[^"']+)\1/g,
+      (_m, q, path) => `src=${q}${backendBase}${path}${q}`
+    );
+  }, [post, backendBase]);
+
+  const normalizedList = useMemo(() => {
+    return (list || []).map((p) => ({ ...p, views: typeof p.views === "number" ? p.views : 0 }));
+  }, [list]);
+
+  const sideNew = normalizedList.slice(0, 10);
+  const sideTop = [...normalizedList].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
 
   if (loading) {
     return (
-      <div className="home">
-        <div style={{ textAlign: "center", padding: "40px" }}>Đang tải...</div>
+      <div className="ns-page">
+        <div className="ns-container">
+          <div style={{ padding: 28, color: "#6b7280", fontWeight: 800 }}>Đang tải…</div>
+        </div>
       </div>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="home">
-        <div style={{ textAlign: "center", padding: "40px", color: "#b91c1c" }}>
-          {error || "Không tìm thấy bài viết"}
+      <div className="ns-page">
+        <div className="ns-container">
+          <button className="ns-back" onClick={onBack}>← Quay lại</button>
+          <div style={{ padding: 20, color: "#b91c1c", fontWeight: 900 }}>
+            {error || "Không tìm thấy bài viết"}
+          </div>
         </div>
-        <button onClick={onBack} className="btn primary" style={{ marginTop: "20px" }}>
-          Quay lại
-        </button>
       </div>
     );
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const months = [
-      "Th1",
-      "Th2",
-      "Th3",
-      "Th4",
-      "Th5",
-      "Th6",
-      "Th7",
-      "Th8",
-      "Th9",
-      "Th10",
-      "Th11",
-      "Th12",
-    ];
-    return `${day} ${months[month - 1]}`;
-  };
-
-  const getImageUrl = (imageUrl?: string) => {
-    if (!imageUrl) return "";
-    if (imageUrl.startsWith("http")) return imageUrl;
-    return `http://localhost:3000${imageUrl}`;
-  };
-
   return (
-    <div className="home">
-      <button
-        onClick={onBack}
-        className="btn outline"
-        style={{ marginBottom: "24px", cursor: "pointer" }}
-      >
-        ← Quay lại
-      </button>
+    <div className="ns-page">
+      <div className="ns-container">
+        <button className="ns-back" onClick={onBack}>← Quay lại</button>
 
-      <article className="blog-detail">
-        {post.imageUrl && (
-          <div className="blog-detail-image">
-            <img src={getImageUrl(post.imageUrl)} alt={post.title} />
-            <div className="blog-date-badge">{formatDate(post.createdAt)}</div>
-          </div>
-        )}
+        <div className="ns-detailGrid">
+          <article className="ns-article">
+            <h1>{post.title}</h1>
 
-        <div className="blog-detail-content">
-          <h1 className="blog-detail-title">{post.title}</h1>
-          <div className="blog-detail-meta">
-            <span>{formatDate(post.createdAt)}</span>
-            <span>•</span>
-            <span>{post.type === "blog" ? "Blog" : "Showbiz"}</span>
-          </div>
-          <div
-            className="blog-detail-body"
-            dangerouslySetInnerHTML={{ __html: post.content.replace(/\n/g, "<br />") }}
-          />
+            <div className="ns-meta">
+              <span>{fmtFull(post.createdAt)}</span>
+              <span className="ns-dot" />
+              <span>Blogs / News</span>
+              <span className="ns-dot" />
+              <span>{(post.views || 0).toLocaleString()} lượt xem</span>
+            </div>
+
+            {post.imageUrl && (
+              <div className="ns-heroImg">
+                <img src={getImageUrl(post.imageUrl)} alt={post.title} />
+              </div>
+            )}
+
+            <div className="ns-content" dangerouslySetInnerHTML={{ __html: html }} />
+
+            {related.length > 0 && (
+              <section className="ns-related">
+                <h3>Tin liên quan</h3>
+                <div className="ns-related-list">
+                  {related.map((p) => (
+                    <div
+                      key={p._id}
+                      className="ns-related-item"
+                      onClick={() => (onOpenPost ? onOpenPost(p._id) : undefined)}
+                      style={{ opacity: onOpenPost ? 1 : 0.75 }}
+                      title={onOpenPost ? "Mở bài này" : "Cần truyền onOpenPost để mở"}
+                    >
+                      <div className="ns-related-thumb">
+                        {p.imageUrl ? <img src={getImageUrl(p.imageUrl)} alt={p.title} /> : <div />}
+                      </div>
+                      <div>
+                        <div className="ns-meta">
+                          <span>{fmtFull(p.createdAt)}</span>
+                        </div>
+                        <p className="ns-related-title">{p.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </article>
+
+          {/* SIDEBAR */}
+          <aside className="ns-aside ns-aside-sticky">
+            <div className="ns-box">
+              <div className="ns-box-head">
+                <button className={`ns-box-tab ${sideTab === "new" ? "active" : ""}`} onClick={() => setSideTab("new")}>
+                  Tin mới
+                </button>
+                <button className={`ns-box-tab ${sideTab === "top" ? "active" : ""}`} onClick={() => setSideTab("top")}>
+                  Đọc nhiều
+                </button>
+              </div>
+
+              <div className="ns-box-body">
+                {(sideTab === "new" ? sideNew : sideTop).map((p, idx) => (
+                  <div
+                    key={p._id}
+                    className="ns-rank"
+                    onClick={() => (onOpenPost ? onOpenPost(p._id) : undefined)}
+                    style={{ opacity: onOpenPost ? 1 : 0.75 }}
+                  >
+                    <div className="ns-rank-num">{idx + 1}</div>
+                    <p className="ns-rank-title">{p.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
-      </article>
+      </div>
     </div>
   );
 };
-

@@ -8,11 +8,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return authRequest("login", { email, password });
 }
 
-export async function register(
-  name: string,
-  email: string,
-  password: string
-): Promise<AuthResponse> {
+export async function register(name: string, email: string, password: string): Promise<AuthResponse> {
   return authRequest("register", { name, email, password });
 }
 
@@ -20,26 +16,19 @@ export async function register(
 export async function verifyEmail(email: string, code: string): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE}/auth/verify-email`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, code }),
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Có lỗi xảy ra");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Có lỗi xảy ra");
   return data as AuthResponse;
 }
 
 // Lấy thông tin user hiện tại từ database (để đảm bảo role được cập nhật)
 export async function getCurrentUser(): Promise<{ user: UserInfo & { id: string } }> {
   const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("Không có token");
-  }
+  if (!token) throw new Error("Không có token");
 
   const res = await fetch(`${API_BASE}/auth/me`, {
     method: "GET",
@@ -50,10 +39,7 @@ export async function getCurrentUser(): Promise<{ user: UserInfo & { id: string 
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Có lỗi xảy ra");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Có lỗi xảy ra");
   return data;
 }
 
@@ -65,18 +51,14 @@ async function authRequest(
 
   const res = await fetch(endpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
   const data = await res.json();
 
   if (!res.ok) {
-    if (data && data.requireEmailVerification) {
-      return data as AuthResponse;
-    }
+    if (data && data.requireEmailVerification) return data as AuthResponse;
     throw new Error(data.message || "Có lỗi xảy ra");
   }
 
@@ -87,17 +69,12 @@ async function authRequest(
 export async function requestResetPassword(email: string): Promise<{ message: string }> {
   const res = await fetch(`${API_BASE}/auth/request-reset-password`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Gửi mã xác minh thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Gửi mã xác minh thất bại");
   return data;
 }
 
@@ -109,17 +86,12 @@ export async function resetPassword(
 ): Promise<{ message: string }> {
   const res = await fetch(`${API_BASE}/auth/reset-password-simple`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, code, newPassword }),
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Đặt lại mật khẩu thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
   return data;
 }
 
@@ -141,7 +113,6 @@ export async function uploadImage(file: File): Promise<string> {
     console.log("Upload response status:", res.status);
     console.log("Upload response ok:", res.ok);
 
-    // Kiểm tra nếu response không phải JSON
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       const text = await res.text();
@@ -151,7 +122,7 @@ export async function uploadImage(file: File): Promise<string> {
 
     const data = await res.json();
     console.log("Upload response data:", data);
-    
+
     if (!res.ok) {
       throw new Error(data.message || `Upload ảnh thất bại: ${res.status} ${res.statusText}`);
     }
@@ -160,40 +131,46 @@ export async function uploadImage(file: File): Promise<string> {
       throw new Error("Server không trả về đường dẫn ảnh");
     }
 
-    // Trả về đường dẫn tương đối để lưu vào DB (ví dụ: /uploads/filename.png)
-    return data.url;
+    return data.url; // ví dụ: /uploads/filename.png
   } catch (error: any) {
     console.error("Upload error details:", {
       name: error.name,
       message: error.message,
       stack: error.stack,
     });
-    
-    // Nếu là lỗi network hoặc fetch
-    if (error.name === "TypeError" || error.message.includes("fetch") || error.message.includes("Failed to fetch")) {
+
+    if (
+      error.name === "TypeError" ||
+      error.message.includes("fetch") ||
+      error.message.includes("Failed to fetch")
+    ) {
       throw new Error(
         `Không thể kết nối đến server tại ${uploadUrl}. ` +
-        `Vui lòng kiểm tra:\n` +
-        `1. Backend có đang chạy không?\n` +
-        `2. URL backend có đúng không? (Hiện tại: ${API_BASE})\n` +
-        `3. CORS có được cấu hình đúng không?`
+          `Vui lòng kiểm tra:\n` +
+          `1. Backend có đang chạy không?\n` +
+          `2. URL backend có đúng không? (Hiện tại: ${API_BASE})\n` +
+          `3. CORS có được cấu hình đúng không?`
       );
     }
-    // Nếu đã có message từ server
+
     throw error;
   }
 }
 
+/** ===== POSTS ===== */
+export type PostType = "showbiz" | "blog";
+export type PostRegion = "vn" | "asia" | "us_eu";
+export type PostSection = "news" | "photo";
+
 export interface Post {
   _id: string;
   title: string;
-  content: string;
-  type: "showbiz" | "blog";
+  content: string; // HTML hoặc text
+  type: PostType;
   imageUrl?: string;
 
-  // ✅ thêm để giống Ngôi Sao
-  region?: "vn" | "asia" | "us_eu";
-  section?: "news" | "photo";
+  region?: PostRegion;
+  section?: PostSection;
   summary?: string;
   isFeatured?: boolean;
   views?: number;
@@ -202,14 +179,29 @@ export interface Post {
   updatedAt: string;
 }
 
-// Lấy danh sách posts
-export async function getPosts(params?: Record<string, string | number | undefined>): Promise<Post[]> {
+// Lấy danh sách posts (có query params)
+export async function getPosts(params?: {
+  type?: PostType;
+  region?: PostRegion;
+  section?: PostSection;
+  featured?: boolean;
+  sort?: "new" | "views";
+  limit?: number;
+  skip?: number;
+
+  // nếu bạn muốn truyền thêm param khác sau này vẫn được
+  [key: string]: string | number | boolean | undefined;
+}): Promise<Post[]> {
   const qs =
     params && Object.keys(params).length > 0
       ? "?" +
         Object.entries(params)
           .filter(([, v]) => v !== undefined && v !== null && `${v}` !== "")
-          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+          .map(([k, v]) => {
+            if (k === "featured") return `${encodeURIComponent(k)}=${v ? "1" : ""}`;
+            return `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
+          })
+          .filter((s) => !s.endsWith("=")) // bỏ featured=false
           .join("&")
       : "";
 
@@ -223,10 +215,15 @@ export async function getPosts(params?: Record<string, string | number | undefin
   return data.posts || [];
 }
 
-// Lấy chi tiết một post
+// Lấy chi tiết một post (incView mặc định = true)
+// ✅ gửi cả incView=1 và inc=1 để backend kiểu nào cũng bắt được
 export async function getPost(id: string, incView: boolean = true): Promise<Post> {
   const url = new URL(`${API_BASE}/posts/${id}`);
-  if (incView) url.searchParams.set("inc", "1");
+
+  if (incView) {
+    url.searchParams.set("incView", "1");
+    url.searchParams.set("inc", "1");
+  }
 
   const res = await fetch(url.toString(), {
     method: "GET",
@@ -238,6 +235,7 @@ export async function getPost(id: string, incView: boolean = true): Promise<Post
   return data.post;
 }
 
+/** ===== EVENTS ===== */
 export interface Event {
   _id: string;
   title: string;
@@ -256,16 +254,11 @@ export interface Event {
 export async function getBanner(): Promise<{ imageUrl: string } | null> {
   const res = await fetch(`${API_BASE}/banner`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Lấy banner thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Lấy banner thất bại");
   return data.banner;
 }
 
@@ -278,15 +271,10 @@ export async function getEvents(featured?: boolean, trending?: boolean): Promise
   const url = `${API_BASE}/events${params.toString() ? `?${params.toString()}` : ""}`;
   const res = await fetch(url, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message || "Lấy danh sách sự kiện thất bại");
-  }
-
+  if (!res.ok) throw new Error(data.message || "Lấy danh sách sự kiện thất bại");
   return data.events || [];
 }
