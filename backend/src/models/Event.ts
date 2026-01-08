@@ -29,6 +29,10 @@ export interface IEvent extends Document {
   imageUrl?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
+  
+  // ✅ tags for filtering and categorization
+  tags?: string[];
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +66,9 @@ const EventSchema: Schema<IEvent> = new Schema(
     imageUrl: { type: String },
     isFeatured: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
+    
+    // ✅ tags for filtering and categorization
+    tags: { type: [String], default: [], required: false },
   },
   { timestamps: true }
 );

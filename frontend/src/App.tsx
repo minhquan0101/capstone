@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -89,6 +90,11 @@ const App: React.FC = () => {
           user={user} 
           onLogout={handleLogout}
           onSearchClick={() => setSearchModalOpen(true)}
+          selectedTag={selectedTag}
+          onTagSelect={(tag) => {
+            setSelectedTag(tag);
+            if (view !== "home") setView("home");
+          }}
         />
       )}
 
@@ -99,6 +105,8 @@ const App: React.FC = () => {
             setView={setView}
             searchModalOpen={searchModalOpen}
             onSearchModalClose={() => setSearchModalOpen(false)}
+            selectedTag={selectedTag}
+            onTagSelect={setSelectedTag}
           />
         )}
         {view === "showbiz" && (

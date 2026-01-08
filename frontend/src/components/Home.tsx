@@ -8,6 +8,8 @@ interface HomeProps {
   setView: (v: View) => void;
   searchModalOpen?: boolean;
   onSearchModalClose?: () => void;
+  selectedTag?: string | null;
+  onTagSelect?: (tag: string | null) => void;
 }
 
 export const Home: React.FC<HomeProps> = ({
@@ -15,6 +17,8 @@ export const Home: React.FC<HomeProps> = ({
   setView,
   searchModalOpen = false,
   onSearchModalClose,
+  selectedTag: propSelectedTag,
+  onTagSelect,
 }) => {
   const [banner, setBanner] = useState<string | null>(null);
   const [allEvents, setAllEvents] = useState<Event[]>([]);
@@ -25,6 +29,9 @@ export const Home: React.FC<HomeProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Event[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Tag filter state - use prop if provided, otherwise local state
+  const selectedTag = propSelectedTag !== undefined ? propSelectedTag : null;
 
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
@@ -60,16 +67,23 @@ export const Home: React.FC<HomeProps> = ({
     loadData();
   }, [backendBase]);
 
-  // Derived State for Sections
-  const specialEvents = useMemo(() => allEvents.filter(e => e.isFeatured).slice(0, 4), [allEvents]);
-  const trendingEvents = useMemo(() => allEvents.slice(0, 10), [allEvents]);
+  // Derived State for Sections - filter by tag if selected
+  const filteredEvents = useMemo(() => {
+    if (selectedTag) {
+      return allEvents.filter(e => Array.isArray(e.tags) && e.tags.includes(selectedTag));
+    }
+    return allEvents;
+  }, [allEvents, selectedTag]);
+
+  const specialEvents = useMemo(() => filteredEvents.filter(e => e.isFeatured).slice(0, 4), [filteredEvents]);
+  const trendingEvents = useMemo(() => filteredEvents.slice(0, 10), [filteredEvents]);
 
   // Search Logic
   useEffect(() => {
     if (searchQuery.trim()) {
       setIsSearching(true);
       const queryLower = searchQuery.toLowerCase();
-      const filtered = allEvents.filter((event) => 
+      const filtered = filteredEvents.filter((event) => 
         event.title.toLowerCase().includes(queryLower) ||
         event.location?.toLowerCase().includes(queryLower) ||
         event.description?.toLowerCase().includes(queryLower)
@@ -79,7 +93,7 @@ export const Home: React.FC<HomeProps> = ({
       setIsSearching(false);
       setSearchResults([]);
     }
-  }, [searchQuery, allEvents]);
+  }, [searchQuery, filteredEvents]);
 
   // Helpers
   const handleGoBooking = (eventId: string) => {
@@ -116,6 +130,35 @@ export const Home: React.FC<HomeProps> = ({
       />
 
       {error && <div className="global-message error">{error}</div>}
+
+      {selectedTag && (
+        <div className="global-message" style={{ 
+          background: "#eff6ff", 
+          color: "#1e40af", 
+          padding: "12px 20px",
+          margin: "20px auto",
+          maxWidth: "1200px",
+          borderRadius: "8px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <span>Đang lọc theo tag: <strong>{selectedTag}</strong></span>
+          <button 
+            onClick={() => onTagSelect?.(null)}
+            style={{
+              background: "none",
+              border: "1px solid #3b82f6",
+              color: "#3b82f6",
+              padding: "4px 12px",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }}
+          >
+            Xóa bộ lọc
+          </button>
+        </div>
+      )}
 
       <div className="content-wrapper">
         {isSearching ? (

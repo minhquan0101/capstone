@@ -66,9 +66,19 @@ export async function PUT(req: NextRequest, context: RouteContext) {
       isFeatured, 
       isTrending,
       ticketsTotal,
-      ticketTypes 
+      ticketTypes,
+      tags
     } = body;
     // ------------------------------
+
+    // Debug: Log received data
+    console.log("🔍 PUT /api/events/[id] - Received data:", {
+      eventId: id,
+      title,
+      tags: body.tags,
+      tagsType: typeof body.tags,
+      tagsIsArray: Array.isArray(body.tags),
+    });
 
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
@@ -78,6 +88,27 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     if (imageUrl !== undefined) update.imageUrl = imageUrl;
     if (isFeatured !== undefined) update.isFeatured = isFeatured === true;
     if (isTrending !== undefined) update.isTrending = isTrending === true;
+    
+    // Handle tags - always process tags if provided (even if empty array)
+    // Frontend should always send tags when editing, so check both destructured and body
+    if (tags !== undefined || body.tags !== undefined) {
+      const tagsToProcess = tags !== undefined ? tags : body.tags;
+      const processedTags = Array.isArray(tagsToProcess) 
+        ? tagsToProcess.filter((t: any) => typeof t === "string" && String(t).trim().length > 0).map((t: any) => String(t).trim())
+        : [];
+      // Always set tags (even if empty array) to ensure it's saved to database
+      update.tags = processedTags;
+      console.log("🔍 PUT /api/events/[id] - Processed tags:", {
+        tagsFromBody: body.tags,
+        tagsDestructured: tags,
+        processedTags,
+        processedTagsLength: processedTags.length,
+        willUpdate: true,
+      });
+    } else {
+      // If tags is not provided at all, don't update it (keep existing tags)
+      console.log("⚠️ PUT /api/events/[id] - Tags not provided in request, keeping existing tags");
+    }
 
     if (Array.isArray(ticketTypes)) {
       const cleaned = ticketTypes
@@ -148,7 +179,15 @@ export async function PUT(req: NextRequest, context: RouteContext) {
       }
     }
 
-    const event = await Event.findByIdAndUpdate(id, update, {
+    // Debug: Log update object before saving
+    console.log("🔍 PUT /api/events/[id] - Update object:", update);
+    console.log("🔍 PUT /api/events/[id] - Update object has tags:", 'tags' in update, update.tags);
+
+    // Use $set to ensure tags is always saved, even if empty array
+    // This forces Mongoose to save the tags field to database
+    const updateWithSet = { $set: update };
+    
+    const event = await Event.findByIdAndUpdate(id, updateWithSet, {
       new: true,
       runValidators: true,
     }).lean();
@@ -156,6 +195,26 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     if (!event) {
       return NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 });
     }
+
+    // Debug: Check event returned from findByIdAndUpdate
+    console.log("🔍 PUT /api/events/[id] - Event returned from update:", {
+      eventId: event._id,
+      eventTitle: event.title,
+      tagsInReturnedEvent: event.tags,
+      tagsType: typeof event.tags,
+      tagsIsArray: Array.isArray(event.tags),
+    });
+
+    // Debug: Verify tags were saved to database by querying again
+    const savedEvent = await Event.findById(id).lean();
+    console.log("✅ PUT /api/events/[id] - Tags saved to database:", {
+      eventId: id,
+      eventTitle: savedEvent?.title,
+      tagsInDatabase: savedEvent?.tags,
+      tagsType: typeof savedEvent?.tags,
+      tagsIsArray: Array.isArray(savedEvent?.tags),
+      allFields: Object.keys(savedEvent || {}),
+    });
 
     const updatedTicketTypes = await TicketType.find({ eventId: id })
       .sort({ createdAt: 1 })

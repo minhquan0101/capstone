@@ -251,6 +251,17 @@ body {
   color: #4f46e5;
 }
 
+.category-link.active {
+  color: #3b82f6;
+  font-weight: 600;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 2px;
+}
+
+.category-link.active:hover {
+  color: #2563eb;
+}
+
 .nav-link {
   background: none;
   border: none;

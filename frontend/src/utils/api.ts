@@ -238,6 +238,7 @@ export interface Event {
   imageUrl?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }

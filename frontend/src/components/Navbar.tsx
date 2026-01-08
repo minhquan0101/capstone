@@ -7,6 +7,8 @@ interface NavbarProps {
   user: UserInfo | null;
   onLogout: () => void;
   onSearchClick?: () => void;
+  selectedTag?: string | null;
+  onTagSelect?: (tag: string | null) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,6 +17,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   user,
   onLogout,
   onSearchClick,
+  selectedTag,
+  onTagSelect,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -160,10 +164,30 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Category Sub-nav (Only on Home) */}
       {currentView === "home" && (
         <nav className="category-nav">
-          <button className="category-link">nhạc sống</button>
-          <button className="category-link">sân khấu & nghệ thuật</button>
-          <button className="category-link">thể thao</button>
-          <button className="category-link">khác</button>
+          <button 
+            className={`category-link ${selectedTag === "nhạc sống" ? "active" : ""}`}
+            onClick={() => onTagSelect?.(selectedTag === "nhạc sống" ? null : "nhạc sống")}
+          >
+            nhạc sống
+          </button>
+          <button 
+            className={`category-link ${selectedTag === "sân khấu & nghệ thuật" ? "active" : ""}`}
+            onClick={() => onTagSelect?.(selectedTag === "sân khấu & nghệ thuật" ? null : "sân khấu & nghệ thuật")}
+          >
+            sân khấu & nghệ thuật
+          </button>
+          <button 
+            className={`category-link ${selectedTag === "thể thao" ? "active" : ""}`}
+            onClick={() => onTagSelect?.(selectedTag === "thể thao" ? null : "thể thao")}
+          >
+            thể thao
+          </button>
+          <button 
+            className={`category-link ${selectedTag === "khác" ? "active" : ""}`}
+            onClick={() => onTagSelect?.(selectedTag === "khác" ? null : "khác")}
+          >
+            khác
+          </button>
         </nav>
       )}
     </>
