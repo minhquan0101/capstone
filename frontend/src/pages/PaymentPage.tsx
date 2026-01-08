@@ -1,12 +1,19 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import QRCode from "qrcode";
+import React, { useEffect, useRef, useState } from "react";
 import { API_BASE } from "../utils/api";
 import { View } from "../utils/types";
 
-type MomoCreateResponse = {
-  payUrl?: string;
-  deeplink?: string;
-  qrCodeUrl?: string; // có thể có hoặc không tuỳ gói MoMo
+type VietQRResponse = {
+  bookingId: string;
+  amount: number;
+  addInfo: string;
+  qrImageUrl: string;
+  expiresAt?: string;
+  receive?: {
+    bankId: string;
+    accountNo: string;
+    accountName: string;
+    template?: string;
+  };
 };
 
 type BookingDetail = {
@@ -30,13 +37,16 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
   const [error, setError] = useState<string | null>(null);
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
-  const [momo, setMomo] = useState<MomoCreateResponse | null>(null);
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  // VietQR data
+  const [vietqr, setVietqr] = useState<VietQRResponse | null>(null);
+  const [qrImageUrl, setQrImageUrl] = useState<string>("");
+  const [addInfo, setAddInfo] = useState<string>("");
+  const [amount, setAmount] = useState<number>(0);
 
   const bookingId =
     typeof window !== "undefined" ? localStorage.getItem("paymentBookingId") : null;
 
-  const backendBase = useMemo(() => API_BASE.replace(/\/api\/?$/, ""), []);
   const pollRef = useRef<number | null>(null);
 
   const formatMoney = (n: number) => n.toLocaleString("vi-VN") + "đ";
@@ -45,7 +55,6 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
   const loadBooking = async () => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Bạn cần đăng nhập để thanh toán.");
-
     if (!bookingId) throw new Error("Không tìm thấy booking để thanh toán.");
 
     const res = await fetch(`${API_BASE}/bookings/${bookingId}`, {
@@ -57,39 +66,29 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
     return data.booking as BookingDetail;
   };
 
-  const createMomo = async () => {
+  const loadVietQR = async () => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Bạn cần đăng nhập để thanh toán.");
     if (!bookingId) throw new Error("Thiếu bookingId");
 
     setCreating(true);
     try {
-      const res = await fetch(`${API_BASE}/payments/momo/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ bookingId }),
+      const res = await fetch(`${API_BASE}/payments/vietqr/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Không tạo được giao dịch MoMo");
+      if (!res.ok) throw new Error(data.message || "Không tạo được VietQR");
 
-      setMomo(data);
-      return data as MomoCreateResponse;
+      const v = data as VietQRResponse;
+      setVietqr(v);
+      setQrImageUrl(v.qrImageUrl || "");
+      setAddInfo(v.addInfo || "");
+      setAmount(Number(v.amount || 0));
+
+      return v;
     } finally {
       setCreating(false);
     }
-  };
-
-  const buildQr = async (m: MomoCreateResponse) => {
-    // Ưu tiên qrCodeUrl nếu backend trả về, không thì dùng payUrl
-    const content = m.qrCodeUrl || m.payUrl || m.deeplink || "";
-    if (!content) return;
-
-    const url = await QRCode.toDataURL(content, { width: 280, margin: 1 });
-    setQrDataUrl(url);
   };
 
   useEffect(() => {
@@ -105,12 +104,11 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
 
         const b = await loadBooking();
         if (b.status === "paid") {
-          setLoading(false);
+          // ✅ paid thì không cần load QR nữa
           return;
         }
 
-        const m = await createMomo();
-        await buildQr(m);
+        await loadVietQR();
       } catch (e: any) {
         setError(e.message || "Có lỗi xảy ra");
       } finally {
@@ -122,9 +120,14 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
-  // Poll status mỗi 3s để tự đổi sang “Thanh toán thành công”
+  // Poll status mỗi 3s để tự cập nhật
   useEffect(() => {
     if (!bookingId) return;
+
+    const stopPoll = () => {
+      if (pollRef.current) window.clearInterval(pollRef.current);
+      pollRef.current = null;
+    };
 
     const startPoll = () => {
       stopPoll();
@@ -140,28 +143,29 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
       }, 3000);
     };
 
-    const stopPoll = () => {
-      if (pollRef.current) window.clearInterval(pollRef.current);
-      pollRef.current = null;
-    };
-
     startPoll();
     return () => stopPoll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
-  const backToBooking = () => {
-    setView("booking");
-  };
+  const backToBooking = () => setView("booking");
 
   const backToHome = () => {
     localStorage.removeItem("paymentBookingId");
     setView("home");
   };
 
-  const openPay = () => {
-    const link = momo?.payUrl || momo?.deeplink;
-    if (link) window.open(link, "_blank", "noopener,noreferrer");
+  const copyAddInfo = async () => {
+    try {
+      await navigator.clipboard.writeText(addInfo);
+      alert("✅ Đã copy nội dung chuyển khoản");
+    } catch {
+      alert("Không copy được. Bạn copy thủ công nhé.");
+    }
+  };
+
+  const openQrImage = () => {
+    if (qrImageUrl) window.open(qrImageUrl, "_blank", "noopener,noreferrer");
   };
 
   if (loading) {
@@ -200,9 +204,9 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
         <div className="payment-card">
           <div className="payment-head">
             <div>
-              <h1 className="payment-title">Thanh toán MoMo</h1>
+              <h1 className="payment-title">Thanh toán chuyển khoản (VietQR)</h1>
               <p className="payment-subtitle">
-                Quét QR để thanh toán. Đơn sẽ tự cập nhật khi thanh toán xong.
+                Quét QR để chuyển khoản. Sau khi nhận tiền, admin sẽ xác nhận và đơn tự cập nhật.
               </p>
             </div>
 
@@ -211,60 +215,98 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
             </button>
           </div>
 
-          {booking && (
-            <div className="payment-order">
-              <div className="payment-order__row">
-                <span>Sự kiện</span>
-                <b>{booking.eventTitle}</b>
-              </div>
-              <div className="payment-order__row">
-                <span>Hạng vé</span>
-                <b>{booking.ticketTypeName || "Vé"}</b>
-              </div>
-              <div className="payment-order__row">
-                <span>Số lượng</span>
-                <b>{booking.quantity}</b>
-              </div>
-              <div className="payment-order__row total">
-                <span>Tổng tiền</span>
-                <b>{formatMoney(booking.totalAmount)}</b>
-              </div>
-              <div className="payment-order__row">
-                <span>Hết hạn giữ vé</span>
-                <b>{formatTime(booking.expiresAt)}</b>
+          {/* ✅ Khi PAID: chỉ hiện success card, ẩn hết phần order/qr/status/buttons dư */}
+          {isPaid ? (
+            <div className="pay-success-wrap">
+              <div className="pay-success-card">
+                <div className="pay-success-logo">
+                  <div className="pay-success-brand">TicketFast</div>
+                </div>
+
+                <div className="pay-success-title">Thanh toán thành công</div>
+                <div className="pay-success-sub">Đơn đặt vé của bạn đã được xác nhận.</div>
+
+                <div className="payment-actions" style={{ marginTop: 18, justifyContent: "center" }}>
+                  <button className="btn outline" onClick={backToHome}>Về trang chủ</button>
+                  <button className="btn outline" onClick={backToBooking}>Về trang đặt vé</button>
+                </div>
               </div>
             </div>
+          ) : (
+            <>
+              {booking && (
+                <div className="payment-order">
+                  <div className="payment-order__row">
+                    <span>Sự kiện</span>
+                    <b>{booking.eventTitle}</b>
+                  </div>
+                  <div className="payment-order__row">
+                    <span>Hạng vé</span>
+                    <b>{booking.ticketTypeName || "Vé"}</b>
+                  </div>
+                  <div className="payment-order__row">
+                    <span>Số lượng</span>
+                    <b>{booking.quantity}</b>
+                  </div>
+                  <div className="payment-order__row total">
+                    <span>Tổng tiền</span>
+                    <b>{formatMoney(booking.totalAmount)}</b>
+                  </div>
+                  <div className="payment-order__row">
+                    <span>Hết hạn giữ vé</span>
+                    <b>{formatTime(booking.expiresAt)}</b>
+                  </div>
+
+                  <div className="payment-order__row">
+                    <span>Nội dung CK</span>
+                    <b style={{ wordBreak: "break-word" }}>{addInfo || "—"}</b>
+                  </div>
+                </div>
+              )}
+
+              <div className="payment-qrbox">
+                {qrImageUrl ? (
+                  <img className="payment-qr" src={qrImageUrl} alt="VietQR" />
+                ) : (
+                  <div className="payment-qr--empty">{creating ? "Đang tạo QR..." : "Chưa tạo được QR"}</div>
+                )}
+
+                <div className="payment-qrhint">
+                  <button className="btn primary" type="button" onClick={openQrImage} disabled={!qrImageUrl}>
+                    Mở ảnh QR
+                  </button>
+
+                  <button className="btn outline" type="button" onClick={copyAddInfo} disabled={!addInfo}>
+                    Copy nội dung CK
+                  </button>
+
+                  <div className="payment-note">
+                    <div>
+                      <b>Số tiền:</b> {formatMoney(amount || booking?.totalAmount || 0)}
+                    </div>
+                    <div style={{ marginTop: 6 }}>
+                      Sau khi bạn chuyển khoản xong, vui lòng chờ admin xác nhận. Trang sẽ tự cập nhật trạng thái.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`payment-status ${isBad ? "bad" : "pending"}`}>
+                {status === "pending" && "⏳ Đang chờ admin xác nhận thanh toán..."}
+                {isBad && "⚠️ Đơn không còn hiệu lực / thanh toán thất bại."}
+              </div>
+
+              <div className="payment-actions">
+                <button className="btn outline" onClick={backToHome}>Về trang chủ</button>
+                <button className="btn outline" onClick={backToBooking}>Về trang đặt vé</button>
+              </div>
+            </>
           )}
 
-          <div className="payment-qrbox">
-            {qrDataUrl ? (
-              <img className="payment-qr" src={qrDataUrl} alt="MoMo QR" />
-            ) : (
-              <div className="payment-qr--empty">
-                {creating ? "Đang tạo QR..." : "Chưa tạo được QR"}
-              </div>
-            )}
-
-            <div className="payment-qrhint">
-              <button className="btn primary" type="button" onClick={openPay} disabled={!momo?.payUrl && !momo?.deeplink}>
-                Mở trang thanh toán
-              </button>
-              <div className="payment-note">
-                Nếu bạn đã thanh toán nhưng chưa cập nhật, chờ vài giây (tự refresh).
-              </div>
-            </div>
-          </div>
-
-          <div className={`payment-status ${isPaid ? "paid" : isBad ? "bad" : "pending"}`}>
-            {isPaid && "✅ Thanh toán thành công!"}
-            {status === "pending" && "⏳ Đang chờ thanh toán..."}
-            {isBad && "⚠️ Đơn không còn hiệu lực / thanh toán thất bại."}
-          </div>
-
-          <div className="payment-actions">
-            <button className="btn outline" onClick={backToHome}>Về trang chủ</button>
-            <button className="btn outline" onClick={backToBooking}>Về trang đặt vé</button>
-          </div>
+          {/* Debug nếu cần */}
+          {/* <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, opacity: 0.7 }}>
+            vietqr: {JSON.stringify(vietqr, null, 2)}
+          </pre> */}
         </div>
       </div>
     </div>
