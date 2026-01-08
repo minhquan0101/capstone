@@ -92,6 +92,8 @@ export interface Event {
   isFeatured?: boolean;
   isTrending?: boolean;
 
+  tags?: string[];
+
   seatMapMode?: SeatMapMode;
   seatMapType?: SeatMapType;
   seatMapUrl?: string;

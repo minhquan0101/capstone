@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   // ===== Helpers for URL <-> View =====
   const pathFor = (v: View, postId: string | null) => {
@@ -206,9 +207,12 @@ const App: React.FC = () => {
       });
   }, []);
 
-  // ✅ AUTO đóng search modal khi rời trang home
+  // ✅ AUTO đóng search modal và reset tags khi rời trang home
   useEffect(() => {
-    if (view !== "home") setSearchModalOpen(false);
+    if (view !== "home") {
+      setSearchModalOpen(false);
+      setSelectedTags([]);
+    }
   }, [view]);
 
   const handleLogout = () => {
@@ -263,6 +267,13 @@ const App: React.FC = () => {
           user={user}
           onLogout={handleLogout}
           onSearchClick={() => setSearchModalOpen(true)}
+          selectedTags={selectedTags}
+          onTagToggle={(tag) => {
+            setSelectedTags((prev) =>
+              prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+            );
+          }}
+          onClearTags={() => setSelectedTags([])}
         />
       )}
 
@@ -273,6 +284,7 @@ const App: React.FC = () => {
             setView={setView}
             searchModalOpen={searchModalOpen}
             onSearchModalClose={() => setSearchModalOpen(false)}
+            selectedTags={selectedTags}
           />
         )}
 

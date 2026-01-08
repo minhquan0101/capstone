@@ -34,6 +34,8 @@ function computeFromTicketTypes(event: any, ticketTypes: any[]) {
   return {
     eventComputed: {
       ...event,
+      // ✅ Preserve tags from original event
+      tags: event?.tags || [],
       // backward: FE cũ dùng event.price -> cho nó là "giá từ"
       price: priceFrom,
       // field rõ nghĩa
@@ -59,12 +61,35 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const featured = searchParams.get("featured") === "true";
     const trending = searchParams.get("trending") === "true";
+    const tagsParam = searchParams.get("tags");
 
     const query: any = {};
     if (featured) query.isFeatured = true;
     if (trending) query.isTrending = true;
+    
+    // ✅ Filter by tags: support multiple tags (comma-separated)
+    if (tagsParam) {
+      const tagsArray = tagsParam.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+      if (tagsArray.length > 0) {
+        query.tags = { $in: tagsArray };
+      }
+    }
 
-    const events = await Event.find(query).sort({ date: 1, createdAt: -1 }).lean();
+    // Sort by creation date (newest first)
+    const events = await Event.find(query).sort({ createdAt: -1 }).lean();
+    
+    // Debug: Log events with tags from database
+    console.log("🔍 Backend: Events found:", events.length);
+    events.forEach((e: any, idx: number) => {
+      console.log(`  [${idx + 1}] "${e.title}":`, {
+        hasTags: !!(e.tags),
+        tagsType: typeof e.tags,
+        tagsIsArray: Array.isArray(e.tags),
+        tagsValue: e.tags,
+        tagsLength: Array.isArray(e.tags) ? e.tags.length : 'not array',
+        allKeys: Object.keys(e).filter(k => k.includes('tag') || k === 'tags')
+      });
+    });
 
     const eventIds = events.map((e: any) => e._id);
     const types = await TicketType.find({ eventId: { $in: eventIds } }).lean();
@@ -83,8 +108,23 @@ export async function GET(req: NextRequest) {
 
       const { eventComputed, tickets } = computeFromTicketTypes(e, ticketTypes);
 
+      // ✅ Ensure tags are properly preserved from database
+      // Use tags from eventComputed first (which preserves from original event)
+      // Fallback to e.tags from database, then to empty array
+      const tags = Array.isArray(eventComputed.tags) && eventComputed.tags.length > 0
+        ? eventComputed.tags
+        : (Array.isArray(e.tags) && e.tags.length > 0 ? e.tags : []);
+
+      // Debug: Log tags before returning
+      if (tags.length > 0) {
+        console.log(`  ✅ "${e.title}" has tags:`, tags);
+      } else {
+        console.log(`  ⚠️ "${e.title}" has NO tags (eventComputed.tags:`, eventComputed.tags, `, e.tags:`, e.tags, `)`);
+      }
+
       return {
         ...eventComputed,
+        tags: tags, // ✅ Ensure tags are included and properly formatted
         ticketTypes,
         tickets, // để FE muốn dùng cũng được
       };
@@ -116,7 +156,16 @@ export async function POST(req: NextRequest) {
       isTrending,
       ticketsTotal,
       ticketTypes,
+      tags,
     } = body;
+
+    // Debug: Log tags received from frontend
+    console.log("🔍 POST /api/events - Received tags:", {
+      tagsFromBody: body.tags,
+      tagsDestructured: tags,
+      tagsType: typeof body.tags,
+      tagsIsArray: Array.isArray(body.tags),
+    });
 
     if (!title) {
       return withCors(
@@ -164,7 +213,17 @@ export async function POST(req: NextRequest) {
           ? Number(price)
           : 0;
 
-    const createdEvent = await Event.create({
+    // Process tags: use destructured tags or body.tags, always set explicitly even if empty
+    const processedTags = Array.isArray(tags) || Array.isArray(body.tags)
+      ? (Array.isArray(tags) ? tags : body.tags || [])
+          .filter((t: any) => typeof t === "string" && t.trim().length > 0)
+          .map((t: any) => t.trim())
+      : [];
+
+    console.log("🔍 POST /api/events - Processed tags before saving:", processedTags);
+
+    // Always explicitly set tags to ensure it's saved to database
+    const eventData: any = {
       title,
       description,
       location,
@@ -174,6 +233,19 @@ export async function POST(req: NextRequest) {
       isFeatured: isFeatured === true,
       isTrending: isTrending === true,
       ticketsTotal: computedTotal, // nếu có ticketTypes => là sum total
+      tags: processedTags, // Always set tags explicitly, even if empty array
+    };
+
+    const createdEvent = await Event.create(eventData);
+
+    // Debug: Verify tags were saved to database
+    const savedEvent = await Event.findById(createdEvent._id).lean();
+    console.log("✅ POST /api/events - Tags saved to database:", {
+      eventId: createdEvent._id,
+      eventTitle: createdEvent.title,
+      tagsInDatabase: savedEvent?.tags,
+      tagsType: typeof savedEvent?.tags,
+      tagsIsArray: Array.isArray(savedEvent?.tags),
     });
 
     // Create ticket types if applicable

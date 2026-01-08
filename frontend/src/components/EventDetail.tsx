@@ -20,6 +20,7 @@ type EventDetailData = {
 
   isFeatured?: boolean;
   isTrending?: boolean;
+  tags?: string[];
 
   ticketTypes?: TicketType[];
 
@@ -318,6 +319,28 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                 {event.isTrending ? <span className="tkb-badge tkb-badge--ghost">Xu hướng</span> : null}
                 {minPrice > 0 ? <span className="tkb-badge tkb-badge--ghost">Giá từ {money(minPrice)}</span> : null}
               </div>
+
+              {/* Display tags */}
+              {event.tags && event.tags.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" }}>
+                  {event.tags.map((tag, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-block",
+                        padding: "4px 12px",
+                        backgroundColor: "#eff6ff",
+                        color: "#3b82f6",
+                        borderRadius: "16px",
+                        fontSize: "13px",
+                        fontWeight: "500"
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               <div className="tkb-meta">
                 <div className="tkb-meta__item">

@@ -246,6 +246,7 @@ export interface Event {
   imageUrl?: string;
   isFeatured?: boolean;
   isTrending?: boolean;
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -263,10 +264,13 @@ export async function getBanner(): Promise<{ imageUrl: string } | null> {
 }
 
 // Lấy danh sách events
-export async function getEvents(featured?: boolean, trending?: boolean): Promise<Event[]> {
+export async function getEvents(featured?: boolean, trending?: boolean, tags?: string[]): Promise<Event[]> {
   const params = new URLSearchParams();
   if (featured) params.append("featured", "true");
   if (trending) params.append("trending", "true");
+  if (tags && tags.length > 0) {
+    params.append("tags", tags.join(","));
+  }
 
   const url = `${API_BASE}/events${params.toString() ? `?${params.toString()}` : ""}`;
   const res = await fetch(url, {

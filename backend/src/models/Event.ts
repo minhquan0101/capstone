@@ -56,6 +56,9 @@ export interface IEvent extends Document {
   isFeatured?: boolean;
   isTrending?: boolean;
 
+  // ✅ tags for filtering and smart search
+  tags?: string[];
+
   // ✅ seatmap
   seatMapMode?: SeatMapMode;
   seatMapType?: SeatMapType;
@@ -130,6 +133,9 @@ const EventSchema: Schema<IEvent> = new Schema(
     imageUrl: { type: String },
     isFeatured: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
+
+    // ✅ tags for filtering
+    tags: { type: [String], default: [], required: false },
 
     // ✅ seatmap config
     seatMapMode: { type: String, enum: ["none", "seat", "zone"], default: "none" },

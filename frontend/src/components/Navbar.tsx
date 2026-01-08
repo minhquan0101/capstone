@@ -7,6 +7,9 @@ interface NavbarProps {
   user: UserInfo | null;
   onLogout: () => void;
   onSearchClick?: () => void;
+  selectedTags?: string[];
+  onTagToggle?: (tag: string) => void;
+  onClearTags?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,6 +18,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   user,
   onLogout,
   onSearchClick,
+  selectedTags = [],
+  onTagToggle,
+  onClearTags,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -160,10 +166,37 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Category Sub-nav (Only on Home) */}
       {currentView === "home" && (
         <nav className="category-nav">
-          <button className="category-link">nhạc sống</button>
-          <button className="category-link">sân khấu & nghệ thuật</button>
-          <button className="category-link">thể thao</button>
-          <button className="category-link">khác</button>
+          {["nhạc sống", "sân khấu & nghệ thuật", "thể thao", "khác"].map((tag) => {
+            const isSelected = selectedTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                className={`category-link ${isSelected ? "active" : ""}`}
+                onClick={() => onTagToggle?.(tag)}
+                style={{
+                  border: isSelected ? "2px solid #3b82f6" : "1px solid #d1d5db",
+                  backgroundColor: isSelected ? "#eff6ff" : "#fff",
+                  color: isSelected ? "#3b82f6" : "#374151",
+                  fontWeight: isSelected ? "600" : "400",
+                }}
+              >
+                {tag}
+              </button>
+            );
+          })}
+          {selectedTags.length > 0 && onClearTags && (
+            <button
+              className="category-link"
+              onClick={onClearTags}
+              style={{
+                border: "1px solid #d1d5db",
+                backgroundColor: "#fff",
+                color: "#6b7280",
+              }}
+            >
+              Xóa bộ lọc
+            </button>
+          )}
         </nav>
       )}
     </>

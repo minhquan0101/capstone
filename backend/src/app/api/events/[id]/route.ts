@@ -40,6 +40,8 @@ function computeEventComputed(event: any, ticketTypes: any[]) {
 
   const eventComputed = {
     ...event,
+    // ✅ Preserve tags from original event
+    tags: event?.tags || [],
     // Giữ backward-compat: FE đang dùng event.price => để nó là "giá từ"
     price: priceFrom,
     // Field mới rõ nghĩa
@@ -123,7 +125,17 @@ export async function PUT(req: NextRequest, context: RouteContext) {
       isTrending,
       ticketsTotal,
       ticketTypes,
+      tags,
     } = body;
+
+    // Debug: Log tags received from frontend
+    console.log("🔍 PUT /api/events/[id] - Received tags:", {
+      eventId: id,
+      tagsFromBody: body.tags,
+      tagsDestructured: tags,
+      tagsType: typeof body.tags,
+      tagsIsArray: Array.isArray(body.tags),
+    });
 
     const update: Record<string, unknown> = {};
     if (title !== undefined) update.title = title;
@@ -133,6 +145,17 @@ export async function PUT(req: NextRequest, context: RouteContext) {
     if (imageUrl !== undefined) update.imageUrl = imageUrl;
     if (isFeatured !== undefined) update.isFeatured = isFeatured === true;
     if (isTrending !== undefined) update.isTrending = isTrending === true;
+    // Always handle tags - if provided, use it (even if empty array), otherwise keep existing
+    // But ensure tags is always explicitly set when provided to ensure it's saved to database
+    if (tags !== undefined || body.tags !== undefined) {
+      const tagsToProcess = tags !== undefined ? tags : body.tags;
+      const processedTags = Array.isArray(tagsToProcess) 
+        ? tagsToProcess.filter((t: any) => typeof t === "string" && t.trim().length > 0).map((t: any) => t.trim())
+        : [];
+      // Explicitly set tags using $set to ensure MongoDB saves it even if empty array
+      update.tags = processedTags;
+      console.log("🔍 PUT /api/events/[id] - Processed tags before updating:", processedTags);
+    }
 
     if (Array.isArray(ticketTypes)) {
       const cleaned = ticketTypes
@@ -236,6 +259,16 @@ export async function PUT(req: NextRequest, context: RouteContext) {
         NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 })
       );
     }
+
+    // Debug: Verify tags were saved to database
+    console.log("✅ PUT /api/events/[id] - Tags saved to database:", {
+      eventId: id,
+      eventTitle: updatedEvent.title,
+      tagsInDatabase: updatedEvent.tags,
+      tagsType: typeof updatedEvent.tags,
+      tagsIsArray: Array.isArray(updatedEvent.tags),
+      updateObjectHadTags: 'tags' in update,
+    });
 
     const updatedTicketTypes = await TicketType.find({ eventId: id })
       .sort({ createdAt: 1 })

@@ -21,6 +21,7 @@ interface EventItem {
 
   isFeatured?: boolean;
   isTrending?: boolean;
+  tags?: string[];
 
   ticketsTotal?: number;
   ticketsSold?: number;
@@ -55,6 +56,10 @@ export const AdminEvents: React.FC = () => {
 
   const [isFeatured, setIsFeatured] = useState(false);
   const [isTrending, setIsTrending] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+
+  // Available tags for selection
+  const availableTags = ["nhạc sống", "sân khấu & nghệ thuật", "thể thao", "khác"];
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +67,7 @@ export const AdminEvents: React.FC = () => {
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<Partial<EventItem>>({});
+  const [savedEventId, setSavedEventId] = useState<string | null>(null); // Track which event was just saved
 
   // Image upload states
   const [creatingImageFile, setCreatingImageFile] = useState<File | null>(null);
@@ -152,7 +158,16 @@ export const AdminEvents: React.FC = () => {
         imageUrl: finalImageUrl || undefined,
         isFeatured,
         isTrending,
+        tags: Array.isArray(tags) ? tags.filter((t) => t && String(t).trim().length > 0) : [],
       };
+
+      // Debug: Log tags being sent
+      console.log("🔍 Frontend POST - Sending tags:", {
+        tagsState: tags,
+        tagsProcessed: payload.tags,
+        tagsIsArray: Array.isArray(tags),
+        tagsLength: Array.isArray(tags) ? tags.length : 0,
+      });
 
       if (useTicketTypes) {
         if (!createTicketTypesPayload || createTicketTypesPayload.length === 0) {
@@ -187,6 +202,7 @@ export const AdminEvents: React.FC = () => {
       setTicketTypes([{ name: "Vé thường", price: "", total: "" }]);
       setIsFeatured(false);
       setIsTrending(false);
+      setTags([]);
 
       setCreatingImageFile(null);
       setCreatingImagePreview(null);
@@ -205,9 +221,15 @@ export const AdminEvents: React.FC = () => {
     setEditingEvent({
       ...ev,
       date: ev.date ? new Date(ev.date).toISOString().slice(0, 10) : "",
+      tags: Array.isArray(ev.tags) ? ev.tags : [],
+      ticketTypes: Array.isArray(ev.ticketTypes) ? ev.ticketTypes : [],
+      isFeatured: ev.isFeatured === true,
+      isTrending: ev.isTrending === true,
     });
     setEditingImageFile(null);
     setEditingImagePreview(null);
+    setSavedEventId(null); // Reset saved state when starting new edit
+    setError(null); // Clear any previous errors
   };
 
   const cancelEdit = () => {
@@ -215,6 +237,7 @@ export const AdminEvents: React.FC = () => {
     setEditingEvent({});
     setEditingImageFile(null);
     setEditingImagePreview(null);
+    setSavedEventId(null); // Reset saved state when canceling
   };
 
   const saveEdit = async () => {
@@ -233,16 +256,60 @@ export const AdminEvents: React.FC = () => {
       const hasTicketTypes =
         Array.isArray(editingEvent.ticketTypes) && editingEvent.ticketTypes.length > 0;
 
+      // Ensure tags is always included, even if empty array
+      const processedTags = Array.isArray(editingEvent.tags) 
+        ? editingEvent.tags.filter((t) => t && String(t).trim().length > 0)
+        : [];
+
+      // Clean payload - only send necessary fields
       const payload: any = {
-        ...editingEvent,
-        imageUrl: finalImageUrl || undefined,
+        title: editingEvent.title,
+        description: editingEvent.description,
+        location: editingEvent.location,
         date: editingEvent.date ? new Date(editingEvent.date).toISOString() : undefined,
+        imageUrl: finalImageUrl || undefined,
+        isFeatured: editingEvent.isFeatured === true,
+        isTrending: editingEvent.isTrending === true,
+        tags: processedTags,
       };
 
+      // Handle ticketTypes or price/ticketsTotal
       if (hasTicketTypes) {
-        delete payload.ticketsTotal;
-        delete payload.price;
+        // Clean ticketTypes - only send name, price, total
+        payload.ticketTypes = editingEvent.ticketTypes
+          ?.filter((tt) => tt && tt.name && (typeof tt.price === 'number' || tt.price === '') && (typeof tt.total === 'number' || tt.total === ''))
+          .map((tt) => {
+            const price = typeof tt.price === 'number' ? tt.price : (tt.price === '' ? 0 : Number(tt.price) || 0);
+            const total = typeof tt.total === 'number' ? tt.total : (tt.total === '' ? 0 : Number(tt.total) || 0);
+            return {
+              name: String(tt.name).trim(),
+              price: price,
+              total: total,
+            };
+          })
+          .filter((tt) => tt.name && !isNaN(tt.price) && !isNaN(tt.total) && tt.price >= 0 && tt.total >= 0) || [];
+      } else {
+        // Only set price/ticketsTotal if not using ticketTypes
+        if (editingEvent.price !== undefined && editingEvent.price !== null) {
+          const priceNum = typeof editingEvent.price === 'number' ? editingEvent.price : Number(editingEvent.price);
+          if (!isNaN(priceNum)) {
+            payload.price = priceNum;
+          }
+        }
+        if (editingEvent.ticketsTotal !== undefined && editingEvent.ticketsTotal !== null) {
+          const totalNum = typeof editingEvent.ticketsTotal === 'number' ? editingEvent.ticketsTotal : Number(editingEvent.ticketsTotal);
+          if (!isNaN(totalNum)) {
+            payload.ticketsTotal = totalNum;
+          }
+        }
       }
+
+      // Debug: Log payload being sent
+      console.log("🔍 Frontend PUT - Sending payload:", {
+        editingEventId: editingId,
+        payload,
+        hasTicketTypes,
+      });
 
       const res = await fetch(`${API_BASE}/events/${editingId}`, {
         method: "PUT",
@@ -254,11 +321,24 @@ export const AdminEvents: React.FC = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Cập nhật thất bại");
+      if (!res.ok) {
+        console.error("❌ PUT /api/events error:", data);
+        throw new Error(data.message || "Cập nhật thất bại");
+      }
 
+      console.log("✅ PUT /api/events success:", data);
+
+      // Show success feedback before closing
+      setSavedEventId(editingId);
       await loadEvents();
-      cancelEdit();
+      
+      // Close edit form after showing success message for 1.5 seconds
+      setTimeout(() => {
+        cancelEdit();
+        setSavedEventId(null);
+      }, 1500);
     } catch (err: any) {
+      console.error("❌ saveEdit error:", err);
       setError(err.message || "Có lỗi xảy ra");
     } finally {
       setLoading(false);
@@ -485,6 +565,99 @@ export const AdminEvents: React.FC = () => {
                 </label>
               </div>
             </div>
+
+            <div className="admin-field span-2">
+              <label>Tags (nhãn phân loại)</label>
+              <div style={{ 
+                display: "flex", 
+                flexWrap: "wrap", 
+                gap: "12px", 
+                marginBottom: "12px",
+                padding: "12px",
+                backgroundColor: "#f9fafb",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb"
+              }}>
+                {availableTags.map((tag) => {
+                  const isSelected = tags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setTags(tags.filter((t) => t !== tag));
+                        } else {
+                          setTags([...tags, tag]);
+                        }
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        border: isSelected ? "2px solid #3b82f6" : "1px solid #d1d5db",
+                        borderRadius: "20px",
+                        backgroundColor: isSelected ? "#eff6ff" : "#fff",
+                        color: isSelected ? "#3b82f6" : "#374151",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: isSelected ? "600" : "400",
+                        transition: "all 0.2s",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      {isSelected && <span>✓</span>}
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+              {tags.length > 0 && (
+                <div style={{ marginTop: "8px" }}>
+                  <p style={{ fontSize: "12px", color: "#6b7280", marginBottom: "8px" }}>
+                    Đã chọn ({tags.length}):
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "4px 12px",
+                          backgroundColor: "#eff6ff",
+                          color: "#3b82f6",
+                          borderRadius: "16px",
+                          fontSize: "13px",
+                          gap: "6px",
+                          fontWeight: "500"
+                        }}
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => setTags(tags.filter((_, i) => i !== idx))}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#3b82f6",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            padding: 0,
+                            lineHeight: 1,
+                            display: "flex",
+                            alignItems: "center"
+                          }}
+                          title="Xóa tag"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="admin-actions">
@@ -618,33 +791,140 @@ export const AdminEvents: React.FC = () => {
 
                     <td>
                       {isEditing ? (
-                        <div className="badge-row">
-                          <label className="inline">
-                            <input
-                              type="checkbox"
-                              checked={!!row.isFeatured}
-                              onChange={(e) =>
-                                setEditingEvent({ ...row, isFeatured: e.target.checked })
-                              }
-                            />
-                            <span>⭐</span>
-                          </label>
-                          <label className="inline">
-                            <input
-                              type="checkbox"
-                              checked={!!row.isTrending}
-                              onChange={(e) =>
-                                setEditingEvent({ ...row, isTrending: e.target.checked })
-                              }
-                            />
-                            <span>🔥</span>
-                          </label>
+                        <div>
+                          <div className="badge-row">
+                            <label className="inline">
+                              <input
+                                type="checkbox"
+                                checked={!!row.isFeatured}
+                                onChange={(e) =>
+                                  setEditingEvent({ ...row, isFeatured: e.target.checked })
+                                }
+                              />
+                              <span>⭐</span>
+                            </label>
+                            <label className="inline">
+                              <input
+                                type="checkbox"
+                                checked={!!row.isTrending}
+                                onChange={(e) =>
+                                  setEditingEvent({ ...row, isTrending: e.target.checked })
+                                }
+                              />
+                              <span>🔥</span>
+                            </label>
+                          </div>
+                          <div style={{ marginTop: "8px" }}>
+                            <div style={{ 
+                              display: "flex", 
+                              flexWrap: "wrap", 
+                              gap: "6px", 
+                              marginBottom: "8px",
+                              padding: "8px",
+                              backgroundColor: "#f9fafb",
+                              borderRadius: "6px"
+                            }}>
+                              {availableTags.map((tag) => {
+                                const isSelected = (row.tags || []).includes(tag);
+                                return (
+                                  <button
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => {
+                                      const currentTags = row.tags || [];
+                                      const newTags = isSelected
+                                        ? currentTags.filter((t) => t !== tag)
+                                        : [...currentTags, tag];
+                                      setEditingEvent({ ...row, tags: newTags });
+                                    }}
+                                    style={{
+                                      padding: "4px 10px",
+                                      border: isSelected ? "2px solid #3b82f6" : "1px solid #d1d5db",
+                                      borderRadius: "16px",
+                                      backgroundColor: isSelected ? "#eff6ff" : "#fff",
+                                      color: isSelected ? "#3b82f6" : "#374151",
+                                      cursor: "pointer",
+                                      fontSize: "11px",
+                                      fontWeight: isSelected ? "600" : "400",
+                                      transition: "all 0.2s",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px"
+                                    }}
+                                  >
+                                    {isSelected && <span>✓</span>}
+                                    {tag}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {(row.tags || []).length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                                {(row.tags || []).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      padding: "2px 8px",
+                                      backgroundColor: "#eff6ff",
+                                      color: "#3b82f6",
+                                      borderRadius: "12px",
+                                      fontSize: "11px",
+                                      gap: "4px"
+                                    }}
+                                  >
+                                    {tag}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newTags = (row.tags || []).filter((_, i) => i !== idx);
+                                        setEditingEvent({ ...row, tags: newTags });
+                                      }}
+                                      style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#3b82f6",
+                                        cursor: "pointer",
+                                        fontSize: "14px",
+                                        padding: 0,
+                                        lineHeight: 1
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ) : (
-                        <div className="badge-row">
-                          {ev.isFeatured && <span className="badge badge-star">⭐</span>}
-                          {ev.isTrending && <span className="badge badge-fire">🔥</span>}
-                          {!ev.isFeatured && !ev.isTrending && <span className="muted">—</span>}
+                        <div>
+                          <div className="badge-row">
+                            {ev.isFeatured && <span className="badge badge-star">⭐</span>}
+                            {ev.isTrending && <span className="badge badge-fire">🔥</span>}
+                            {!ev.isFeatured && !ev.isTrending && <span className="muted">—</span>}
+                          </div>
+                          {(ev.tags || []).length > 0 && (
+                            <div style={{ marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                              {ev.tags?.map((tag, idx) => (
+                                <span
+                                  key={idx}
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "2px 8px",
+                                    backgroundColor: "#f3f4f6",
+                                    color: "#374151",
+                                    borderRadius: "12px",
+                                    fontSize: "11px"
+                                  }}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>
@@ -652,17 +932,25 @@ export const AdminEvents: React.FC = () => {
                     <td>
                       {isEditing ? (
                         <div className="row-actions">
-                          <button className="btn primary" onClick={saveEdit} disabled={loading}>
-                            Lưu
-                          </button>
-                          <button
-                            type="button"
-                            className="btn secondary"
-                            onClick={cancelEdit}
-                            disabled={loading}
-                          >
-                            Hủy
-                          </button>
+                          {savedEventId === ev._id ? (
+                            <span className="btn success">
+                              <span>✓</span> Đã lưu
+                            </span>
+                          ) : (
+                            <button className="btn primary" onClick={saveEdit} disabled={loading}>
+                              {loading ? "Đang lưu..." : "Lưu"}
+                            </button>
+                          )}
+                          {savedEventId !== ev._id && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={cancelEdit}
+                              disabled={loading}
+                            >
+                              Hủy
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <div className="row-actions">

@@ -1351,6 +1351,22 @@ body {
   border-color: #9ca3af;
 }
 
+/* Success button style for saved feedback */
+.btn.success {
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Wrapper */
 .admin-events {
   display: flex;
