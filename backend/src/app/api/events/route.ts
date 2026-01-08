@@ -238,40 +238,51 @@ export async function POST(req: NextRequest) {
 
     const createdEvent = await Event.create(eventData);
 
-    // Debug: Verify tags were saved to database
-    const savedEvent = await Event.findById(createdEvent._id).lean();
-    console.log("✅ POST /api/events - Tags saved to database:", {
-      eventId: createdEvent._id,
-      eventTitle: createdEvent.title,
-      tagsInDatabase: savedEvent?.tags,
-      tagsType: typeof savedEvent?.tags,
-      tagsIsArray: Array.isArray(savedEvent?.tags),
-    });
+    // ✅ Normalize createdEvent (Mongoose create() đôi khi trả về Doc | Doc[])
+const eventDoc = Array.isArray(createdEvent) ? createdEvent[0] : createdEvent;
+const eventId = eventDoc._id;
 
-    // Create ticket types if applicable
-    if (cleanedTicketTypes.length > 0) {
-      await TicketType.insertMany(
-        cleanedTicketTypes.map((t) => ({
-          eventId: createdEvent._id,
-          name: t.name,
-          price: t.price,
-          total: t.total,
-        }))
-      );
-    }
+// Debug: Verify tags were saved to database
+const savedEvent = await Event.findById(eventId).lean();
+console.log("✅ POST /api/events - Tags saved to database:", {
+  eventId: eventId,
+  eventTitle: eventDoc.title,
+  tagsInDatabase: savedEvent?.tags,
+  tagsType: typeof savedEvent?.tags,
+  tagsIsArray: Array.isArray(savedEvent?.tags),
+});
 
-    const createdTicketTypes = await TicketType.find({ eventId: createdEvent._id })
-      .sort({ createdAt: 1 })
-      .lean();
+// Create ticket types if applicable
+if (cleanedTicketTypes.length > 0) {
+  await TicketType.insertMany(
+    cleanedTicketTypes.map((t) => ({
+      eventId: eventId,
+      name: t.name,
+      price: t.price,
+      total: t.total,
+    }))
+  );
+}
 
-    const { eventComputed, tickets } = computeFromTicketTypes(createdEvent.toObject?.() ?? createdEvent, createdTicketTypes);
+const createdTicketTypes = await TicketType.find({ eventId: eventId })
+  .sort({ createdAt: 1 })
+  .lean();
 
-    return withCors(
-      NextResponse.json(
-        { event: eventComputed, ticketTypes: createdTicketTypes, tickets },
-        { status: 201 }
-      )
-    );
+// ✅ Use plain object for computeFromTicketTypes
+const eventPlain =
+  typeof (eventDoc as any).toObject === "function"
+    ? (eventDoc as any).toObject()
+    : eventDoc;
+
+const { eventComputed, tickets } = computeFromTicketTypes(eventPlain, createdTicketTypes);
+
+return withCors(
+  NextResponse.json(
+    { event: eventComputed, ticketTypes: createdTicketTypes, tickets },
+    { status: 201 }
+  )
+);
+
   } catch (error) {
     console.error("Create event error", error);
     return withCors(NextResponse.json({ message: "Lỗi server" }, { status: 500 }));
