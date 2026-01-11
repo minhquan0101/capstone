@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="user-menu-dropdown">
                   <button
                     type="button"
-                    className="user-menu-item"
+                    className="user-menu-item user-menu-item-booking"
                     onClick={() => handleNavigate("booking")}
                   >
                     <span>Vé của tôi</span>

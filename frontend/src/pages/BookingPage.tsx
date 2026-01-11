@@ -176,8 +176,17 @@ export const BookingPage: React.FC<BookingPageProps> = ({ user }) => {
 
       const typeText = b.ticketTypeName ? ` (${b.ticketTypeName})` : "";
 
+<<<<<<< Updated upstream
       setSuccess(
         `Đặt vé thành công${typeText} (đang giữ vé). Mã đơn: ${b._id}. Tổng tiền: ${b.totalAmount.toLocaleString()}đ. Hết hạn lúc: ${expiresText}`
+=======
+      // còn lại: chỉ báo thành công
+      const expiresText = b.expiresAt ? new Date(b.expiresAt).toLocaleString("vi-VN") : "";
+      const typeText = b.ticketTypeName ? ` • ${b.ticketTypeName}` : "";
+      const totalAmt = Number(b.totalAmount ?? 0);
+      setSuccess(
+        `Đặt vé thành công${typeText}. Đơn: ${b._id}. Tổng tiền: ${totalAmt.toLocaleString()}đ. Hết hạn lúc: ${expiresText}`
+>>>>>>> Stashed changes
       );
 
       await Promise.all([loadMyBookings(), loadEvents()]);
@@ -318,6 +327,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ user }) => {
               </thead>
               <tbody>
                 {myBookings.map((b) => (
+<<<<<<< Updated upstream
                   <tr key={b._id} style={{ borderTop: "1px solid #e5e7eb" }}>
                     <td style={{ padding: 8 }}>{b.eventTitle}</td>
                     <td style={{ padding: 8 }}>{b.ticketTypeName ?? "—"}</td>
@@ -330,6 +340,39 @@ export const BookingPage: React.FC<BookingPageProps> = ({ user }) => {
                       {b.expiresAt ? new Date(b.expiresAt).toLocaleString() : "-"}
                     </td>
                   </tr>
+=======
+                  <div key={b._id} className="mybooking-item">
+                    <div className="mybooking-top">
+                      <div className="mybooking-title">
+                        {b.eventTitle}
+                        {b.ticketTypeName ? (
+                          <span className="mybooking-type"> • {b.ticketTypeName}</span>
+                        ) : null}
+                      </div>
+                      <span className={`status-pill ${statusClass(b.status)}`}>
+                        {statusLabel(b.status)}
+                      </span>
+                    </div>
+
+                    <div className="mybooking-meta">
+                      <span>
+                        SL: <b>{b.quantity}</b>
+                      </span>
+                      <span className="dot">•</span>
+                      <span>
+                        Tổng: <b>{Number(b.totalAmount ?? 0).toLocaleString()}đ</b>
+                      </span>
+                    </div>
+
+                    <div className="mybooking-sub">
+                      {b.expiresAt ? (
+                        <span>Hết hạn: {new Date(b.expiresAt).toLocaleString("vi-VN")}</span>
+                      ) : (
+                        <span>Tạo lúc: {new Date(b.createdAt).toLocaleString("vi-VN")}</span>
+                      )}
+                    </div>
+                  </div>
+>>>>>>> Stashed changes
                 ))}
               </tbody>
             </table>

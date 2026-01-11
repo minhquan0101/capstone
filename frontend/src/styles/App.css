@@ -225,6 +225,13 @@ body {
   background-color: #fee2e2;
 }
 
+/* Ẩn "Vé của tôi" trên mobile */
+@media (max-width: 768px) {
+  .user-menu-item-booking {
+    display: none;
+  }
+}
+
 
 .category-nav {
   display: flex;
@@ -1347,3 +1354,2412 @@ body {
 }
 
 
+<<<<<<< Updated upstream
+=======
+/* Alias để AdminEvents dùng .btn.secondary (vì bạn đang có .btn.outline) */
+.btn.secondary {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #111827;
+}
+.btn.secondary:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Success button style for saved feedback */
+.btn.success {
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Wrapper */
+.admin-events {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Card */
+.admin-card {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+.admin-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.admin-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.admin-subtitle {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.admin-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Alert */
+.admin-alert {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #9f1239;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin: 10px 0 12px;
+  font-size: 14px;
+}
+
+/* Form grid */
+.admin-form .admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.admin-field input,
+.admin-field textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus {
+  border-color: #c7d2fe;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.admin-field textarea {
+  resize: vertical;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
+.toggle-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 8px 0 2px;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* Upload */
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.upload-preview {
+  width: 220px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+/* Ticket Types */
+.tickettypes-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tickettype-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr 40px;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-icon {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 10px;
+  height: 38px;
+  cursor: pointer;
+}
+
+.btn-icon:hover {
+  background: #f9fafb;
+}
+
+/* Table */
+.admin-table-wrap {
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid #eee;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 950px;
+  background: #fff;
+}
+
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #374151;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  z-index: 1;
+}
+
+.admin-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+.admin-table tbody tr:nth-child(2n) {
+  background: #fcfcfd;
+}
+
+.admin-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.thumb {
+  width: 120px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.cell-info .cell-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cell-info .cell-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.admin-empty {
+  padding: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Badges */
+.badge-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.badge-star {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.badge-fire {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .admin-form .admin-grid {
+    grid-template-columns: 1fr;
+  }
+  .tickettype-row {
+    grid-template-columns: 1fr 1fr 1fr 40px;
+  }
+  .upload-preview {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+/* ===== FIX checkbox bị ăn style input ===== */
+.admin-field input[type="checkbox"] {
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  accent-color: #4f46e5;
+}
+
+/* File input cũng đừng bị ép width/padding kiểu text input */
+.admin-field input[type="file"] {
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Cho label inline thẳng hàng đẹp */
+.admin-field label.inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+/* ===== Event Detail (đẹp + không repeat hình) ===== */
+.event-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 32px;
+}
+
+.event-detail-topbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.event-detail-hero2 {
+  height: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #e5e7eb;
+
+  /* FIX: không lặp hình */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+}
+
+.event-detail-hero2__overlay {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.05) 0%,
+    rgba(0,0,0,0.60) 65%,
+    rgba(0,0,0,0.75) 100%
+  );
+}
+
+.event-detail-hero2__content {
+  width: 100%;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-detail-hero2__badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.event-detail-hero2__title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.event-detail-hero2__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.event-detail-container {
+  margin-top: 14px;
+}
+
+.event-detail-grid2 {
+  display: grid;
+  grid-template-columns: 1.6fr 0.9fr;
+  gap: 14px;
+}
+
+/* Card dùng chung */
+.detail-card {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+.detail-card__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.detail-card__text {
+  margin: 0;
+  color: #374151;
+  line-height: 1.75;
+}
+
+.detail-card__actions {
+  margin-top: 12px;
+}
+
+/* Vé */
+.tickettype-list2 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tickettype-row2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #eee;
+  background: #fafafa;
+}
+
+.tickettype-name2 {
+  font-weight: 800;
+  color: #111827;
+}
+
+.tickettype-sub2 {
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.tickettype-right2 {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.tickettype-price2 {
+  font-weight: 900;
+  color: #111827;
+}
+
+.tickettype-pill2 {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.tickettype-pill2.soldout {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+/* Sidebar info */
+.info-row2 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row2:last-child {
+  border-bottom: none;
+}
+
+.info-label2 {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.info-value2 {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* Sticky action card */
+.sticky-card2 {
+  position: sticky;
+  top: 92px; /* dưới navbar */
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .event-detail-page { padding: 14px 16px; }
+  .event-detail-hero2 { height: 220px; }
+  .event-detail-hero2__title { font-size: 22px; }
+  .event-detail-grid2 { grid-template-columns: 1fr; }
+  .sticky-card2 { position: static; }
+}
+
+/* ===== Booking Page ===== */
+.booking-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.booking-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.booking-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 22px;
+}
+
+.booking-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.booking-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.2px;
+}
+
+.booking-subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booking-label {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Make select/input look consistent */
+.booking-select,
+.qty-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  background: #fff;
+}
+
+.booking-select:focus,
+.qty-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.18);
+}
+
+/* Event preview */
+.booking-eventcard {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #eef2ff;
+}
+
+.booking-eventthumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.booking-eventtitle {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.booking-eventmeta {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.dot {
+  opacity: 0.6;
+}
+
+/* Ticket cards */
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ticket-card {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.ticket-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  border-color: #c7d2fe;
+}
+
+.ticket-card.active {
+  border-color: #4f46e5;
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.18);
+}
+
+.ticket-card.soldout {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ticket-card.single {
+  cursor: default;
+}
+
+.ticket-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-card__name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ticket-card__price {
+  font-weight: 800;
+  font-size: 14px;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.ticket-card__bottom {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-card__remain {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.pill.ok {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.pill.bad {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* Quantity */
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.qty-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qty-input {
+  width: 90px;
+  text-align: center;
+}
+
+.qty-hint {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Payment segmented */
+.pay-segment {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pay-btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pay-btn.active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+/* Summary */
+.booking-summary {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.sum-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 6px 0;
+  color: #374151;
+}
+
+.sum-row.total {
+  border-top: 1px dashed #d1d5db;
+  margin-top: 6px;
+  padding-top: 10px;
+  color: #111827;
+}
+
+.booking-side .booking-card {
+  position: sticky;
+  top: 92px;
+}
+
+.side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.side-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* My bookings */
+.mybooking-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mybooking-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+}
+
+.mybooking-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mybooking-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.mybooking-type {
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.mybooking-meta {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.mybooking-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.status-pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.status-pill.paid {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.status-pill.pending {
+  background: #ffedd5;
+  color: #9a3412;
+  border-color: #fed7aa;
+}
+
+.status-pill.bad {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+  }
+  .booking-side .booking-card {
+    position: static;
+    top: auto;
+  }
+  .ticket-grid {
+    grid-template-columns: 1fr;
+  }
+  .pay-segment {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment-page { display:flex; justify-content:center; }
+.payment-card {
+  width: 100%;
+  max-width: 980px;
+  background:#fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15,23,42,.08);
+  padding: 22px;
+  margin: 0 auto;
+}
+.payment-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.payment-grid { display:grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-top: 16px; }
+.payment-qrbox { border:1px dashed #d1d5db; border-radius: 16px; padding: 18px; display:flex; justify-content:center; }
+.payment-qrimg { width: 260px; height: 260px; object-fit: contain; }
+.payment-qrhint { margin-top: 10px; color:#6b7280; font-size: 14px; text-align:center; }
+.payment-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top: 14px; }
+.payment-summary { align-self:start; }
+.payment-success { text-align:center; padding: 22px 0; }
+.success-icon { width:56px; height:56px; border-radius:999px; background:#22c55e; color:#fff; display:flex; align-items:center; justify-content:center; margin: 0 auto 10px; font-size: 28px; font-weight: 700; }
+
+@media (max-width: 900px) {
+  .payment-grid { grid-template-columns: 1fr; }
+  .payment-actions { justify-content:center; }
+}
+
+
+/* =========================
+   Ticketbox-like Event Detail
+   ========================= */
+
+.tkb-detail {
+  width: 100%;
+}
+
+/* HERO */
+.tkb-hero {
+  position: relative;
+  color: #fff;
+  padding: 18px 0 26px;
+  background: #0b1220;
+}
+
+.tkb-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-image: var(--tkb-hero);
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  transform: scale(1.08);
+  opacity: 0.55;
+}
+
+.tkb-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 18, 32, 0.35) 0%,
+    rgba(11, 18, 32, 0.75) 40%,
+    rgba(11, 18, 32, 0.95) 100%
+  );
+}
+
+.tkb-hero__container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 14px;
+}
+
+.tkb-hero__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tkb-hero__grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.tkb-poster {
+  width: 280px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.tkb-poster img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  display: block;
+}
+
+.tkb-poster__placeholder {
+  height: 380px;
+}
+
+.tkb-hero__info {
+  padding-top: 4px;
+}
+
+.tkb-breadcrumb {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 6px;
+}
+
+.tkb-title {
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 0 0 10px;
+  letter-spacing: -0.2px;
+}
+
+.tkb-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tkb-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.tkb-badge--ghost {
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+}
+
+.tkb-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tkb-meta__item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.tkb-meta__label {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+
+.tkb-meta__value {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.tkb-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.tkb-btn-primary {
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  background: #e11d48;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(225, 29, 72, 0.28);
+}
+
+.tkb-btn-primary:hover {
+  opacity: 0.92;
+}
+
+.tkb-btn-primary.disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.tkb-btn-full {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.tkb-toast {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+}
+
+/* BODY LAYOUT */
+.tkb-body {
+  background: #f6f7fb;
+  padding: 18px 0 30px;
+}
+
+.tkb-body__container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 14px;
+}
+
+.tkb-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.tkb-main {
+  min-width: 0;
+}
+
+.tkb-side {
+  position: sticky;
+  top: 14px;
+}
+
+/* Cards */
+.tkb-card {
+  background: #fff;
+  border: 1px solid #e7e8ef;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+  margin-top: 12px;
+}
+
+.tkb-card__title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  letter-spacing: -0.1px;
+}
+
+.tkb-card__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-line;
+  color: #111827;
+}
+
+/* Tabs */
+.tkb-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.tkb-tab {
+  border: 1px solid #e7e8ef;
+  background: #fff;
+  color: #111827;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.tkb-tab.active {
+  border-color: #111827;
+}
+
+/* Ticket list */
+.tkb-ticketlist {
+  display: grid;
+  gap: 10px;
+}
+
+.tkb-ticketrow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #fbfbfe;
+  border: 1px solid #eef0f6;
+}
+
+.tkb-ticketrow__name {
+  font-weight: 800;
+  color: #111827;
+}
+
+.tkb-ticketrow__sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.tkb-ticketrow__right {
+  text-align: right;
+}
+
+.tkb-ticketrow__price {
+  font-weight: 900;
+  color: #111827;
+}
+
+.tkb-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+.tkb-pill.ok {
+  background: #e9fbf0;
+  color: #0f7a34;
+  border: 1px solid #c9f2d7;
+}
+
+.tkb-pill.bad {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.tkb-note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+/* Key-value */
+.tkb-kv__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eef0f6;
+}
+
+.tkb-kv__row:last-child {
+  border-bottom: 0;
+}
+
+.tkb-kv__label {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.tkb-kv__value {
+  font-weight: 750;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* BUY CARD */
+.tkb-buycard {
+  background: #fff;
+  border: 1px solid #e7e8ef;
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+}
+
+.tkb-buycard__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.tkb-buycard__label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tkb-buycard__price {
+  font-size: 20px;
+  font-weight: 950;
+  color: #111827;
+  margin-top: 3px;
+}
+
+.tkb-buycard__remainNum {
+  font-size: 18px;
+  font-weight: 950;
+  color: #111827;
+  margin-top: 3px;
+  text-align: right;
+}
+
+.tkb-buycard__meta {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fbfbfe;
+  border: 1px solid #eef0f6;
+}
+
+.tkb-buymeta__label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.tkb-buymeta__value {
+  font-size: 13px;
+  font-weight: 750;
+  color: #111827;
+  margin-top: 2px;
+}
+
+.tkb-buycard__block {
+  margin-top: 12px;
+}
+
+.tkb-buycard__blockTitle {
+  font-size: 13px;
+  font-weight: 850;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.tkb-buycard__tickets {
+  display: grid;
+  gap: 8px;
+}
+
+.tkb-ticketbtn {
+  text-align: left;
+  border: 1px solid #eef0f6;
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.tkb-ticketbtn:hover {
+  background: #fbfbfe;
+}
+
+.tkb-ticketbtn.active {
+  border-color: #111827;
+  background: #fbfbfe;
+}
+
+.tkb-ticketbtn.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.tkb-ticketbtn__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.tkb-ticketbtn__name {
+  font-weight: 850;
+  color: #111827;
+}
+
+.tkb-ticketbtn__p {
+  font-weight: 950;
+  color: #111827;
+}
+
+.tkb-ticketbtn__sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.tkb-qty {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  gap: 8px;
+  align-items: center;
+}
+
+.tkb-qty__btn {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.tkb-qty__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tkb-qty__input {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 0 10px;
+  font-weight: 850;
+  text-align: center;
+  outline: none;
+}
+
+.tkb-pay {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tkb-pay__btn {
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.tkb-pay__btn.active {
+  border-color: #111827;
+  background: #fbfbfe;
+}
+
+.tkb-total {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fbfbfe;
+  border: 1px solid #eef0f6;
+}
+
+.tkb-total__label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.tkb-total__value {
+  font-size: 14px;
+  font-weight: 950;
+  color: #111827;
+}
+
+.tkb-buycard__foot {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .tkb-hero__grid {
+    grid-template-columns: 220px 1fr;
+  }
+  .tkb-poster {
+    width: 220px;
+  }
+  .tkb-poster img {
+    height: 320px;
+  }
+  .tkb-layout {
+    grid-template-columns: 1fr;
+  }
+  .tkb-side {
+    position: static;
+    display: none; /* Ẩn sidebar trên mobile */
+  }
+}
+
+@media (max-width: 620px) {
+  .tkb-hero {
+    padding: 14px 0 18px;
+  }
+  .tkb-hero__grid {
+    grid-template-columns: 1fr;
+  }
+  .tkb-poster {
+    width: 100%;
+  }
+  .tkb-poster img {
+    height: 360px;
+  }
+  .tkb-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================
+   PATCH: Polish typography + spacing + harmony
+   Paste at the VERY END of App.css
+   ========================================= */
+
+/* 1) Typography: đồng bộ chữ, nét, khoảng cách */
+.tkb-detail {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2) HERO: giảm nặng đầu trang, blur nhẹ hơn, bố cục cân hơn */
+.tkb-hero {
+  padding: 14px 0 18px; /* thấp hơn => đỡ “loãng” */
+}
+
+.tkb-hero__bg {
+  filter: blur(12px);   /* giảm blur cho nền sạch hơn */
+  opacity: 0.48;        /* bớt bệt */
+}
+
+.tkb-hero__container {
+  max-width: 1160px;    /* gọn hơn => nhìn “premium” */
+}
+
+.tkb-hero__grid {
+  grid-template-columns: 300px 1fr; /* poster to hơn tí */
+  gap: 20px;
+}
+
+.tkb-poster {
+  width: 300px;
+  border-radius: 18px;
+}
+
+.tkb-poster img {
+  height: 360px;        /* giảm chiều cao => hero đỡ dài */
+}
+
+.tkb-title {
+  font-size: 32px;
+  letter-spacing: -0.35px;
+  margin: 0 0 8px;
+}
+
+.tkb-breadcrumb {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Meta box: gọn, chữ rõ */
+.tkb-meta__item {
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.tkb-meta__label {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.tkb-meta__value {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Nút trong hero: đồng bộ nhìn “mềm” */
+.tkb-btn-primary {
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.tkb-hero .btn.outline {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.tkb-hero .btn.outline:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 3) BODY: kéo nội dung lên sát hero, giảm khoảng trắng */
+.tkb-body {
+  padding: 10px 0 28px;
+  margin-top: -14px; /* “dính” vào hero nhẹ giống Ticketbox */
+}
+
+.tkb-body__container {
+  max-width: 1160px;
+}
+
+/* 4) Tabs & Card: chữ rõ, spacing đều */
+.tkb-tabs {
+  margin-top: 8px;
+}
+
+.tkb-tab {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.tkb-card {
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.tkb-card__title {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.15px;
+}
+
+.tkb-card__text {
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+/* 5) Layout: khoảng cách 2 cột dễ chịu hơn */
+.tkb-layout {
+  gap: 18px;
+}
+
+/* Sticky card lên cao hơn tí để “ăn” với hero */
+.tkb-side {
+  top: 10px;
+}
+
+/* 6) Buy card: chữ/spacing cân, các control gọn đẹp */
+.tkb-buycard {
+  padding: 16px;
+  border-radius: 18px;
+}
+
+.tkb-buycard__price {
+  font-size: 22px;
+  font-weight: 950;
+  letter-spacing: -0.2px;
+}
+
+.tkb-buycard__remainNum {
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.tkb-buycard__blockTitle {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.1px;
+}
+
+.tkb-ticketbtn,
+.tkb-ticketrow {
+  border-radius: 14px;
+}
+
+.tkb-ticketbtn {
+  padding: 10px 12px;
+}
+
+.tkb-ticketbtn__name,
+.tkb-ticketrow__name {
+  letter-spacing: -0.1px;
+}
+
+/* text phụ nhỏ hơn chút cho sang */
+.tkb-ticketbtn__sub,
+.tkb-ticketrow__sub,
+.tkb-note,
+.tkb-buycard__foot {
+  font-size: 12px;
+}
+
+/* Qty & Pay buttons: đồng bộ radius/height */
+.tkb-qty__btn,
+.tkb-qty__input {
+  height: 38px;
+  border-radius: 10px;
+}
+
+.tkb-pay__btn {
+  height: 34px;
+  border-radius: 10px;
+}
+
+/* 7) Responsive: giữ cân đối trên màn nhỏ */
+@media (max-width: 980px) {
+  .tkb-hero__container,
+  .tkb-body__container {
+    max-width: 980px;
+  }
+  .tkb-hero__grid {
+    grid-template-columns: 240px 1fr;
+  }
+  .tkb-poster {
+    width: 240px;
+  }
+  .tkb-poster img {
+    height: 320px;
+  }
+  .tkb-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 620px) {
+  .tkb-hero__grid {
+    grid-template-columns: 1fr;
+  }
+  .tkb-poster {
+    width: 100%;
+  }
+  .tkb-poster img {
+    height: 360px;
+  }
+  .tkb-title {
+    font-size: 24px;
+  }
+  .tkb-body {
+    margin-top: 0;
+  }
+}
+
+/* =========================================
+   FIX: Banner/Background overlap + blur bleeding
+   Paste at the VERY END of App.css
+   ========================================= */
+
+/* 1) Chặn blur tràn ra ngoài hero (đây là nguyên nhân viền loang màu) */
+.tkb-hero {
+  overflow: hidden !important;
+}
+
+/* 2) Bỏ “dính body lên hero” để tabs/card không bị lấn vào banner */
+.tkb-body {
+  margin-top: 0 !important;
+  padding-top: 14px !important;
+}
+
+/* 3) Tạo đường chuyển mượt nhưng KHÔNG chồng lớp */
+.tkb-body__container {
+  position: relative;
+}
+
+.tkb-tabs {
+  margin-top: 6px !important;   /* tabs nằm đúng trong body */
+  position: relative;
+  z-index: 1;
+}
+
+/* 4) Nếu bạn vẫn thấy hơi loang ở mép dưới banner, giảm nhẹ cường độ nền */
+.tkb-hero__bg {
+  opacity: 0.42 !important;
+  transform: scale(1.06) !important; /* vẫn đủ phủ nền nhưng không quá gắt */
+}
+
+/* =========================================
+   PATCH 4: "Article-like" typography for description
+   Giống kiểu chữ bài báo (bên phải ảnh)
+   Paste at the VERY END of App.css
+   ========================================= */
+
+/* Block mô tả đọc dài */
+.tkb-card__text {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+  font-size: 16.5px !important;
+  line-height: 1.95 !important;
+  letter-spacing: 0.1px;
+  color: rgba(17, 24, 39, 0.96) !important; /* nếu bạn đang dùng nền trắng */
+
+  /* đọc giống bài báo */
+  text-align: left;
+}
+
+/* Khoảng cách đoạn giống bài báo */
+.tkb-card__text p {
+  margin: 0 0 14px;
+}
+
+.tkb-card__text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Heading trong mô tả (nếu có) */
+.tkb-card__text h1,
+.tkb-card__text h2,
+.tkb-card__text h3 {
+  margin: 18px 0 10px;
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+}
+
+/* Bullet list đẹp hơn */
+.tkb-card__text ul,
+.tkb-card__text ol {
+  margin: 10px 0 14px 18px;
+  padding: 0;
+}
+
+.tkb-card__text li {
+  margin: 6px 0;
+}
+
+/* Link giống báo */
+.tkb-card__text a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.tkb-card__text a:hover {
+  text-decoration: underline;
+}
+
+/* Blockquote nếu có */
+.tkb-card__text blockquote {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-left: 3px solid rgba(17, 24, 39, 0.2);
+  background: rgba(17, 24, 39, 0.04);
+  border-radius: 10px;
+}
+
+/* Nếu bạn đang dùng theme tối cho body/card thì bật phần này (nếu cần):
+   -> Nếu chữ bị tối quá trên nền tối, uncomment khối dưới.
+*/
+/*
+.tkb-card,
+.tkb-buycard { background: rgba(255,255,255,0.06) !important; }
+
+.tkb-card__text {
+  color: rgba(255,255,255,0.88) !important;
+}
+
+.tkb-card__text blockquote {
+  border-left-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.06);
+}
+*/
+/* =========================================
+   GLOBAL TYPO PATCH: Đồng bộ chữ toàn trang Event Detail
+   Giống vibe phần Giới thiệu: dễ đọc, đều nhịp, hài hòa
+   Paste at the VERY END of App.css
+   ========================================= */
+
+/* 0) Phạm vi: chỉ áp cho trang chi tiết */
+.tkb-detail {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial !important;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Base rhythm */
+  font-size: 16px;
+  line-height: 1.85;
+  letter-spacing: 0.05px;
+}
+
+/* 1) Giữ hero là chữ trắng, không bị “đen hóa” */
+.tkb-detail .tkb-hero,
+.tkb-detail .tkb-hero * {
+  color: #fff;
+}
+
+/* 2) Body theme (light) để giống phần giới thiệu */
+.tkb-detail .tkb-body {
+  background: #f6f7fb !important;
+}
+.tkb-detail .tkb-card,
+.tkb-detail .tkb-buycard {
+  background: #fff !important;
+  border: 1px solid #e7e8ef !important;
+}
+
+/* 3) Scale chữ đồng bộ */
+.tkb-detail .tkb-title {
+  font-size: 32px !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.35px !important;
+  font-weight: 900 !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tkb-detail .tkb-card__title {
+  font-size: 16px !important;
+  line-height: 1.35 !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.12px !important;
+}
+
+/* Toàn bộ text nội dung đọc dài (giống intro) */
+.tkb-detail .tkb-card__text {
+  font-size: 16px !important;
+  line-height: 1.95 !important;
+  letter-spacing: 0.05px !important;
+  color: #111827 !important;
+  white-space: pre-line !important; /* giữ xuống dòng từ mô tả */
+}
+
+/* Nhịp đoạn (vì pre-line không tự có margin như <p>) */
+.tkb-detail .tkb-card__text { --para-gap: 12px; }
+.tkb-detail .tkb-card__text br + br {
+  content: "";
+  display: block;
+  margin-bottom: var(--para-gap);
+}
+
+/* 4) Meta/label/value: cùng hệ chữ, rõ hierarchy */
+.tkb-detail .tkb-meta__label,
+.tkb-detail .tkb-buycard__label,
+.tkb-detail .tkb-buymeta__label,
+.tkb-detail .tkb-total__label,
+.tkb-detail .tkb-ticketrow__sub,
+.tkb-detail .tkb-ticketbtn__sub,
+.tkb-detail .tkb-buycard__foot,
+.tkb-detail .tkb-note {
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+  color: #6b7280 !important;
+  letter-spacing: 0.02px !important;
+}
+
+.tkb-detail .tkb-meta__value,
+.tkb-detail .tkb-buymeta__value {
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  font-weight: 750 !important;
+  color: #111827 !important;
+}
+
+/* 5) Tabs: chữ gọn, đồng bộ */
+.tkb-detail .tkb-tab {
+  font-size: 12.5px !important;
+  line-height: 1 !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.02px !important;
+}
+
+/* 6) Ticket list + ticket button: đồng bộ chữ */
+.tkb-detail .tkb-ticketrow__name,
+.tkb-detail .tkb-ticketbtn__name {
+  font-size: 13.5px !important;
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+  color: #111827 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tkb-detail .tkb-ticketbtn__p,
+.tkb-detail .tkb-ticketrow__price {
+  font-size: 13.5px !important;
+  font-weight: 950 !important;
+  color: #111827 !important;
+  white-space: nowrap;
+}
+
+/* 7) Buy card price/total: chữ “cứng” nhưng vẫn cùng hệ */
+.tkb-detail .tkb-buycard__price {
+  font-size: 22px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.2px !important;
+  color: #111827 !important;
+}
+.tkb-detail .tkb-buycard__remainNum {
+  font-size: 20px !important;
+  line-height: 1.15 !important;
+  font-weight: 950 !important;
+  color: #111827 !important;
+}
+.tkb-detail .tkb-total__value {
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  white-space: nowrap;
+}
+
+/* 8) Button text đồng bộ (không chỗ to chỗ nhỏ) */
+.tkb-detail .tkb-btn-primary,
+.tkb-detail .btn,
+.tkb-detail button {
+  font-family: inherit;
+  letter-spacing: 0.02px;
+}
+
+.tkb-detail .tkb-btn-primary {
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+}
+
+.tkb-detail .btn.outline {
+  font-size: 13px !important;
+  font-weight: 850 !important;
+}
+
+/* 9) Mobile: giữ dễ đọc */
+@media (max-width: 620px) {
+  .tkb-detail { font-size: 15.5px; }
+  .tkb-detail .tkb-title { font-size: 24px !important; }
+  .tkb-detail .tkb-card__text { font-size: 15.5px !important; line-height: 1.9 !important; }
+}
+
+/* =========================================
+   HERO meta (Thời gian / Địa điểm) rõ hơn, không giống input trống
+   Paste at the VERY END of App.css
+   ========================================= */
+
+.tkb-hero .tkb-meta {
+  grid-template-columns: repeat(2, minmax(240px, 340px)) !important;
+  gap: 12px !important;
+  justify-content: start;
+}
+
+.tkb-hero .tkb-meta__item {
+  background: rgba(0, 0, 0, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  backdrop-filter: blur(6px);
+}
+
+.tkb-hero .tkb-meta__label {
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  opacity: 0.9 !important;
+  letter-spacing: 0.02px !important;
+  margin-bottom: 2px !important;
+}
+
+.tkb-hero .tkb-meta__value {
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  opacity: 0.95 !important;
+}
+
+.seatselect-page{height:100vh;display:flex;flex-direction:column;background:#0b0b0c;color:#fff}
+.seatselect-topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#111827}
+.seatselect-title{flex:1;text-align:center}
+.seatselect-title__main{font-weight:700}
+.seatselect-title__sub{font-size:12px;opacity:.75}
+.seatselect-controls{display:flex;gap:8px}
+
+.seatselect-body{flex:1;display:grid;grid-template-columns:1fr 360px;overflow:hidden}
+.seatselect-mapwrap{overflow:auto;padding:16px}
+.seatselect-mapviewport{min-height:100%;display:flex;justify-content:center}
+.seatselect-map{transform-origin:top left}
+
+.seatselect-side{background:#111827;padding:16px;overflow:auto}
+.seatselect-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-bottom:12px}
+.seatselect-card__title{font-weight:700;margin-bottom:10px}
+.seatselect-total{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)}
+.legend-dot{width:12px;height:12px;border-radius:999px;display:inline-block;margin-right:6px}
+.legend-dot.available{background:#fff;border:1px solid #cbd5e1}
+.legend-dot.selected{background:#22c55e}
+.legend-dot.blocked{background:#9ca3af}
+
+/* ===== FIX: text Thời gian / Địa điểm bị chìm trong HERO ===== */
+.tkb-detail .tkb-hero__info .tkb-meta__label {
+  color: rgba(255, 255, 255, 0.75) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.75) !important;
+  opacity: 1 !important;
+}
+
+.tkb-detail .tkb-hero__info .tkb-meta__value {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+}
+
+/* box meta nổi rõ hơn trên nền blur */
+.tkb-detail .tkb-hero__info .tkb-meta__item {
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+/* đảm bảo nội dung nằm trên overlay */
+.tkb-detail .tkb-hero__info {
+  position: relative !important;
+  z-index: 5 !important;
+}
+.tkb-detail .tkb-hero__bg,
+.tkb-detail .tkb-hero__overlay {
+  z-index: 1 !important;
+}
+
+/* ===== HERO layering chuẩn: overlay chỉ phủ nền, không đè poster/text ===== */
+.tkb-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.tkb-hero__bg,
+.tkb-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;          /* dưới */
+  pointer-events: none;
+}
+
+.tkb-hero__container {
+  position: relative;
+  z-index: 5;          /* trên overlay */
+}
+
+.tkb-poster,
+.tkb-hero__info {
+  position: relative;
+  z-index: 6;          /* đảm bảo poster không bị chìm */
+}
+
+/* ===== Thời gian / Địa điểm rõ chữ ===== */
+.tkb-meta__item {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+}
+
+.tkb-meta__label {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tkb-meta__value {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* (tuỳ chọn) giảm tối overlay nếu muốn nền sáng hơn */
+.tkb-hero__overlay {
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(10px);
+}
+
+.pay-success-wrap{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 28px 0;
+}
+
+.pay-success-card{
+  width: min(720px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e7e7e7;
+  padding: 36px 24px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+}
+
+.pay-success-logo{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.pay-success-brand{
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: .5px;
+}
+
+.pay-success-title{
+  color: #169b45; /* xanh giống hình */
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.pay-success-sub{
+  margin-top: 8px;
+  opacity: .75;
+  font-size: 14px;
+}
+
+/* ===== Mobile Bottom Buy Button ===== */
+.tkb-mobile-buy {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #e7e8ef;
+  padding: 12px 16px;
+  box-shadow: 0 -4px 20px rgba(17, 24, 39, 0.1);
+  z-index: 100;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+@media (max-width: 980px) {
+  .tkb-mobile-buy {
+    display: flex;
+  }
+  .tkb-body {
+    padding-bottom: 90px; /* Space cho bottom button trên mobile */
+  }
+}
+
+@media (min-width: 981px) {
+  .tkb-body {
+    padding-bottom: 30px; /* Desktop: giữ padding bình thường */
+  }
+}
+
+.tkb-mobile-buy__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tkb-mobile-buy__price {
+  font-size: 18px;
+  font-weight: 950;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.tkb-mobile-buy__remain {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.tkb-mobile-buy__btn {
+  flex-shrink: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 24px;
+  font-weight: 800;
+  font-size: 15px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+  white-space: nowrap;
+}
+
+.tkb-mobile-buy__btn:hover:not(.disabled) {
+  opacity: 0.92;
+}
+
+.tkb-mobile-buy__btn.disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ===== Mobile Modal ===== */
+.tkb-mobile-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tkb-mobile-modal__content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.tkb-mobile-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e7e8ef;
+  flex-shrink: 0;
+}
+
+.tkb-mobile-modal__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.tkb-mobile-modal__close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font-size: 32px;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 150ms ease;
+}
+
+.tkb-mobile-modal__close:hover {
+  background: #f3f4f6;
+}
+
+.tkb-mobile-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 981px) {
+  .tkb-mobile-modal {
+    display: none;
+  }
+}
+  
+>>>>>>> Stashed changes

@@ -212,7 +212,41 @@ const EventCard = ({ event, getImageUrl, formatDate, onBooking }: any) => (
       <h3>{event.title}</h3>
       <p className="event-meta">{event.location}</p>
       <p className="event-meta">{formatDate(event.date)}</p>
+<<<<<<< Updated upstream
       <button className="btn small full-width" onClick={() => onBooking(event._id)}>
+=======
+      
+      {/* Display tags */}
+      {event.tags && event.tags.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
+          {event.tags.map((tag, idx) => (
+            <span
+              key={idx}
+              style={{
+                display: "inline-block",
+                padding: "2px 8px",
+                backgroundColor: "#eff6ff",
+                color: "#3b82f6",
+                borderRadius: "12px",
+                fontSize: "11px",
+                fontWeight: "500"
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ✅ Nút đặt vé chuyển đến detail event */}
+      <button
+        className="btn small full-width"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenDetail(event._id);
+        }}
+      >
+>>>>>>> Stashed changes
         Đặt vé ngay
       </button>
     </div>
