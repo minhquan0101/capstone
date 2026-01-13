@@ -42,6 +42,15 @@ const Tab = createBottomTabNavigator();
 
 interface MainTabsProps {
   onLogout: () => void;
+<<<<<<< Updated upstream
+=======
+
+
+
+
+
+  
+>>>>>>> Stashed changes
 }
 
 function MainTabs({ onLogout }: MainTabsProps) {
