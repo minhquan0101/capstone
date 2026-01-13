@@ -61,6 +61,9 @@ const App: React.FC = () => {
             name: data.user.name,
             email: data.user.email,
             role: data.user.role || "user",
+
+
+            
           });
         }
       })
