@@ -1,0 +1,190 @@
+/* ===== Ticketfast Search Modal (CENTER like Ticketbox) ===== */
+
+.tf-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9998;
+}
+
+.tf-search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 96px 16px 16px;
+}
+
+.tf-search-modal-content {
+  position: relative;
+
+  width: min(920px, 92vw);
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: rgba(20, 20, 20, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+
+  padding: 18px 18px 20px;
+  color: #fff;
+}
+
+.tf-search-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+
+  cursor: pointer;
+}
+
+.tf-search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid rgba(16, 185, 129, 0.6);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.tf-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+
+.tf-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.tf-search-section-title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 12px 0 10px;
+  text-transform: uppercase;
+}
+
+.tf-popular-list,
+.tf-suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tf-popular-item,
+.tf-suggestion-item {
+  width: 100%;
+  text-align: left;
+
+  padding: 12px 14px;
+  border-radius: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+
+  cursor: pointer;
+}
+
+.tf-popular-item:hover,
+.tf-suggestion-item:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.tf-tabs {
+  display: flex;
+  gap: 18px;
+  margin-top: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.tf-tab {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.tf-tab.active {
+  color: #10b981;
+  border-bottom: 2px solid #10b981;
+}
+
+.tf-category-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .tf-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tf-category-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+}
+
+.tf-category-img {
+  height: 110px;
+  background-size: cover;
+  background-position: center;
+}
+
+.tf-category-name {
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tf-city-list {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tf-city-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.tf-city-item:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
