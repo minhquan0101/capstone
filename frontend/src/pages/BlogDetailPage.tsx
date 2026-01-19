@@ -10,7 +10,11 @@ interface BlogDetailPageProps {
 
 type SideTab = "new" | "top";
 
-export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, onOpenPost }) => {
+export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
+  postId,
+  onBack,
+  onOpenPost,
+}) => {
   const [post, setPost] = useState<Post | null>(null);
   const [list, setList] = useState<Post[]>([]);
   const [related, setRelated] = useState<Post[]>([]);
@@ -46,7 +50,6 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
 
         // tăng view khi mở detail
         const p = await getPost(postId, true);
-
         const all = await getPosts({ type: "blog", sort: "new", limit: 200 });
 
         setPost(p);
@@ -69,28 +72,66 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
     run();
   }, [postId]);
 
-  // ✅ fix ảnh trong content nếu src là "/uploads/..."
+  // ✅ helper: so sánh src để detect trùng ảnh hero
+  const normalizeSrc = (s: string) =>
+    (s || "")
+      .trim()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/+$/g, "");
+
+  // ✅ remove ảnh đầu tiên trong content nếu trùng với post.imageUrl
+  const removeDuplicateFirstImage = (rawHtml: string, heroUrl: string) => {
+    if (!rawHtml || !heroUrl) return rawHtml;
+    try {
+      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+      const firstImg = doc.body.querySelector("img");
+      if (!firstImg) return rawHtml;
+
+      const src = firstImg.getAttribute("src") || "";
+      const a = normalizeSrc(src);
+      const b = normalizeSrc(heroUrl);
+
+      // nếu trùng (hoặc chứa nhau) => remove
+      if (a && b && (a.includes(b) || b.includes(a))) {
+        firstImg.remove();
+        return doc.body.innerHTML;
+      }
+      return rawHtml;
+    } catch {
+      return rawHtml;
+    }
+  };
+
+  // ✅ fix ảnh trong content nếu src là "/uploads/..." + remove duplicate hero img
   const html = useMemo(() => {
     if (!post) return "";
     const raw = post.content || "";
 
     const isHtmlLike = /<\/?[a-z][\s\S]*>/i.test(raw);
-    const base = raw;
+    const normalized = isHtmlLike ? raw : raw.replace(/\n/g, "<br/>");
 
-    const normalized = isHtmlLike ? base : base.replace(/\n/g, "<br/>");
-
-    return normalized.replace(
+    // fix /uploads
+    const fixed = normalized.replace(
       /src=(["'])(\/uploads\/[^"']+)\1/g,
       (_m, q, path) => `src=${q}${backendBase}${path}${q}`
     );
+
+    // remove duplicate first image
+    const heroUrl = post.imageUrl ? getImageUrl(post.imageUrl) : "";
+    return removeDuplicateFirstImage(fixed, heroUrl);
   }, [post, backendBase]);
 
   const normalizedList = useMemo(() => {
-    return (list || []).map((p) => ({ ...p, views: typeof p.views === "number" ? p.views : 0 }));
+    return (list || []).map((p) => ({
+      ...p,
+      views: typeof p.views === "number" ? p.views : 0,
+    }));
   }, [list]);
 
   const sideNew = normalizedList.slice(0, 10);
-  const sideTop = [...normalizedList].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+  const sideTop = [...normalizedList]
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .slice(0, 10);
 
   if (loading) {
     return (
@@ -106,7 +147,9 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
     return (
       <div className="ns-page">
         <div className="ns-container">
-          <button className="ns-back" onClick={onBack}>← Quay lại</button>
+          <button className="ns-back" onClick={onBack}>
+            ← Quay lại
+          </button>
           <div style={{ padding: 20, color: "#b91c1c", fontWeight: 900 }}>
             {error || "Không tìm thấy bài viết"}
           </div>
@@ -118,7 +161,9 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
   return (
     <div className="ns-page">
       <div className="ns-container">
-        <button className="ns-back" onClick={onBack}>← Quay lại</button>
+        <button className="ns-back" onClick={onBack}>
+          ← Quay lại
+        </button>
 
         <div className="ns-detailGrid">
           <article className="ns-article">
@@ -132,12 +177,14 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
               <span>{(post.views || 0).toLocaleString()} lượt xem</span>
             </div>
 
+            {/* ✅ vẫn giữ hero img */}
             {post.imageUrl && (
               <div className="ns-heroImg">
                 <img src={getImageUrl(post.imageUrl)} alt={post.title} />
               </div>
             )}
 
+            {/* ✅ content đã được remove ảnh trùng ở đầu */}
             <div className="ns-content" dangerouslySetInnerHTML={{ __html: html }} />
 
             {related.length > 0 && (
@@ -172,10 +219,16 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({ postId, onBack, 
           <aside className="ns-aside ns-aside-sticky">
             <div className="ns-box">
               <div className="ns-box-head">
-                <button className={`ns-box-tab ${sideTab === "new" ? "active" : ""}`} onClick={() => setSideTab("new")}>
+                <button
+                  className={`ns-box-tab ${sideTab === "new" ? "active" : ""}`}
+                  onClick={() => setSideTab("new")}
+                >
                   Tin mới
                 </button>
-                <button className={`ns-box-tab ${sideTab === "top" ? "active" : ""}`} onClick={() => setSideTab("top")}>
+                <button
+                  className={`ns-box-tab ${sideTab === "top" ? "active" : ""}`}
+                  onClick={() => setSideTab("top")}
+                >
                   Đọc nhiều
                 </button>
               </div>

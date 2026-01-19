@@ -6,8 +6,6 @@ import "../styles/showbiz.css";
 interface ShowbizDetailPageProps {
   postId: string;
   onBack: () => void;
-
-  // Optional: click “Tin liên quan” mở bài khác ngay
   onOpenPost?: (id: string) => void;
 }
 
@@ -52,13 +50,11 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
       try {
         setLoading(true);
 
-        // ✅ tăng views khi mở bài (incView = true)
         const p = await getPost(postId, true);
         setPost(p);
 
         const region = (p.region || "vn") as any;
 
-        // ✅ lấy list cho sidebar + related
         const [newList, viewList] = await Promise.all([
           getPosts({ type: "showbiz", sort: "new", limit: 80, region }),
           getPosts({ type: "showbiz", sort: "views", limit: 80, region }),
@@ -67,11 +63,9 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
         const newNoSelf = (newList || []).filter((x) => x._id !== postId);
         const viewNoSelf = (viewList || []).filter((x) => x._id !== postId);
 
-        // Sidebar
         setLatest(newNoSelf.slice(0, 10));
         setMostViewed(viewNoSelf.slice(0, 10));
 
-        // Related: ưu tiên cùng region, lấy 6 bài mới nhất
         const rel = newNoSelf
           .slice()
           .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
@@ -89,24 +83,53 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
     run();
   }, [postId]);
 
-  // ✅ render HTML từ editor + fix ảnh inline + sanitize
+  // ✅ helper: so sánh src để detect trùng ảnh hero
+  const normalizeSrc = (s: string) =>
+    (s || "")
+      .trim()
+      .replace(/^https?:\/\//, "")
+      .replace(/\/+$/g, "");
+
+  // ✅ remove ảnh đầu tiên trong content nếu trùng với post.imageUrl
+  const removeDuplicateFirstImage = (rawHtml: string, heroUrl: string) => {
+    if (!rawHtml || !heroUrl) return rawHtml;
+    try {
+      const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+      const firstImg = doc.body.querySelector("img");
+      if (!firstImg) return rawHtml;
+
+      const src = firstImg.getAttribute("src") || "";
+      const a = normalizeSrc(src);
+      const b = normalizeSrc(heroUrl);
+
+      if (a && b && (a.includes(b) || b.includes(a))) {
+        firstImg.remove();
+        return doc.body.innerHTML;
+      }
+      return rawHtml;
+    } catch {
+      return rawHtml;
+    }
+  };
+
+  // ✅ render HTML + fix ảnh inline + sanitize + remove duplicate hero image
   const html = useMemo(() => {
     if (!post) return "";
 
     let raw = post.content || "";
-    // ✅ convert NBSP to normal space (fix wrap inside Vietnamese words)
     raw = raw.replace(/&nbsp;/g, " ").replace(/\u00A0/g, " ");
     raw = raw.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "");
 
-
-    // Nếu bài cũ là text thuần => xuống dòng
     const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(raw);
     if (!looksLikeHtml) raw = raw.replace(/\n/g, "<br/>");
 
-    // Fix ảnh chèn trong nội dung: src="/uploads/..." -> prefix backend
+    // Fix src="/uploads/.." hoặc src="/..."
     raw = raw.replace(/src="(\/[^"]+)"/g, `src="${backendBase}$1"`);
 
-    return DOMPurify.sanitize(raw);
+    const sanitized = DOMPurify.sanitize(raw);
+
+    const heroUrl = post.imageUrl ? getImageUrl(post.imageUrl) : "";
+    return removeDuplicateFirstImage(sanitized, heroUrl);
   }, [post, backendBase]);
 
   const canOpen = !!onOpenPost;
@@ -149,11 +172,9 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
         </button>
 
         <div className="ns-detailGrid">
-          {/* ===== MAIN ARTICLE ===== */}
           <article className="ns-article">
             <h1>{post.title}</h1>
 
-            {/* Sapo (summary) nếu có */}
             {(post.summary || "").trim() && <div className="ns-sapo">{post.summary}</div>}
 
             <div className="ns-meta">
@@ -168,12 +189,14 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
               )}
             </div>
 
+            {/* ✅ vẫn giữ hero img */}
             {post.imageUrl && (
               <div className="ns-heroImg">
                 <img src={getImageUrl(post.imageUrl)} alt={post.title} />
               </div>
             )}
 
+            {/* ✅ content đã remove ảnh trùng ở đầu */}
             <div className="ns-content" dangerouslySetInnerHTML={{ __html: html }} />
 
             {related.length > 0 && (
@@ -186,7 +209,10 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
                       key={p._id}
                       className="ns-related-item"
                       onClick={() => handleOpen(p._id)}
-                      style={{ opacity: canOpen ? 1 : 0.75, cursor: canOpen ? "pointer" : "default" }}
+                      style={{
+                        opacity: canOpen ? 1 : 0.75,
+                        cursor: canOpen ? "pointer" : "default",
+                      }}
                       title={canOpen ? "Mở bài này" : "Cần truyền onOpenPost từ App.tsx để mở"}
                     >
                       <div className="ns-related-thumb">
@@ -206,7 +232,6 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
             )}
           </article>
 
-          {/* ===== SIDEBAR ===== */}
           <aside className="ns-detailSide">
             <div className="ns-sideCard">
               <div className="ns-sideTabs">
@@ -232,7 +257,10 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
                     key={p._id}
                     className="ns-sideItem"
                     onClick={() => handleOpen(p._id)}
-                    style={{ cursor: canOpen ? "pointer" : "default", opacity: canOpen ? 1 : 0.75 }}
+                    style={{
+                      cursor: canOpen ? "pointer" : "default",
+                      opacity: canOpen ? 1 : 0.75,
+                    }}
                     title={canOpen ? "Mở bài này" : "Cần truyền onOpenPost từ App.tsx để mở"}
                   >
                     <div className="ns-sideRank">{idx + 1}</div>
@@ -247,7 +275,9 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
                 ))}
 
                 {sideList.length === 0 && (
-                  <div style={{ padding: 12, color: "#6b7280", fontWeight: 700 }}>Chưa có dữ liệu</div>
+                  <div style={{ padding: 12, color: "#6b7280", fontWeight: 700 }}>
+                    Chưa có dữ liệu
+                  </div>
                 )}
               </div>
             </div>

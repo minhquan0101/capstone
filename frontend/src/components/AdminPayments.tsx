@@ -152,7 +152,7 @@ export const AdminPayments: React.FC = () => {
               </div>
 
               <div style={{ fontSize: 12, opacity: 0.75 }}>
-                Nội dung chuyển khoản đề xuất: <b>BOOKING {b._id}</b>
+                Nội dung chuyển khoản: <b>BOOKING {b._id}</b>
               </div>
             </div>
           ))}
@@ -160,7 +160,6 @@ export const AdminPayments: React.FC = () => {
       )}
 
       <div style={{ marginTop: 14, fontSize: 12, opacity: 0.75 }}>
-        API đang dùng: <code>GET /api/admin/bookings?status=pending</code>
       </div>
     </div>
   );

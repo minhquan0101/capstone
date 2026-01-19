@@ -16,12 +16,7 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { getCurrentUser } from "./utils/api";
 import { SeatSelectPage } from "./pages/SeatSelectPage";
-
-
-// ✅ TRANG CHI TIẾT SỰ KIỆN
 import { EventDetail } from "./components/EventDetail";
-
-// ✅ THÊM TRANG THANH TOÁN
 import { PaymentPage } from "./pages/PaymentPage";
 
 type NavState = { view: View; selectedPostId: string | null };
@@ -32,7 +27,6 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   // ===== Helpers for URL <-> View =====
@@ -207,12 +201,9 @@ const App: React.FC = () => {
       });
   }, []);
 
-  // ✅ AUTO đóng search modal và reset tags khi rời trang home
+  // ✅ reset tags khi rời trang home
   useEffect(() => {
-    if (view !== "home") {
-      setSearchModalOpen(false);
-      setSelectedTags([]);
-    }
+    if (view !== "home") setSelectedTags([]);
   }, [view]);
 
   const handleLogout = () => {
@@ -240,22 +231,10 @@ const App: React.FC = () => {
     pushHistory("showbizDetail", postId);
   };
 
-  const backToShowbiz = () => {
-    setSelectedPostId(null);
-    _setView("showbiz");
-    pushHistory("showbiz", null);
-  };
-
   const openBlogDetail = (postId: string) => {
     setSelectedPostId(postId);
     _setView("blogDetail");
     pushHistory("blogDetail", postId);
-  };
-
-  const backToBlogs = () => {
-    setSelectedPostId(null);
-    _setView("blogs");
-    pushHistory("blogs", null);
   };
 
   return (
@@ -266,7 +245,6 @@ const App: React.FC = () => {
           setView={setView}
           user={user}
           onLogout={handleLogout}
-          onSearchClick={() => setSearchModalOpen(true)}
           selectedTags={selectedTags}
           onTagToggle={(tag) => {
             setSelectedTags((prev) =>
@@ -278,21 +256,12 @@ const App: React.FC = () => {
       )}
 
       <main className="main-content">
-        {view === "home" && (
-          <Home
-            user={user}
-            setView={setView}
-            searchModalOpen={searchModalOpen}
-            onSearchModalClose={() => setSearchModalOpen(false)}
-            selectedTags={selectedTags}
-          />
-        )}
+        {view === "home" && <Home user={user} setView={setView} selectedTags={selectedTags} />}
 
         {/* ✅ TRANG CHI TIẾT SỰ KIỆN */}
         {view === "event_detail" && <EventDetail user={user} setView={setView} />}
 
         {view === "seatmap" && <SeatSelectPage user={user} setView={setView} />}
-
 
         {/* ✅ TRANG THANH TOÁN */}
         {view === "payment" && <PaymentPage setView={setView} />}
@@ -300,36 +269,14 @@ const App: React.FC = () => {
         {view === "showbiz" && <ShowbizPage onPostClick={openShowbizDetail} />}
 
         {view === "showbizDetail" && selectedPostId && (
-  <ShowbizDetailPage
-    postId={selectedPostId}
-    onBack={() => {
-      setSelectedPostId(null);
-      setView("showbiz");
-    }}
-    onOpenPost={(id) => {
-      setSelectedPostId(id);
-      setView("showbizDetail");
-    }}
-  />
-)}
-
+          <ShowbizDetailPage postId={selectedPostId} onBack={() => setView("showbiz")} />
+        )}
 
         {view === "blogs" && <BlogsPage onPostClick={openBlogDetail} />}
 
         {view === "blogDetail" && selectedPostId && (
-  <BlogDetailPage
-    postId={selectedPostId}
-    onBack={() => {
-      setSelectedPostId(null);
-      setView("blogs");
-    }}
-    onOpenPost={(id) => {
-      setSelectedPostId(id);
-      setView("blogDetail");
-    }}
-  />
-)}
-
+          <BlogDetailPage postId={selectedPostId} onBack={() => setView("blogs")} />
+        )}
 
         {/* ✅ QUAN TRỌNG: truyền setView vào BookingPage */}
         {view === "booking" && <BookingPage user={user} setView={setView} />}
