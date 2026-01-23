@@ -9,7 +9,6 @@ function token(): string {
   return localStorage.getItem("token") || localStorage.getItem("authToken") || "";
 }
 
-// ✅ luôn trả Record<string,string> để fetch headers không bị TS chửi
 function authHeaders(): Record<string, string> {
   const t = token();
   return t ? { Authorization: `Bearer ${t}` } : {};
@@ -34,55 +33,59 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
   const [scale, setScale] = useState<number>(1);
   const svgRef = useRef<HTMLDivElement | null>(null);
 
-  // seatId -> ticketTypeId (cho phép nhiều hạng)
+  // ===== SEAT MODE: seatId -> ticketTypeId
   const [selected, setSelected] = useState<Record<string, string>>({});
+
+  // ===== ZONE MODE: chọn 1 khu vực + số lượng
+  const [selectedZoneTypeId, setSelectedZoneTypeId] = useState<string>("");
+  const [zoneQty, setZoneQty] = useState<number>(1);
 
   const remainingByTypeId = useMemo(() => {
     const m: Record<string, number> = {};
     for (const t of ticketTypes) {
-      // TicketType._id là string (đã sửa types.ts)
       m[t._id] = (t.total || 0) - (t.sold || 0) - (t.held || 0);
     }
     return m;
   }, [ticketTypes]);
 
+  const selectedEntries = useMemo(() => Object.entries(selected), [selected]);
+
+  const isEnded = useMemo(() => {
+    if (!event?.date) return false;
+    const d = new Date((event as any).date);
+    if (Number.isNaN(d.getTime())) return false;
+    return d.getTime() < Date.now();
+  }, [event?.date]);
+
+  // SEAT MODE: lock block
   const isBlocked = (seatId: string) =>
     status.soldSeatIds.includes(seatId) || status.heldSeatIds.includes(seatId);
 
-  const selectedEntries = useMemo(() => Object.entries(selected), [selected]);
-
   const selectedByType = useMemo(() => {
     const g: Record<string, string[]> = {};
-    for (const [seatId, tid] of selectedEntries) {
-      (g[tid] ||= []).push(seatId);
-    }
+    for (const [seatId, tid] of selectedEntries) (g[tid] ||= []).push(seatId);
     Object.keys(g).forEach((k) => g[k].sort());
     return g;
   }, [selectedEntries]);
 
-  const totalAmount = useMemo(() => {
+  const totalAmountSeat = useMemo(() => {
     const priceById: Record<string, number> = {};
     for (const t of ticketTypes) priceById[t._id] = Number(t.price || 0);
     return selectedEntries.reduce<number>((sum, [, tid]) => sum + (priceById[tid] || 0), 0);
   }, [selectedEntries, ticketTypes]);
 
-  // ✅ Nếu seat bị lock bởi người khác trong lúc mình đang chọn -> tự bỏ chọn
-  useEffect(() => {
-    if (selectedEntries.length === 0) return;
-    const blockedSet = new Set([...status.soldSeatIds, ...status.heldSeatIds]);
+  const zoneType = useMemo(() => {
+    return ticketTypes.find((t) => t._id === selectedZoneTypeId) || null;
+  }, [ticketTypes, selectedZoneTypeId]);
 
-    let changed = false;
-    const next: Record<string, string> = { ...selected };
+  const zoneRemain = useMemo(() => {
+    if (!selectedZoneTypeId) return 0;
+    return Math.max(0, remainingByTypeId[selectedZoneTypeId] ?? 0);
+  }, [selectedZoneTypeId, remainingByTypeId]);
 
-    for (const [seatId] of selectedEntries) {
-      if (blockedSet.has(seatId)) {
-        delete next[seatId];
-        changed = true;
-      }
-    }
-    if (changed) setSelected(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status.soldSeatIds, status.heldSeatIds]);
+  const zoneUnitPrice = useMemo(() => Number(zoneType?.price || 0), [zoneType]);
+  const zoneQtySafe = useMemo(() => Math.max(1, Number(zoneQty || 1)), [zoneQty]);
+  const totalAmountZone = useMemo(() => zoneUnitPrice * zoneQtySafe, [zoneUnitPrice, zoneQtySafe]);
 
   // load event + seatmap
   useEffect(() => {
@@ -98,18 +101,18 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
       setEvent(ev);
       setTicketTypes(types);
 
-      const m = ev.seatMapMode || "seat";
+      const m = (ev as any).seatMapMode || "seat";
       setMode(m === "zone" ? "zone" : "seat");
 
-      const t = ev.seatMapType || "svg";
+      const t = (ev as any).seatMapType || "svg";
       setMapType(t === "json" ? "json" : "svg");
 
       if (t !== "svg") return;
 
-      const url = ev.seatMapUrl
-        ? ev.seatMapUrl.startsWith("http")
-          ? ev.seatMapUrl
-          : `${baseOrigin}${ev.seatMapUrl}`
+      const url = (ev as any).seatMapUrl
+        ? (ev as any).seatMapUrl.startsWith("http")
+          ? (ev as any).seatMapUrl
+          : `${baseOrigin}${(ev as any).seatMapUrl}`
         : "";
 
       if (!url) {
@@ -122,9 +125,13 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
     })();
   }, [eventId, baseOrigin]);
 
-  // poll seat status
+  // ✅ CHỈ poll seat status khi mode === "seat"
   useEffect(() => {
     if (!eventId) return;
+    if (mode !== "seat") {
+      setStatus({ soldSeatIds: [], heldSeatIds: [] });
+      return;
+    }
 
     let alive = true;
 
@@ -149,41 +156,110 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
       alive = false;
       clearInterval(itv);
     };
-  }, [eventId]);
+  }, [eventId, mode]);
 
-  // paint svg seats
+  // ✅ SEAT MODE: nếu seat bị lock -> tự bỏ chọn
+  useEffect(() => {
+    if (mode !== "seat") return;
+    if (selectedEntries.length === 0) return;
+
+    const blockedSet = new Set([...status.soldSeatIds, ...status.heldSeatIds]);
+    let changed = false;
+    const next: Record<string, string> = { ...selected };
+
+    for (const [seatId] of selectedEntries) {
+      if (blockedSet.has(seatId)) {
+        delete next[seatId];
+        changed = true;
+      }
+    }
+    if (changed) setSelected(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status.soldSeatIds, status.heldSeatIds, mode]);
+
+  // paint svg: seat vs zone
   useEffect(() => {
     const root = svgRef.current;
     if (!root) return;
 
-    const seats = root.querySelectorAll<HTMLElement>("[data-seat-id]");
-    seats.forEach((el) => {
-      const seatId = el.getAttribute("data-seat-id") || "";
-      if (!seatId) return;
+    // ===== SEAT MODE: paint [data-seat-id]
+    if (mode === "seat") {
+      const seats = root.querySelectorAll<HTMLElement>("[data-seat-id]");
+      seats.forEach((el) => {
+        const seatId = el.getAttribute("data-seat-id") || "";
+        if (!seatId) return;
 
-      const blocked = isBlocked(seatId);
-      const picked = Boolean(selected[seatId]);
+        const blocked = isBlocked(seatId);
+        const picked = Boolean(selected[seatId]);
 
-      if (blocked) {
-        el.style.fill = "#9ca3af";
-        el.style.opacity = "0.7";
+        if (blocked) {
+          el.style.fill = "#9ca3af";
+          el.style.opacity = "0.7";
+          el.style.cursor = "not-allowed";
+        } else if (picked) {
+          el.style.fill = "#22c55e";
+          el.style.opacity = "1";
+          el.style.cursor = "pointer";
+        } else {
+          el.style.fill = "#ffffff";
+          el.style.opacity = "1";
+          el.style.cursor = "pointer";
+        }
+      });
+      return;
+    }
+
+    // ===== ZONE MODE: paint theo [data-ticket-type-id] (giữ màu fill gốc, chỉ thêm stroke/opacity)
+    const zones = root.querySelectorAll<HTMLElement>("[data-ticket-type-id]");
+    zones.forEach((el) => {
+      const tid = el.getAttribute("data-ticket-type-id") || "";
+      if (!tid) return;
+
+      const remain = remainingByTypeId[tid] ?? 0;
+      const active = tid === selectedZoneTypeId;
+
+      if (remain <= 0) {
+        el.style.opacity = "0.35";
         el.style.cursor = "not-allowed";
-      } else if (picked) {
-        el.style.fill = "#22c55e";
+        el.style.stroke = "transparent";
+        el.style.strokeWidth = "0";
+      } else if (active) {
         el.style.opacity = "1";
         el.style.cursor = "pointer";
+        el.style.stroke = "#22c55e";
+        el.style.strokeWidth = "6";
       } else {
-        el.style.fill = "#ffffff";
         el.style.opacity = "1";
         el.style.cursor = "pointer";
+        el.style.stroke = "transparent";
+        el.style.strokeWidth = "0";
       }
     });
-  }, [status, selected]);
+  }, [mode, status, selected, remainingByTypeId, selectedZoneTypeId]); // eslint-disable-line
 
   const onSvgClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
 
+    if (isEnded) return;
+
+    // ===== ZONE MODE: chỉ cần ticketTypeId
+    if (mode === "zone") {
+      const el = target.closest("[data-ticket-type-id]") as HTMLElement | null;
+      if (!el) return;
+
+      const ticketTypeId = el.getAttribute("data-ticket-type-id") || "";
+      if (!ticketTypeId) return;
+
+      const remain = remainingByTypeId[ticketTypeId] ?? 0;
+      if (remain <= 0) return;
+
+      setSelectedZoneTypeId(ticketTypeId);
+      setZoneQty(1);
+      return;
+    }
+
+    // ===== SEAT MODE: cần seatId + ticketTypeId
     const seatEl = target.closest("[data-seat-id]") as HTMLElement | null;
     if (!seatEl) return;
 
@@ -211,14 +287,61 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
       return;
     }
 
-    if (!eventId || !event || selectedEntries.length === 0) return;
+    if (isEnded) {
+      alert("Sự kiện đã diễn ra, không thể đặt vé.");
+      return;
+    }
 
-    const seats = selectedEntries.map(([seatId, ticketTypeId]) => ({ seatId, ticketTypeId }));
+    if (!eventId || !event) return;
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...authHeaders(),
     };
+
+    // ===== ZONE MODE: normal booking (không gửi seats)
+    if (mode === "zone") {
+      if (!selectedZoneTypeId) {
+        alert("Vui lòng chọn khu vực.");
+        return;
+      }
+      const remain = remainingByTypeId[selectedZoneTypeId] ?? 0;
+      if (remain <= 0) {
+        alert("Khu vực này đã hết vé.");
+        return;
+      }
+      if (zoneQtySafe > remain) {
+        alert("Số lượng vượt quá vé còn lại.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/bookings`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          eventId: event._id,
+          ticketTypeId: selectedZoneTypeId,
+          quantity: zoneQtySafe,
+          paymentMethod: "momo",
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data?.message || "Đặt vé thất bại");
+        return;
+      }
+
+      const bookingId = data?.booking?._id || data?.bookingId;
+      if (bookingId) localStorage.setItem("paymentBookingId", String(bookingId));
+      setView("payment");
+      return;
+    }
+
+    // ===== SEAT MODE: seat booking
+    if (selectedEntries.length === 0) return;
+
+    const seats = selectedEntries.map(([seatId, ticketTypeId]) => ({ seatId, ticketTypeId }));
 
     const res = await fetch(`${API_BASE}/bookings`, {
       method: "POST",
@@ -230,18 +353,19 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
       }),
     });
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       alert(data?.message || "Đặt vé thất bại");
       return;
     }
 
-    // ✅ backend của mình trả { booking } (không phải bookingId)
     const bookingId = data?.booking?._id || data?.bookingId;
     if (bookingId) localStorage.setItem("paymentBookingId", String(bookingId));
-
     setView("payment");
   };
+
+  const decZoneQty = () => setZoneQty((q) => Math.max(1, Number(q || 1) - 1));
+  const incZoneQty = () => setZoneQty((q) => Math.min(zoneRemain || 1, Number(q || 1) + 1));
 
   if (!eventId) {
     return (
@@ -269,23 +393,23 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
         </div>
 
         <div className="seatselect-controls">
-          <button
-            className="btn outline"
-            onClick={() => setScale((s) => Math.max(0.5, +(s - 0.1).toFixed(2)))}
-          >
+          <button className="btn outline" onClick={() => setScale((s) => Math.max(0.5, +(s - 0.1).toFixed(2)))}>
             −
           </button>
           <button className="btn outline" onClick={() => setScale(1)}>
             100%
           </button>
-          <button
-            className="btn outline"
-            onClick={() => setScale((s) => Math.min(2.5, +(s + 0.1).toFixed(2)))}
-          >
+          <button className="btn outline" onClick={() => setScale((s) => Math.min(2.5, +(s + 0.1).toFixed(2)))}>
             +
           </button>
         </div>
       </div>
+
+      {isEnded ? (
+        <div className="global-message error" style={{ margin: 12 }}>
+          Sự kiện đã diễn ra. Hiện không thể đặt vé.
+        </div>
+      ) : null}
 
       <div className="seatselect-body">
         <div className="seatselect-mapwrap">
@@ -319,8 +443,7 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
                   }}
                 >
                   <div>
-                    <b>{t.name}</b>{" "}
-                    <span style={{ opacity: 0.8 }}>• Còn {Math.max(0, remain)}</span>
+                    <b>{t.name}</b> <span style={{ opacity: 0.8 }}>• Còn {Math.max(0, remain)}</span>
                   </div>
                   <b>{money(Number(t.price || 0))}</b>
                 </div>
@@ -329,49 +452,96 @@ export const SeatSelectPage: React.FC<Props> = ({ user, setView }) => {
           </div>
 
           <div className="seatselect-card">
-            <div className="seatselect-card__title">Ghế đã chọn</div>
+            <div className="seatselect-card__title">
+              {mode === "zone" ? "Khu vực đã chọn" : "Ghế đã chọn"}
+            </div>
 
-            {selectedEntries.length === 0 ? (
-              <div style={{ opacity: 0.75 }}>Chọn ghế trên sơ đồ để tiếp tục.</div>
-            ) : (
-              <>
-                {Object.entries(selectedByType).map(([tid, seats]) => {
-                  const type = ticketTypes.find((x) => x._id === tid);
-                  const price = Number(type?.price || 0);
-                  return (
-                    <div key={tid} style={{ marginBottom: 10 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <b>
-                          {type?.name || "Hạng vé"} ({seats.length})
-                        </b>
-                        <b>{money(price * seats.length)}</b>
-                      </div>
-                      <div style={{ opacity: 0.8, marginTop: 4 }}>{seats.join(", ")}</div>
+            {/* ===== ZONE MODE UI ===== */}
+            {mode === "zone" ? (
+              !selectedZoneTypeId ? (
+                <div style={{ opacity: 0.75 }}>Click vào khu vực trên sơ đồ để tiếp tục.</div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                    <b>{zoneType?.name || "Khu vực"}</b>
+                    <b>{money(totalAmountZone)}</b>
+                  </div>
+
+                  <div style={{ opacity: 0.8, marginBottom: 10 }}>
+                    Còn {zoneRemain} vé • {money(zoneUnitPrice)}/vé
+                  </div>
+
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>Số lượng</div>
+                    <div className="tkb-qty" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <button className="btn outline" onClick={decZoneQty} disabled={zoneQtySafe <= 1}>
+                        −
+                      </button>
+                      <input
+                        value={zoneQtySafe}
+                        onChange={(e) => setZoneQty(Number(e.target.value || 1))}
+                        style={{ width: 60, textAlign: "center" }}
+                        inputMode="numeric"
+                      />
+                      <button className="btn outline" onClick={incZoneQty} disabled={zoneQtySafe >= (zoneRemain || 1)}>
+                        +
+                      </button>
                     </div>
-                  );
-                })}
-
-                <div className="seatselect-total">
-                  <span>Tổng tiền</span>
-                  <b>{money(totalAmount)}</b>
-                </div>
-
-                <button className="btn primary full-width" onClick={continueToPay}>
-                  Tiếp tục
-                </button>
-
-                <div style={{ marginTop: 10, opacity: 0.85 }}>
-                  <div>
-                    <span className="legend-dot available" /> Trống
                   </div>
-                  <div>
-                    <span className="legend-dot selected" /> Đang chọn
+
+                  <button className="btn primary full-width" onClick={continueToPay}>
+                    Tiếp tục
+                  </button>
+
+                  <div style={{ marginTop: 10, opacity: 0.85 }}>
+                    <div>Tip: Click khu vực khác để đổi lựa chọn.</div>
                   </div>
-                  <div>
-                    <span className="legend-dot blocked" /> Đã được chọn
+                </>
+              )
+            ) : (
+              // ===== SEAT MODE UI (giữ nguyên) =====
+              selectedEntries.length === 0 ? (
+                <div style={{ opacity: 0.75 }}>Chọn ghế trên sơ đồ để tiếp tục.</div>
+              ) : (
+                <>
+                  {Object.entries(selectedByType).map(([tid, seats]) => {
+                    const type = ticketTypes.find((x) => x._id === tid);
+                    const price = Number(type?.price || 0);
+                    return (
+                      <div key={tid} style={{ marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <b>
+                            {type?.name || "Hạng vé"} ({seats.length})
+                          </b>
+                          <b>{money(price * seats.length)}</b>
+                        </div>
+                        <div style={{ opacity: 0.8, marginTop: 4 }}>{seats.join(", ")}</div>
+                      </div>
+                    );
+                  })}
+
+                  <div className="seatselect-total">
+                    <span>Tổng tiền</span>
+                    <b>{money(totalAmountSeat)}</b>
                   </div>
-                </div>
-              </>
+
+                  <button className="btn primary full-width" onClick={continueToPay}>
+                    Tiếp tục
+                  </button>
+
+                  <div style={{ marginTop: 10, opacity: 0.85 }}>
+                    <div>
+                      <span className="legend-dot available" /> Trống
+                    </div>
+                    <div>
+                      <span className="legend-dot selected" /> Đang chọn
+                    </div>
+                    <div>
+                      <span className="legend-dot blocked" /> Đã được chọn
+                    </div>
+                  </div>
+                </>
+              )
             )}
           </div>
         </aside>

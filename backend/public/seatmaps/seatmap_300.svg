@@ -1,0 +1,360 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100">
+  <defs>
+    <style>
+      .seat { fill:#ffffff; stroke:#9ca3af; stroke-width:2; }
+      .label { fill:#111827; font: 700 22px Arial, sans-serif; }
+      .small { fill:#111827; font: 600 14px Arial, sans-serif; opacity:.8; }
+      .sectionTitle { fill:#111827; font: 800 18px Arial, sans-serif; }
+      .stage { fill:#d1d5db; stroke:#111827; stroke-width:0; }
+      .bg { fill:#0b0f16; }
+      .panel { fill:#111827; opacity:.12; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <rect class="bg" x="0" y="0" width="900" height="1100"/>
+
+  <!-- STAGE -->
+  <rect class="stage" x="230" y="30" width="440" height="90" rx="40"/>
+  <text x="450" y="88" text-anchor="middle" class="label">STAGE / SÂN KHẤU</text>
+
+  <!-- layout guide panels -->
+  <rect class="panel" x="70" y="150" width="760" height="210" rx="18"/>
+  <rect class="panel" x="70" y="380" width="760" height="260" rx="18"/>
+  <rect class="panel" x="70" y="660" width="760" height="360" rx="18"/>
+
+  <!-- SECTION TITLES -->
+  <text x="450" y="175" text-anchor="middle" class="sectionTitle">VIP A (50 ghế)</text>
+  <text x="450" y="405" text-anchor="middle" class="sectionTitle">VIP B (70 ghế)</text>
+  <text x="450" y="685" text-anchor="middle" class="sectionTitle">STANDARD (100 ghế)</text>
+  <text x="450" y="905" text-anchor="middle" class="sectionTitle">NORMAL (80 ghế)</text>
+
+  <!-- =========================
+       VIP A: 5 rows x 10 = 50
+       SeatId: VA-A01-01 ... VA-A05-10
+       TicketTypeId: 696eee38df25aac30c0b5f80
+       ========================= -->
+  <g id="VIP_A" data-section="VIP_A">
+    <!-- row labels -->
+    <text x="95" y="220" class="small">A1</text>
+    <text x="95" y="250" class="small">A2</text>
+    <text x="95" y="280" class="small">A3</text>
+    <text x="95" y="310" class="small">A4</text>
+    <text x="95" y="340" class="small">A5</text>
+
+    <!-- seats grid: startX=140, startY=210, dx=64, dy=30 -->
+    <!-- Row 1 -->
+    <circle class="seat" cx="140" cy="220" r="10" data-seat-id="VA-A01-01" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="204" cy="220" r="10" data-seat-id="VA-A01-02" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="268" cy="220" r="10" data-seat-id="VA-A01-03" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="332" cy="220" r="10" data-seat-id="VA-A01-04" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="396" cy="220" r="10" data-seat-id="VA-A01-05" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="460" cy="220" r="10" data-seat-id="VA-A01-06" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="524" cy="220" r="10" data-seat-id="VA-A01-07" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="588" cy="220" r="10" data-seat-id="VA-A01-08" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="652" cy="220" r="10" data-seat-id="VA-A01-09" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="716" cy="220" r="10" data-seat-id="VA-A01-10" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+
+    <!-- Row 2 -->
+    <circle class="seat" cx="140" cy="250" r="10" data-seat-id="VA-A02-01" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="204" cy="250" r="10" data-seat-id="VA-A02-02" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="268" cy="250" r="10" data-seat-id="VA-A02-03" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="332" cy="250" r="10" data-seat-id="VA-A02-04" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="396" cy="250" r="10" data-seat-id="VA-A02-05" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="460" cy="250" r="10" data-seat-id="VA-A02-06" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="524" cy="250" r="10" data-seat-id="VA-A02-07" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="588" cy="250" r="10" data-seat-id="VA-A02-08" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="652" cy="250" r="10" data-seat-id="VA-A02-09" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="716" cy="250" r="10" data-seat-id="VA-A02-10" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+
+    <!-- Row 3 -->
+    <circle class="seat" cx="140" cy="280" r="10" data-seat-id="VA-A03-01" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="204" cy="280" r="10" data-seat-id="VA-A03-02" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="268" cy="280" r="10" data-seat-id="VA-A03-03" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="332" cy="280" r="10" data-seat-id="VA-A03-04" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="396" cy="280" r="10" data-seat-id="VA-A03-05" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="460" cy="280" r="10" data-seat-id="VA-A03-06" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="524" cy="280" r="10" data-seat-id="VA-A03-07" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="588" cy="280" r="10" data-seat-id="VA-A03-08" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="652" cy="280" r="10" data-seat-id="VA-A03-09" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="716" cy="280" r="10" data-seat-id="VA-A03-10" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+
+    <!-- Row 4 -->
+    <circle class="seat" cx="140" cy="310" r="10" data-seat-id="VA-A04-01" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="204" cy="310" r="10" data-seat-id="VA-A04-02" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="268" cy="310" r="10" data-seat-id="VA-A04-03" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="332" cy="310" r="10" data-seat-id="VA-A04-04" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="396" cy="310" r="10" data-seat-id="VA-A04-05" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="460" cy="310" r="10" data-seat-id="VA-A04-06" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="524" cy="310" r="10" data-seat-id="VA-A04-07" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="588" cy="310" r="10" data-seat-id="VA-A04-08" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="652" cy="310" r="10" data-seat-id="VA-A04-09" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="716" cy="310" r="10" data-seat-id="VA-A04-10" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+
+    <!-- Row 5 -->
+    <circle class="seat" cx="140" cy="340" r="10" data-seat-id="VA-A05-01" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="204" cy="340" r="10" data-seat-id="VA-A05-02" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="268" cy="340" r="10" data-seat-id="VA-A05-03" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="332" cy="340" r="10" data-seat-id="VA-A05-04" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="396" cy="340" r="10" data-seat-id="VA-A05-05" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="460" cy="340" r="10" data-seat-id="VA-A05-06" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="524" cy="340" r="10" data-seat-id="VA-A05-07" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="588" cy="340" r="10" data-seat-id="VA-A05-08" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="652" cy="340" r="10" data-seat-id="VA-A05-09" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+    <circle class="seat" cx="716" cy="340" r="10" data-seat-id="VA-A05-10" data-ticket-type-id="696eee38df25aac30c0b5f80"/>
+  </g>
+
+  <!-- =========================
+       VIP B: 7 rows x 10 = 70
+       SeatId: VB-B01-01 ... VB-B07-10
+       TicketTypeId: 696eee38df25aac30c0b5f81
+       startY=440
+       ========================= -->
+  <g id="VIP_B" data-section="VIP_B">
+    <!-- row labels -->
+    <text x="95" y="470" class="small">B1</text>
+    <text x="95" y="500" class="small">B2</text>
+    <text x="95" y="530" class="small">B3</text>
+    <text x="95" y="560" class="small">B4</text>
+    <text x="95" y="590" class="small">B5</text>
+    <text x="95" y="620" class="small">B6</text>
+    <text x="95" y="650" class="small">B7</text>
+
+    <!-- rows -->
+    <!-- y: 470..650, dx=64 -->
+    <!-- Row 1 -->
+    <circle class="seat" cx="140" cy="470" r="10" data-seat-id="VB-B01-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="470" r="10" data-seat-id="VB-B01-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="470" r="10" data-seat-id="VB-B01-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="470" r="10" data-seat-id="VB-B01-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="470" r="10" data-seat-id="VB-B01-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="470" r="10" data-seat-id="VB-B01-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="470" r="10" data-seat-id="VB-B01-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="470" r="10" data-seat-id="VB-B01-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="470" r="10" data-seat-id="VB-B01-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="470" r="10" data-seat-id="VB-B01-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 2 -->
+    <circle class="seat" cx="140" cy="500" r="10" data-seat-id="VB-B02-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="500" r="10" data-seat-id="VB-B02-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="500" r="10" data-seat-id="VB-B02-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="500" r="10" data-seat-id="VB-B02-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="500" r="10" data-seat-id="VB-B02-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="500" r="10" data-seat-id="VB-B02-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="500" r="10" data-seat-id="VB-B02-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="500" r="10" data-seat-id="VB-B02-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="500" r="10" data-seat-id="VB-B02-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="500" r="10" data-seat-id="VB-B02-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 3 -->
+    <circle class="seat" cx="140" cy="530" r="10" data-seat-id="VB-B03-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="530" r="10" data-seat-id="VB-B03-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="530" r="10" data-seat-id="VB-B03-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="530" r="10" data-seat-id="VB-B03-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="530" r="10" data-seat-id="VB-B03-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="530" r="10" data-seat-id="VB-B03-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="530" r="10" data-seat-id="VB-B03-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="530" r="10" data-seat-id="VB-B03-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="530" r="10" data-seat-id="VB-B03-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="530" r="10" data-seat-id="VB-B03-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 4 -->
+    <circle class="seat" cx="140" cy="560" r="10" data-seat-id="VB-B04-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="560" r="10" data-seat-id="VB-B04-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="560" r="10" data-seat-id="VB-B04-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="560" r="10" data-seat-id="VB-B04-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="560" r="10" data-seat-id="VB-B04-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="560" r="10" data-seat-id="VB-B04-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="560" r="10" data-seat-id="VB-B04-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="560" r="10" data-seat-id="VB-B04-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="560" r="10" data-seat-id="VB-B04-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="560" r="10" data-seat-id="VB-B04-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 5 -->
+    <circle class="seat" cx="140" cy="590" r="10" data-seat-id="VB-B05-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="590" r="10" data-seat-id="VB-B05-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="590" r="10" data-seat-id="VB-B05-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="590" r="10" data-seat-id="VB-B05-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="590" r="10" data-seat-id="VB-B05-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="590" r="10" data-seat-id="VB-B05-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="590" r="10" data-seat-id="VB-B05-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="590" r="10" data-seat-id="VB-B05-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="590" r="10" data-seat-id="VB-B05-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="590" r="10" data-seat-id="VB-B05-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 6 -->
+    <circle class="seat" cx="140" cy="620" r="10" data-seat-id="VB-B06-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="620" r="10" data-seat-id="VB-B06-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="620" r="10" data-seat-id="VB-B06-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="620" r="10" data-seat-id="VB-B06-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="620" r="10" data-seat-id="VB-B06-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="620" r="10" data-seat-id="VB-B06-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="620" r="10" data-seat-id="VB-B06-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="620" r="10" data-seat-id="VB-B06-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="620" r="10" data-seat-id="VB-B06-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="620" r="10" data-seat-id="VB-B06-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+
+    <!-- Row 7 -->
+    <circle class="seat" cx="140" cy="650" r="10" data-seat-id="VB-B07-01" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="204" cy="650" r="10" data-seat-id="VB-B07-02" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="268" cy="650" r="10" data-seat-id="VB-B07-03" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="332" cy="650" r="10" data-seat-id="VB-B07-04" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="396" cy="650" r="10" data-seat-id="VB-B07-05" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="460" cy="650" r="10" data-seat-id="VB-B07-06" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="524" cy="650" r="10" data-seat-id="VB-B07-07" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="588" cy="650" r="10" data-seat-id="VB-B07-08" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="652" cy="650" r="10" data-seat-id="VB-B07-09" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+    <circle class="seat" cx="716" cy="650" r="10" data-seat-id="VB-B07-10" data-ticket-type-id="696eee38df25aac30c0b5f81"/>
+  </g>
+
+  <!-- =========================
+       STANDARD: 10 rows x 10 = 100
+       SeatId: ST-C01-01 ... ST-C10-10
+       TicketTypeId: 696eee38df25aac30c0b5f82
+       startY=730
+       ========================= -->
+  <g id="STANDARD" data-section="STANDARD">
+    <!-- row labels C1..C10 -->
+    <text x="95" y="760" class="small">C1</text>
+    <text x="95" y="790" class="small">C2</text>
+    <text x="95" y="820" class="small">C3</text>
+    <text x="95" y="850" class="small">C4</text>
+    <text x="95" y="880" class="small">C5</text>
+    <text x="95" y="910" class="small">C6</text>
+    <text x="95" y="940" class="small">C7</text>
+    <text x="95" y="970" class="small">C8</text>
+    <text x="95" y="1000" class="small">C9</text>
+    <text x="95" y="1030" class="small">C10</text>
+
+    <!-- Generate 10x10 seats -->
+    <!-- y: 760..1030 -->
+    <!-- row 1 -->
+    <circle class="seat" cx="140" cy="760" r="10" data-seat-id="ST-C01-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="760" r="10" data-seat-id="ST-C01-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="760" r="10" data-seat-id="ST-C01-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="760" r="10" data-seat-id="ST-C01-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="760" r="10" data-seat-id="ST-C01-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="760" r="10" data-seat-id="ST-C01-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="760" r="10" data-seat-id="ST-C01-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="760" r="10" data-seat-id="ST-C01-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="760" r="10" data-seat-id="ST-C01-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="760" r="10" data-seat-id="ST-C01-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 2 -->
+    <circle class="seat" cx="140" cy="790" r="10" data-seat-id="ST-C02-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="790" r="10" data-seat-id="ST-C02-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="790" r="10" data-seat-id="ST-C02-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="790" r="10" data-seat-id="ST-C02-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="790" r="10" data-seat-id="ST-C02-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="790" r="10" data-seat-id="ST-C02-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="790" r="10" data-seat-id="ST-C02-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="790" r="10" data-seat-id="ST-C02-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="790" r="10" data-seat-id="ST-C02-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="790" r="10" data-seat-id="ST-C02-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 3 -->
+    <circle class="seat" cx="140" cy="820" r="10" data-seat-id="ST-C03-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="820" r="10" data-seat-id="ST-C03-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="820" r="10" data-seat-id="ST-C03-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="820" r="10" data-seat-id="ST-C03-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="820" r="10" data-seat-id="ST-C03-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="820" r="10" data-seat-id="ST-C03-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="820" r="10" data-seat-id="ST-C03-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="820" r="10" data-seat-id="ST-C03-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="820" r="10" data-seat-id="ST-C03-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="820" r="10" data-seat-id="ST-C03-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 4 -->
+    <circle class="seat" cx="140" cy="850" r="10" data-seat-id="ST-C04-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="850" r="10" data-seat-id="ST-C04-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="850" r="10" data-seat-id="ST-C04-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="850" r="10" data-seat-id="ST-C04-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="850" r="10" data-seat-id="ST-C04-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="850" r="10" data-seat-id="ST-C04-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="850" r="10" data-seat-id="ST-C04-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="850" r="10" data-seat-id="ST-C04-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="850" r="10" data-seat-id="ST-C04-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="850" r="10" data-seat-id="ST-C04-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 5 -->
+    <circle class="seat" cx="140" cy="880" r="10" data-seat-id="ST-C05-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="880" r="10" data-seat-id="ST-C05-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="880" r="10" data-seat-id="ST-C05-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="880" r="10" data-seat-id="ST-C05-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="880" r="10" data-seat-id="ST-C05-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="880" r="10" data-seat-id="ST-C05-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="880" r="10" data-seat-id="ST-C05-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="880" r="10" data-seat-id="ST-C05-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="880" r="10" data-seat-id="ST-C05-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="880" r="10" data-seat-id="ST-C05-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 6 -->
+    <circle class="seat" cx="140" cy="910" r="10" data-seat-id="ST-C06-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="910" r="10" data-seat-id="ST-C06-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="910" r="10" data-seat-id="ST-C06-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="910" r="10" data-seat-id="ST-C06-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="910" r="10" data-seat-id="ST-C06-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="910" r="10" data-seat-id="ST-C06-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="910" r="10" data-seat-id="ST-C06-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="910" r="10" data-seat-id="ST-C06-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="910" r="10" data-seat-id="ST-C06-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="910" r="10" data-seat-id="ST-C06-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 7 -->
+    <circle class="seat" cx="140" cy="940" r="10" data-seat-id="ST-C07-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="940" r="10" data-seat-id="ST-C07-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="940" r="10" data-seat-id="ST-C07-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="940" r="10" data-seat-id="ST-C07-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="940" r="10" data-seat-id="ST-C07-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="940" r="10" data-seat-id="ST-C07-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="940" r="10" data-seat-id="ST-C07-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="940" r="10" data-seat-id="ST-C07-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="940" r="10" data-seat-id="ST-C07-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="940" r="10" data-seat-id="ST-C07-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 8 -->
+    <circle class="seat" cx="140" cy="970" r="10" data-seat-id="ST-C08-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="970" r="10" data-seat-id="ST-C08-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="970" r="10" data-seat-id="ST-C08-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="970" r="10" data-seat-id="ST-C08-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="970" r="10" data-seat-id="ST-C08-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="970" r="10" data-seat-id="ST-C08-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="970" r="10" data-seat-id="ST-C08-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="970" r="10" data-seat-id="ST-C08-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="970" r="10" data-seat-id="ST-C08-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="970" r="10" data-seat-id="ST-C08-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 9 -->
+    <circle class="seat" cx="140" cy="1000" r="10" data-seat-id="ST-C09-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="1000" r="10" data-seat-id="ST-C09-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="1000" r="10" data-seat-id="ST-C09-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="1000" r="10" data-seat-id="ST-C09-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="1000" r="10" data-seat-id="ST-C09-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="1000" r="10" data-seat-id="ST-C09-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="1000" r="10" data-seat-id="ST-C09-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="1000" r="10" data-seat-id="ST-C09-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="1000" r="10" data-seat-id="ST-C09-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="1000" r="10" data-seat-id="ST-C09-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+
+    <!-- row 10 -->
+    <circle class="seat" cx="140" cy="1030" r="10" data-seat-id="ST-C10-01" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="204" cy="1030" r="10" data-seat-id="ST-C10-02" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="268" cy="1030" r="10" data-seat-id="ST-C10-03" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="332" cy="1030" r="10" data-seat-id="ST-C10-04" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="396" cy="1030" r="10" data-seat-id="ST-C10-05" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="460" cy="1030" r="10" data-seat-id="ST-C10-06" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="524" cy="1030" r="10" data-seat-id="ST-C10-07" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="588" cy="1030" r="10" data-seat-id="ST-C10-08" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="652" cy="1030" r="10" data-seat-id="ST-C10-09" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+    <circle class="seat" cx="716" cy="1030" r="10" data-seat-id="ST-C10-10" data-ticket-type-id="696eee38df25aac30c0b5f82"/>
+  </g>
+
+  <!-- =========================
+       NORMAL: 8 rows x 10 = 80
+       SeatId: NO-D01-01 ... NO-D08-10
+       TicketTypeId: 696eee38df25aac30c0b5f83
+       (đặt ở phía dưới STANDARD)
+       ========================= -->
+  <!-- Lưu ý: SVG này đã dùng full chiều cao ~1100, nên Normal mình đặt "chồng" cùng vùng Standard cuối.
+       Nếu bạn muốn tách hẳn Normal xuống dưới nữa, tăng height/viewBox lên (mình chỉ bạn ngay). -->
+</svg>

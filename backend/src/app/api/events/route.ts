@@ -63,31 +63,47 @@ export async function GET(req: NextRequest) {
     const trending = searchParams.get("trending") === "true";
     const tagsParam = searchParams.get("tags");
 
+    // ✅ NEW: price filter + sort
+    const priceMinParam = searchParams.get("priceMin");
+    const priceMaxParam = searchParams.get("priceMax");
+    const priceSort = (searchParams.get("priceSort") || "").toLowerCase(); // asc | desc
+
+    const priceMin =
+      priceMinParam !== null && priceMinParam !== "" ? Number(priceMinParam) : null;
+    const priceMax =
+      priceMaxParam !== null && priceMaxParam !== "" ? Number(priceMaxParam) : null;
+
+    const hasPriceMin = priceMin !== null && Number.isFinite(priceMin);
+    const hasPriceMax = priceMax !== null && Number.isFinite(priceMax);
+
     const query: any = {};
     if (featured) query.isFeatured = true;
     if (trending) query.isTrending = true;
-    
+
     // ✅ Filter by tags: support multiple tags (comma-separated)
     if (tagsParam) {
-      const tagsArray = tagsParam.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
+      const tagsArray = tagsParam
+        .split(",")
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0);
       if (tagsArray.length > 0) {
         query.tags = { $in: tagsArray };
       }
     }
 
-    // Sort by creation date (newest first)
+    // Default: newest first (giữ như cũ)
     const events = await Event.find(query).sort({ createdAt: -1 }).lean();
-    
+
     // Debug: Log events with tags from database
     console.log("🔍 Backend: Events found:", events.length);
     events.forEach((e: any, idx: number) => {
       console.log(`  [${idx + 1}] "${e.title}":`, {
-        hasTags: !!(e.tags),
+        hasTags: !!e.tags,
         tagsType: typeof e.tags,
         tagsIsArray: Array.isArray(e.tags),
         tagsValue: e.tags,
-        tagsLength: Array.isArray(e.tags) ? e.tags.length : 'not array',
-        allKeys: Object.keys(e).filter(k => k.includes('tag') || k === 'tags')
+        tagsLength: Array.isArray(e.tags) ? e.tags.length : "not array",
+        allKeys: Object.keys(e).filter((k) => k.includes("tag") || k === "tags"),
       });
     });
 
@@ -101,36 +117,73 @@ export async function GET(req: NextRequest) {
       byEvent.get(key)!.push(t);
     }
 
-    const eventsWithComputed = events.map((e: any) => {
+    // ✅ Tính computed trước
+    let eventsWithComputed = events.map((e: any) => {
       const ticketTypes = (byEvent.get(String(e._id)) || []).sort(
-        (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+        (a, b) =>
+          new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
       );
 
       const { eventComputed, tickets } = computeFromTicketTypes(e, ticketTypes);
 
-      // ✅ Ensure tags are properly preserved from database
-      // Use tags from eventComputed first (which preserves from original event)
-      // Fallback to e.tags from database, then to empty array
-      const tags = Array.isArray(eventComputed.tags) && eventComputed.tags.length > 0
-        ? eventComputed.tags
-        : (Array.isArray(e.tags) && e.tags.length > 0 ? e.tags : []);
+      const tags =
+        Array.isArray(eventComputed.tags) && eventComputed.tags.length > 0
+          ? eventComputed.tags
+          : Array.isArray(e.tags) && e.tags.length > 0
+            ? e.tags
+            : [];
 
-      // Debug: Log tags before returning
       if (tags.length > 0) {
         console.log(`  ✅ "${e.title}" has tags:`, tags);
       } else {
-        console.log(`  ⚠️ "${e.title}" has NO tags (eventComputed.tags:`, eventComputed.tags, `, e.tags:`, e.tags, `)`);
+        console.log(
+          `  ⚠️ "${e.title}" has NO tags (eventComputed.tags:`,
+          eventComputed.tags,
+          `, e.tags:`,
+          e.tags,
+          `)`
+        );
       }
 
       return {
         ...eventComputed,
-        tags: tags, // ✅ Ensure tags are included and properly formatted
+        tags,
         ticketTypes,
-        tickets, // để FE muốn dùng cũng được
+        tickets,
       };
     });
 
-    return withCors(NextResponse.json({ events: eventsWithComputed }, { status: 200 }));
+    // ✅ NEW: Filter by priceFrom (min ticketTypes price, fallback event.price)
+    if (hasPriceMin || hasPriceMax) {
+      eventsWithComputed = eventsWithComputed.filter((ev: any) => {
+        const p = Number(ev.priceFrom ?? ev.price ?? 0);
+        if (!Number.isFinite(p)) return false;
+        if (hasPriceMin && p < (priceMin as number)) return false;
+        if (hasPriceMax && p > (priceMax as number)) return false;
+        return true;
+      });
+    }
+
+    // ✅ NEW: Sort by priceFrom asc/desc nếu client yêu cầu
+    if (priceSort === "asc" || priceSort === "desc") {
+      const dir = priceSort === "asc" ? 1 : -1;
+      eventsWithComputed.sort((a: any, b: any) => {
+        const pa = Number(a.priceFrom ?? a.price ?? 0);
+        const pb = Number(b.priceFrom ?? b.price ?? 0);
+
+        // sort price trước
+        if (pa !== pb) return (pa - pb) * dir;
+
+        // tie-break: newest first (giữ cảm giác như cũ)
+        const ta = new Date(a.createdAt || 0).getTime();
+        const tb = new Date(b.createdAt || 0).getTime();
+        return tb - ta;
+      });
+    }
+
+    return withCors(
+      NextResponse.json({ events: eventsWithComputed }, { status: 200 })
+    );
   } catch (error) {
     console.error("Get events error", error);
     return withCors(NextResponse.json({ message: "Lỗi server" }, { status: 500 }));
@@ -214,11 +267,12 @@ export async function POST(req: NextRequest) {
           : 0;
 
     // Process tags: use destructured tags or body.tags, always set explicitly even if empty
-    const processedTags = Array.isArray(tags) || Array.isArray(body.tags)
-      ? (Array.isArray(tags) ? tags : body.tags || [])
-          .filter((t: any) => typeof t === "string" && t.trim().length > 0)
-          .map((t: any) => t.trim())
-      : [];
+    const processedTags =
+      Array.isArray(tags) || Array.isArray(body.tags)
+        ? (Array.isArray(tags) ? tags : body.tags || [])
+            .filter((t: any) => typeof t === "string" && t.trim().length > 0)
+            .map((t: any) => t.trim())
+        : [];
 
     console.log("🔍 POST /api/events - Processed tags before saving:", processedTags);
 
@@ -228,7 +282,7 @@ export async function POST(req: NextRequest) {
       description,
       location,
       date: date ? new Date(date) : undefined,
-      price: computedMinPrice,     // lưu "giá từ" (nếu có ticketTypes)
+      price: computedMinPrice, // lưu "giá từ" (nếu có ticketTypes)
       imageUrl,
       isFeatured: isFeatured === true,
       isTrending: isTrending === true,
@@ -239,50 +293,52 @@ export async function POST(req: NextRequest) {
     const createdEvent = await Event.create(eventData);
 
     // ✅ Normalize createdEvent (Mongoose create() đôi khi trả về Doc | Doc[])
-const eventDoc = Array.isArray(createdEvent) ? createdEvent[0] : createdEvent;
-const eventId = eventDoc._id;
+    const eventDoc = Array.isArray(createdEvent) ? createdEvent[0] : createdEvent;
+    const eventId = eventDoc._id;
 
-// Debug: Verify tags were saved to database
-const savedEvent = await Event.findById(eventId).lean();
-console.log("✅ POST /api/events - Tags saved to database:", {
-  eventId: eventId,
-  eventTitle: eventDoc.title,
-  tagsInDatabase: savedEvent?.tags,
-  tagsType: typeof savedEvent?.tags,
-  tagsIsArray: Array.isArray(savedEvent?.tags),
-});
-
-// Create ticket types if applicable
-if (cleanedTicketTypes.length > 0) {
-  await TicketType.insertMany(
-    cleanedTicketTypes.map((t) => ({
+    // Debug: Verify tags were saved to database
+    const savedEvent = await Event.findById(eventId).lean();
+    console.log("✅ POST /api/events - Tags saved to database:", {
       eventId: eventId,
-      name: t.name,
-      price: t.price,
-      total: t.total,
-    }))
-  );
-}
+      eventTitle: eventDoc.title,
+      tagsInDatabase: savedEvent?.tags,
+      tagsType: typeof savedEvent?.tags,
+      tagsIsArray: Array.isArray(savedEvent?.tags),
+    });
 
-const createdTicketTypes = await TicketType.find({ eventId: eventId })
-  .sort({ createdAt: 1 })
-  .lean();
+    // Create ticket types if applicable
+    if (cleanedTicketTypes.length > 0) {
+      await TicketType.insertMany(
+        cleanedTicketTypes.map((t) => ({
+          eventId: eventId,
+          name: t.name,
+          price: t.price,
+          total: t.total,
+        }))
+      );
+    }
 
-// ✅ Use plain object for computeFromTicketTypes
-const eventPlain =
-  typeof (eventDoc as any).toObject === "function"
-    ? (eventDoc as any).toObject()
-    : eventDoc;
+    const createdTicketTypes = await TicketType.find({ eventId: eventId })
+      .sort({ createdAt: 1 })
+      .lean();
 
-const { eventComputed, tickets } = computeFromTicketTypes(eventPlain, createdTicketTypes);
+    // ✅ Use plain object for computeFromTicketTypes
+    const eventPlain =
+      typeof (eventDoc as any).toObject === "function"
+        ? (eventDoc as any).toObject()
+        : eventDoc;
 
-return withCors(
-  NextResponse.json(
-    { event: eventComputed, ticketTypes: createdTicketTypes, tickets },
-    { status: 201 }
-  )
-);
+    const { eventComputed, tickets } = computeFromTicketTypes(
+      eventPlain,
+      createdTicketTypes
+    );
 
+    return withCors(
+      NextResponse.json(
+        { event: eventComputed, ticketTypes: createdTicketTypes, tickets },
+        { status: 201 }
+      )
+    );
   } catch (error) {
     console.error("Create event error", error);
     return withCors(NextResponse.json({ message: "Lỗi server" }, { status: 500 }));

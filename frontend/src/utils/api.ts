@@ -264,12 +264,49 @@ export async function getBanner(): Promise<{ imageUrl: string } | null> {
 }
 
 // Lấy danh sách events
-export async function getEvents(featured?: boolean, trending?: boolean, tags?: string[]): Promise<Event[]> {
+// Lấy danh sách events
+export async function getEvents(
+  featuredOrOpts?: boolean | {
+    featured?: boolean;
+    trending?: boolean;
+    tags?: string[];
+    priceMin?: string | number;
+    priceMax?: string | number;
+    priceSort?: "" | "asc" | "desc";
+  },
+  trending?: boolean,
+  tags?: string[]
+): Promise<Event[]> {
   const params = new URLSearchParams();
-  if (featured) params.append("featured", "true");
-  if (trending) params.append("trending", "true");
-  if (tags && tags.length > 0) {
-    params.append("tags", tags.join(","));
+
+  // ✅ Backward compatible:
+  // - nếu param đầu là object => dùng options
+  // - nếu param đầu là boolean => dùng signature cũ (featured, trending, tags)
+  const opts =
+    typeof featuredOrOpts === "object" && featuredOrOpts !== null
+      ? featuredOrOpts
+      : {
+          featured: featuredOrOpts === true,
+          trending: trending === true,
+          tags: tags,
+        };
+
+  if (opts.featured) params.set("featured", "true");
+  if (opts.trending) params.set("trending", "true");
+
+  if (opts.tags && opts.tags.length > 0) {
+    params.set("tags", opts.tags.join(","));
+  }
+
+  // ✅ NEW: price filter + sort
+  if (opts.priceMin !== undefined && String(opts.priceMin).trim() !== "") {
+    params.set("priceMin", String(opts.priceMin).trim());
+  }
+  if (opts.priceMax !== undefined && String(opts.priceMax).trim() !== "") {
+    params.set("priceMax", String(opts.priceMax).trim());
+  }
+  if (opts.priceSort === "asc" || opts.priceSort === "desc") {
+    params.set("priceSort", opts.priceSort);
   }
 
   const url = `${API_BASE}/events${params.toString() ? `?${params.toString()}` : ""}`;
@@ -282,3 +319,4 @@ export async function getEvents(featured?: boolean, trending?: boolean, tags?: s
   if (!res.ok) throw new Error(data.message || "Lấy danh sách sự kiện thất bại");
   return data.events || [];
 }
+

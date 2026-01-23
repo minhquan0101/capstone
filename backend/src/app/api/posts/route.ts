@@ -10,8 +10,13 @@ function withCors(res: NextResponse) {
   return res;
 }
 
+// escape regex special chars to avoid broken regex / injection-like behavior
+function escapeRegex(input: string) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // GET /api/posts?type=showbiz|blog&region=vn|asia|us_eu&section=news|photo
-//          &featured=true|1&sort=new|views&limit=50&skip=0
+//          &featured=true|1&sort=new|views&limit=50&skip=0&q=keyword
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
@@ -24,6 +29,9 @@ export async function GET(req: NextRequest) {
     const featured = sp.get("featured"); // "1"/"true"
     const sortParam = sp.get("sort") || "new"; // new | views
 
+    const qRaw = (sp.get("q") || "").trim(); // ✅ NEW
+    const q = qRaw.length > 200 ? qRaw.slice(0, 200) : qRaw; // giới hạn nhẹ cho an toàn
+
     const limit = Math.min(parseInt(sp.get("limit") || "50", 10), 100);
     const skip = Math.max(parseInt(sp.get("skip") || "0", 10), 0);
 
@@ -33,8 +41,17 @@ export async function GET(req: NextRequest) {
     if (section) filter.section = section;
     if (featured === "1" || featured === "true") filter.isFeatured = true;
 
+    // ✅ NEW: keyword search (title/summary/content)
+    if (q) {
+      const rx = new RegExp(escapeRegex(q), "i");
+      filter.$or = [{ title: rx }, { summary: rx }, { content: rx }];
+    }
+
     const sort: Record<string, 1 | -1> =
       sortParam === "views" ? { views: -1, createdAt: -1 } : { createdAt: -1 };
+
+    // ✅ NEW: total để FE biết còn trang tiếp không
+    const total = await Post.countDocuments(filter);
 
     const posts = await Post.find(filter)
       .sort(sort as any)
@@ -42,7 +59,20 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
 
-    return withCors(NextResponse.json({ posts }, { status: 200 }));
+    const hasMore = skip + posts.length < total;
+
+    return withCors(
+      NextResponse.json(
+        {
+          posts,
+          total,
+          limit,
+          skip,
+          hasMore,
+        },
+        { status: 200 }
+      )
+    );
   } catch (error) {
     console.error("Get posts error", error);
     return NextResponse.json({ message: "Lỗi server" }, { status: 500 });

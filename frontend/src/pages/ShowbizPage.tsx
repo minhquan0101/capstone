@@ -4,17 +4,22 @@ import "../styles/showbiz.css";
 
 interface ShowbizPageProps {
   onPostClick: (postId: string) => void;
+  searchTerm: string;
 }
 
 type SubTab = "all" | "vn" | "asia" | "us_eu";
 type SideTab = "new" | "top";
 
-export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
+const PAGE_SIZE = 24;
+
+export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick, searchTerm }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [skip, setSkip] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ mặc định là ALL để show tất cả bài
   const [subTab, setSubTab] = useState<SubTab>("all");
   const [sideTab, setSideTab] = useState<SideTab>("new");
   const [visibleCount, setVisibleCount] = useState(12);
@@ -31,7 +36,6 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
   const stripHtml = (html: string) => {
     const noTags = (html || "").replace(/<[^>]*>/g, " ");
     const decoded = decodeHtml(noTags);
-    // ✅ fix NBSP để không bị lỗi chữ/line break kỳ
     return decoded.replace(/&nbsp;/g, " ").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
   };
 
@@ -49,14 +53,27 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
     return `${dd}/${mm}`;
   };
 
+  const fetchPage = async (nextSkip: number, mode: "reset" | "append") => {
+    const data = await getPosts({ type: "showbiz", sort: "new", limit: PAGE_SIZE, skip: nextSkip });
+    const list = data || [];
+    setHasMore(list.length === PAGE_SIZE);
+
+    if (mode === "reset") setPosts(list);
+    else setPosts((prev) => [...prev, ...list]);
+
+    setSkip(nextSkip + PAGE_SIZE);
+  };
+
+  // load page 1
   useEffect(() => {
     const run = async () => {
       try {
         setLoading(true);
-        // lấy showbiz (tất cả region), backend có query luôn
-        const data = await getPosts({ type: "showbiz", sort: "new", limit: 200 });
-        setPosts(data || []);
         setError(null);
+        setVisibleCount(12);
+        setHasMore(true);
+        setSkip(0);
+        await fetchPage(0, "reset");
       } catch (e) {
         setError(e instanceof Error ? e.message : "Không thể tải Showbiz");
       } finally {
@@ -64,10 +81,15 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
       }
     };
     run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // reset visible when search or tab changes
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [searchTerm, subTab]);
+
   const normalized = useMemo(() => {
-    // data cũ chưa có field -> mặc định vn/news
     return (posts || []).map((p) => ({
       ...p,
       region: (p.region || "vn") as any,
@@ -76,23 +98,53 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
     }));
   }, [posts]);
 
-  // ✅ lọc theo tab: all => không lọc
   const byRegion = useMemo(() => {
     if (subTab === "all") return normalized;
     return normalized.filter((p) => p.region === subTab);
   }, [normalized, subTab]);
 
-  // giống page thật: đầu trang là “Ảnh sao”
-  const photoPosts = useMemo(() => byRegion.filter((p) => p.section === "photo").slice(0, 8), [byRegion]);
-  const newsPosts = useMemo(() => byRegion.filter((p) => p.section !== "photo"), [byRegion]);
+  const bySearch = useMemo(() => {
+    const q = (searchTerm || "").trim().toLowerCase();
+    if (!q) return byRegion;
+
+    return byRegion.filter((p) => {
+      const title = (p.title || "").toLowerCase();
+      const sum = (p.summary || "").toLowerCase();
+      const content = stripHtml(p.content || "").toLowerCase();
+      return title.includes(q) || sum.includes(q) || content.includes(q);
+    });
+  }, [byRegion, searchTerm]);
+
+  const photoPosts = useMemo(() => bySearch.filter((p) => p.section === "photo").slice(0, 8), [bySearch]);
+  const newsPosts = useMemo(() => bySearch.filter((p) => p.section !== "photo"), [bySearch]);
 
   const lead = newsPosts[0];
   const minis = newsPosts.slice(1, 4);
   const feed = newsPosts.slice(4);
 
-  // sidebar theo tab hiện tại
   const sideNew = newsPosts.slice(0, 10);
   const sideTop = [...newsPosts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+
+  const canShowMoreLocal = feed.length > visibleCount;
+  const showLoadMoreBtn = canShowMoreLocal || hasMore;
+
+  const handleLoadMore = async () => {
+    if (canShowMoreLocal) {
+      setVisibleCount((n) => n + 12);
+      return;
+    }
+    if (!hasMore || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      await fetchPage(skip, "append");
+      setVisibleCount((n) => n + 12);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không thể tải thêm bài");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const regionText =
     subTab === "vn" ? "Việt Nam" : subTab === "asia" ? "Châu Á" : subTab === "us_eu" ? "Âu Mỹ" : "Tất cả";
@@ -130,7 +182,6 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
           <h1 className="ns-title">Showbiz</h1>
         </div>
 
-        {/* ✅ Tabs: Tất cả / Việt Nam / Châu Á / Âu Mỹ */}
         <div className="ns-subnav">
           <button className={`ns-tab ${subTab === "all" ? "active" : ""}`} onClick={() => setSubTab("all")}>
             Tất cả
@@ -146,7 +197,6 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
           </button>
         </div>
 
-        {/* ✅ Ảnh sao */}
         {photoPosts.length > 0 && (
           <section className="ns-photoWrap">
             <div className="ns-photoHead">
@@ -157,11 +207,7 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
               {photoPosts.map((p) => (
                 <div key={p._id} className="ns-photoCard" onClick={() => onPostClick(p._id)}>
                   <div className="ns-photoMedia">
-                    {p.imageUrl ? (
-                      <img src={img(p.imageUrl)} alt={p.title} />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%" }} />
-                    )}
+                    {p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div style={{ width: "100%", height: "100%" }} />}
                   </div>
                   <div className="ns-photoBody">
                     <div className="ns-meta">
@@ -179,16 +225,11 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
 
         <div className="ns-grid">
           <main>
-            {/* HERO: big + 3 minis */}
             <section className="ns-hero">
               {lead ? (
                 <div className="ns-card ns-lead" onClick={() => onPostClick(lead._id)}>
                   <div className="ns-media r16x10">
-                    {lead.imageUrl ? (
-                      <img src={img(lead.imageUrl)} alt={lead.title} />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%" }} />
-                    )}
+                    {lead.imageUrl ? <img src={img(lead.imageUrl)} alt={lead.title} /> : <div style={{ width: "100%", height: "100%" }} />}
                     <div className="ns-badge">Showbiz</div>
                   </div>
                   <div className="ns-body">
@@ -203,16 +244,14 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
                 </div>
               ) : (
                 <div className="ns-card" style={{ padding: 18, color: "#6b7280", fontWeight: 800 }}>
-                  Chưa có bài Showbiz ở mục này.
+                  {(searchTerm || "").trim() ? "Không có kết quả phù hợp." : "Chưa có bài Showbiz ở mục này."}
                 </div>
               )}
 
               <div className="ns-miniList">
                 {minis.map((p) => (
                   <div key={p._id} className="ns-mini" onClick={() => onPostClick(p._id)}>
-                    <div className="ns-mini-thumb">
-                      {p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}
-                    </div>
+                    <div className="ns-mini-thumb">{p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}</div>
                     <div>
                       <div className="ns-meta">
                         <span>{fmtDM(p.createdAt)}</span>
@@ -226,13 +265,10 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
               </div>
             </section>
 
-            {/* FEED */}
             <section className="ns-feed">
               {feed.slice(0, visibleCount).map((p) => (
                 <article key={p._id} className="ns-item" onClick={() => onPostClick(p._id)}>
-                  <div className="ns-thumb">
-                    {p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}
-                  </div>
+                  <div className="ns-thumb">{p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}</div>
                   <div>
                     <div className="ns-meta">
                       <span>{fmtDM(p.createdAt)}</span>
@@ -245,15 +281,14 @@ export const ShowbizPage: React.FC<ShowbizPageProps> = ({ onPostClick }) => {
                 </article>
               ))}
 
-              {feed.length > visibleCount && (
-                <button className="ns-loadmore" onClick={() => setVisibleCount((n) => n + 12)}>
-                  Xem thêm
+              {showLoadMoreBtn && (
+                <button className="ns-loadmore" onClick={handleLoadMore} disabled={loadingMore}>
+                  {loadingMore ? "Đang tải…" : "Xem thêm"}
                 </button>
               )}
             </section>
           </main>
 
-          {/* SIDEBAR */}
           <aside className="ns-aside">
             <div className="ns-box">
               <div className="ns-box-head">

@@ -45,7 +45,9 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
   const [amount, setAmount] = useState<number>(0);
 
   const bookingId =
-    typeof window !== "undefined" ? localStorage.getItem("paymentBookingId") : null;
+    typeof window !== "undefined"
+      ? localStorage.getItem("paymentBookingId")
+      : null;
 
   const pollRef = useRef<number | null>(null);
 
@@ -150,7 +152,17 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
-  const backToBooking = () => setView("booking");
+  // ✅ Back đúng trang trước đó (history back). Nếu không có history thì fallback về booking.
+  const backSmart = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    setView("booking");
+  };
+
+  // “Vé của tôi” bạn đang muốn về booking (không cần back)
+  const goToMyTickets = () => setView("booking");
 
   const backToHome = () => {
     localStorage.removeItem("paymentBookingId");
@@ -188,7 +200,7 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
           <h1 className="payment-title">Thanh toán</h1>
           <div className="global-message error">{error}</div>
           <div className="payment-actions">
-            <button className="btn outline" onClick={backToBooking}>
+            <button className="btn outline" onClick={backSmart}>
               Quay lại
             </button>
             <button className="btn outline" onClick={backToHome}>
@@ -212,10 +224,10 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
             <h1 className="payment-title">Thanh toán chuyển khoản</h1>
             <p className="payment-subtitle">
               Quét QR để chuyển khoản. Hệ thống sẽ tự xác nhận sau khi SePay ghi nhận tiền vào.
-            </p>  
+            </p>
           </div>
 
-          <button className="btn outline small" onClick={backToBooking}>
+          <button className="btn outline small" onClick={backSmart}>
             ← Quay lại
           </button>
         </div>
@@ -234,7 +246,7 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
                 <button className="btn outline" onClick={backToHome}>
                   Về trang chủ
                 </button>
-                <button className="btn outline" onClick={backToBooking}>
+                <button className="btn outline" onClick={goToMyTickets}>
                   Về vé của tôi
                 </button>
               </div>
@@ -285,7 +297,7 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
                   <button className="btn outline" onClick={backToHome}>
                     Về trang chủ
                   </button>
-                  <button className="btn outline" onClick={backToBooking}>
+                  <button className="btn outline" onClick={goToMyTickets}>
                     Về vé của tôi
                   </button>
                 </div>
@@ -295,7 +307,6 @@ export const PaymentPage: React.FC<Props> = ({ setView }) => {
               <div className="payment-right">
                 <div className="payment-qrbox">
                   {qrImageUrl ? (
-                    // ✅ sửa class để ăn CSS -> QR sẽ nhỏ lại
                     <img className="payment-qrimg" src={qrImageUrl} alt="VietQR" />
                   ) : (
                     <div className="payment-qr--empty">
