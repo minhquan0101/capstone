@@ -38,6 +38,15 @@ function toObjectId(id: string, fieldName: string): Types.ObjectId {
   return new Types.ObjectId(id);
 }
 
+/** ✅ Check sự kiện đã diễn ra chưa */
+function isEventEnded(event: any): boolean {
+  const raw = event?.date;
+  if (!raw) return false;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return false;
+  return d.getTime() < Date.now();
+}
+
 // trả vé/ghế cho booking pending hết hạn
 async function releaseExpiredBookings() {
   const now = new Date();
@@ -148,6 +157,13 @@ export async function POST(req: NextRequest) {
     const event = await EventModel.findById(eventId).lean();
     if (!event) {
       return withCors(NextResponse.json({ message: "Không tìm thấy sự kiện" }, { status: 404 }));
+    }
+
+    // ✅ CHẶN ĐẶT VÉ NẾU SỰ KIỆN ĐÃ DIỄN RA
+    if (isEventEnded(event)) {
+      return withCors(
+        NextResponse.json({ message: "Sự kiện đã diễn ra, không thể đặt vé." }, { status: 400 })
+      );
     }
 
     const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000);
@@ -288,35 +304,38 @@ export async function POST(req: NextRequest) {
       // 3) lock seats
       try {
         const bookingId = (booking as any)._id as Types.ObjectId;
+
         await SeatLock.insertMany(
-  seats.map((s) => ({
-    eventId: new Types.ObjectId(eventId),
-    seatId: s.seatId,
-    ticketTypeId: new Types.ObjectId(s.ticketTypeId),
-    bookingId, // ✅
-    status: "held",
-    expiresAt,
-  }))
-);
+          seats.map((s) => ({
+            eventId: new Types.ObjectId(eventId),
+            seatId: s.seatId,
+            ticketTypeId: new Types.ObjectId(s.ticketTypeId),
+            bookingId, // ✅
+            status: "held",
+            expiresAt,
+          }))
+        );
       } catch (e: any) {
-  const bookingId = (booking as any)._id as Types.ObjectId;
+        const bookingId = (booking as any)._id as Types.ObjectId;
 
-  await SeatLock.deleteMany({ bookingId, status: "held" });
+        await SeatLock.deleteMany({ bookingId, status: "held" });
 
-  for (const x of heldSucceeded) {
-    await TicketType.updateOne(
-      { _id: x.ticketTypeId, held: { $gte: x.qty } },
-      { $inc: { held: -x.qty } }
-    );
-  }
+        for (const x of heldSucceeded) {
+          await TicketType.updateOne(
+            { _id: x.ticketTypeId, held: { $gte: x.qty } },
+            { $inc: { held: -x.qty } }
+          );
+        }
 
-  await Booking.updateOne({ _id: bookingId }, { $set: { status: "expired" } });
+        await Booking.updateOne({ _id: bookingId }, { $set: { status: "expired" } });
 
-  if (String(e?.code) === "11000") {
-    return withCors(NextResponse.json({ message: "Ghế vừa bị người khác chọn" }, { status: 409 }));
-  }
-  throw e;
-}
+        if (String(e?.code) === "11000") {
+          return withCors(
+            NextResponse.json({ message: "Ghế vừa bị người khác chọn" }, { status: 409 })
+          );
+        }
+        throw e;
+      }
 
       return withCors(NextResponse.json({ booking }, { status: 201 }));
     }
@@ -337,7 +356,9 @@ export async function POST(req: NextRequest) {
 
     if (ticketTypeId) {
       if (!Types.ObjectId.isValid(ticketTypeId)) {
-        return withCors(NextResponse.json({ message: "ticketTypeId không hợp lệ" }, { status: 400 }));
+        return withCors(
+          NextResponse.json({ message: "ticketTypeId không hợp lệ" }, { status: 400 })
+        );
       }
 
       const type = await TicketType.findById(ticketTypeId).lean();

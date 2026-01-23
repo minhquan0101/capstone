@@ -4,13 +4,19 @@ import "../styles/showbiz.css";
 
 interface BlogsPageProps {
   onPostClick: (postId: string) => void;
+  searchTerm: string;
 }
 
 type SideTab = "new" | "top";
 
-export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
+const PAGE_SIZE = 24;
+
+export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick, searchTerm }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [skip, setSkip] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const [sideTab, setSideTab] = useState<SideTab>("new");
@@ -28,7 +34,7 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
   const stripHtml = (html: string) => {
     const noTags = (html || "").replace(/<[^>]*>/g, " ");
     const decoded = decodeHtml(noTags);
-    return decoded.replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+    return decoded.replace(/&nbsp;/g, " ").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
   };
 
   const excerpt = (p: Post, maxLen: number) => {
@@ -45,13 +51,27 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
     return `${dd}/${mm}`;
   };
 
+  const fetchPage = async (nextSkip: number, mode: "reset" | "append") => {
+    const data = await getPosts({ type: "blog", sort: "new", limit: PAGE_SIZE, skip: nextSkip });
+    const list = data || [];
+    setHasMore(list.length === PAGE_SIZE);
+
+    if (mode === "reset") setPosts(list);
+    else setPosts((prev) => [...prev, ...list]);
+
+    setSkip(nextSkip + PAGE_SIZE);
+  };
+
+  // load page 1
   useEffect(() => {
     const run = async () => {
       try {
         setLoading(true);
-        const data = await getPosts({ type: "blog", sort: "new", limit: 200 });
-        setPosts(data || []);
         setError(null);
+        setVisibleCount(12);
+        setHasMore(true);
+        setSkip(0);
+        await fetchPage(0, "reset");
       } catch (e) {
         setError(e instanceof Error ? e.message : "Không thể tải Blogs / News");
       } finally {
@@ -59,7 +79,13 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
       }
     };
     run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // reset visible when search changes (search vẫn lọc client-side)
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [searchTerm]);
 
   const normalized = useMemo(() => {
     return (posts || []).map((p) => ({
@@ -68,12 +94,47 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
     }));
   }, [posts]);
 
-  const lead = normalized[0];
-  const minis = normalized.slice(1, 4);
-  const feed = normalized.slice(4);
+  const filtered = useMemo(() => {
+    const q = (searchTerm || "").trim().toLowerCase();
+    if (!q) return normalized;
 
-  const sideNew = normalized.slice(0, 10);
-  const sideTop = [...normalized].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+    return normalized.filter((p) => {
+      const title = (p.title || "").toLowerCase();
+      const sum = (p.summary || "").toLowerCase();
+      const content = stripHtml(p.content || "").toLowerCase();
+      return title.includes(q) || sum.includes(q) || content.includes(q);
+    });
+  }, [normalized, searchTerm]);
+
+  const lead = filtered[0];
+  const minis = filtered.slice(1, 4);
+  const feed = filtered.slice(4);
+
+  const sideNew = filtered.slice(0, 10);
+  const sideTop = [...filtered].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+
+  const canShowMoreLocal = feed.length > visibleCount;
+  const showLoadMoreBtn = canShowMoreLocal || hasMore;
+
+  const handleLoadMore = async () => {
+    // ưu tiên show thêm từ data đã có
+    if (canShowMoreLocal) {
+      setVisibleCount((n) => n + 12);
+      return;
+    }
+    // nếu hết local thì fetch thêm page
+    if (!hasMore || loadingMore) return;
+
+    try {
+      setLoadingMore(true);
+      await fetchPage(skip, "append");
+      setVisibleCount((n) => n + 12);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không thể tải thêm bài");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -110,42 +171,33 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
 
         <div className="ns-grid">
           <main>
-            {/* HERO: big + 3 minis */}
             <section className="ns-hero">
               {lead ? (
                 <div className="ns-card ns-lead" onClick={() => onPostClick(lead._id)}>
                   <div className="ns-media r16x10">
-                    {lead.imageUrl ? (
-                      <img src={img(lead.imageUrl)} alt={lead.title} />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%" }} />
-                    )}
+                    {lead.imageUrl ? <img src={img(lead.imageUrl)} alt={lead.title} /> : <div style={{ width: "100%", height: "100%" }} />}
                     <div className="ns-badge">News</div>
                   </div>
-
                   <div className="ns-body">
                     <div className="ns-meta">
                       <span>{fmtDM(lead.createdAt)}</span>
                       <span className="ns-dot" />
                       <span>{(lead.views || 0).toLocaleString()} lượt xem</span>
                     </div>
-
                     <h2 className="ns-lead-title ns-title-hover">{lead.title}</h2>
                     <p className="ns-excerpt">{excerpt(lead, 170)}</p>
                   </div>
                 </div>
               ) : (
                 <div className="ns-card" style={{ padding: 18, color: "#6b7280", fontWeight: 800 }}>
-                  Chưa có bài Blog/News.
+                  {(searchTerm || "").trim() ? "Không có kết quả phù hợp." : "Chưa có bài Blog/News."}
                 </div>
               )}
 
               <div className="ns-miniList">
                 {minis.map((p) => (
                   <div key={p._id} className="ns-mini" onClick={() => onPostClick(p._id)}>
-                    <div className="ns-mini-thumb">
-                      {p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}
-                    </div>
+                    <div className="ns-mini-thumb">{p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}</div>
                     <div>
                       <div className="ns-meta">
                         <span>{fmtDM(p.createdAt)}</span>
@@ -159,13 +211,10 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
               </div>
             </section>
 
-            {/* FEED */}
             <section className="ns-feed">
               {feed.slice(0, visibleCount).map((p) => (
                 <article key={p._id} className="ns-item" onClick={() => onPostClick(p._id)}>
-                  <div className="ns-thumb">
-                    {p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}
-                  </div>
+                  <div className="ns-thumb">{p.imageUrl ? <img src={img(p.imageUrl)} alt={p.title} /> : <div />}</div>
                   <div>
                     <div className="ns-meta">
                       <span>{fmtDM(p.createdAt)}</span>
@@ -178,28 +227,21 @@ export const BlogsPage: React.FC<BlogsPageProps> = ({ onPostClick }) => {
                 </article>
               ))}
 
-              {feed.length > visibleCount && (
-                <button className="ns-loadmore" onClick={() => setVisibleCount((n) => n + 12)}>
-                  Xem thêm
+              {showLoadMoreBtn && (
+                <button className="ns-loadmore" onClick={handleLoadMore} disabled={loadingMore}>
+                  {loadingMore ? "Đang tải…" : "Xem thêm"}
                 </button>
               )}
             </section>
           </main>
 
-          {/* SIDEBAR */}
           <aside className="ns-aside">
             <div className="ns-box">
               <div className="ns-box-head">
-                <button
-                  className={`ns-box-tab ${sideTab === "new" ? "active" : ""}`}
-                  onClick={() => setSideTab("new")}
-                >
+                <button className={`ns-box-tab ${sideTab === "new" ? "active" : ""}`} onClick={() => setSideTab("new")}>
                   Tin mới
                 </button>
-                <button
-                  className={`ns-box-tab ${sideTab === "top" ? "active" : ""}`}
-                  onClick={() => setSideTab("top")}
-                >
+                <button className={`ns-box-tab ${sideTab === "top" ? "active" : ""}`} onClick={() => setSideTab("top")}>
                   Đọc nhiều
                 </button>
               </div>

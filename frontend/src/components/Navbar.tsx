@@ -9,16 +9,19 @@ interface NavbarProps {
   selectedTags?: string[];
   onTagToggle?: (tag: string) => void;
   onClearTags?: () => void;
+
+  // ✅ NEW: search chung cho Showbiz/Blogs (App giữ state)
+  searchTerm: string;
+  onSearchChange: (v: string) => void;
 }
 
 const POPULAR_SEARCHES = ["Nhạc sống", "Sân khấu", "Thể thao", "Workshop", "Hội chợ"];
 
 /**
- * Navbar search behavior (Ticketbox-like):
- * - Gõ tới đâu: Home lọc tới đó (bắn event homeSearchQueryChanged)
- * - Dropdown: nếu có chữ => gợi ý theo event titles (đọc từ localStorage homeEventTitles)
- * - Không có chữ => show popular
- * - Click logo => reset search và về home
+ * Navbar search behavior:
+ * - Home: giữ logic cũ (dispatch event homeSearchQueryChanged)
+ * - Showbiz/Blogs: gọi onSearchChange để filter realtime trong page
+ * - Input q luôn sync với searchTerm (nguồn từ App)
  */
 export const Navbar: React.FC<NavbarProps> = ({
   currentView,
@@ -28,12 +31,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   selectedTags = [],
   onTagToggle,
   onClearTags,
+
+  searchTerm,
+  onSearchChange,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Search dropdown state
   const [searchOpen, setSearchOpen] = useState(false);
-  const [q, setQ] = useState("");
+
+  // ✅ input value hiển thị
+  const [q, setQ] = useState(searchTerm || "");
+
   const [titles, setTitles] = useState<string[]>([]);
   const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
@@ -54,21 +63,28 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, []);
 
-  // Keep input in sync with Home's current query (optional but nice)
+  // ✅ Sync input with App searchTerm
+  useEffect(() => {
+    setQ(searchTerm || "");
+  }, [searchTerm]);
+
+  // Keep input in sync with Home's saved query (only for home init)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("homeSearchQuery") || "";
-      setQ(saved);
+      // chỉ sync từ homeSearchQuery nếu đang ở Home và App chưa có gì
+      if (currentView === "home" && !(searchTerm || "").trim()) {
+        setQ(saved);
+        onSearchChange(saved);
+      }
     } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const suggestions = useMemo(() => {
     const t = q.trim().toLowerCase();
     if (!t) return [];
-    return titles
-  .filter((x: string) => x && x.toLowerCase().includes(t))
-  .slice(0, 6);
-
+    return titles.filter((x: string) => x && x.toLowerCase().includes(t)).slice(0, 6);
   }, [q, titles]);
 
   // click outside closes dropdown
@@ -90,24 +106,43 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const publishQuery = (value: string) => {
+  // ✅ Home publish (giữ nguyên)
+  const publishQueryToHome = (value: string) => {
     localStorage.setItem("homeSearchQuery", value);
     window.dispatchEvent(new CustomEvent("homeSearchQueryChanged", { detail: value }));
   };
 
+  // ✅ Update search globally + optionally publish to home
+  const applySearch = (value: string, opts?: { publishHome?: boolean }) => {
+    const v = value ?? "";
+    setQ(v);
+    onSearchChange(v);
+
+    if (opts?.publishHome) {
+      publishQueryToHome(v.trim());
+    }
+  };
+
+  const resetSearch = () => {
+    applySearch("", { publishHome: currentView === "home" });
+    setSearchOpen(false);
+  };
+
   const resetSearchAndGoHome = () => {
-    setQ("");
-    publishQuery("");
+    // reset cả home + global
+    applySearch("", { publishHome: true });
     setSearchOpen(false);
     setView("home");
   };
 
   const commitSearch = (value: string) => {
     const v = (value ?? "").trim();
-    setQ(v);
-    publishQuery(v);
-    setView("home");
+    // commit: cập nhật global
+    applySearch(v, { publishHome: currentView === "home" });
     setSearchOpen(false);
+
+    // nếu đang ở trang khác home, KHÔNG ép về home nữa
+    // (để showbiz/blog tìm kiếm ngay trên trang đó)
   };
 
   return (
@@ -130,7 +165,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Center: Search anchored dropdown */}
         <div className="navbar-search" ref={searchBoxRef}>
           <div className={`tb-search ${searchOpen ? "open" : ""}`}>
-            <span className="tb-search-icon">🔍</span>
+            <span className="tb-search-icon"></span>
 
             <input
               className="tb-search-input"
@@ -139,23 +174,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               onFocus={() => setSearchOpen(true)}
               onChange={(e) => {
                 const v = e.target.value;
-                setQ(v);
                 setSearchOpen(true);
 
-                // ✅ auto-search: gõ tới đâu Home lọc tới đó
-                publishQuery(v.trim());
+                // ✅ realtime:
+                // - Home: vẫn publish event để Home lọc
+                // - Showbiz/Blogs: page lọc bằng searchTerm
+                applySearch(v, { publishHome: currentView === "home" });
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") commitSearch(q);
               }}
             />
 
-            {/* ✅ clear button */}
+            {/* clear button */}
             {q.trim() && (
               <button
                 type="button"
                 className="tb-search-clear"
-                onClick={() => resetSearchAndGoHome()}
+                onClick={() => resetSearch()}
                 aria-label="Xóa tìm kiếm"
               >
                 ✕
@@ -221,28 +257,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {menuOpen && (
                 <div className="user-menu-dropdown">
-                  <button
-                    type="button"
-                    className="user-menu-item"
-                    onClick={() => handleNavigate("booking")}
-                  >
+                  <button type="button" className="user-menu-item" onClick={() => handleNavigate("booking")}>
                     <span>Vé của tôi</span>
                   </button>
 
-                  <button
-                    type="button"
-                    className="user-menu-item"
-                    onClick={() => handleNavigate("profile")}
-                  >
+                  <button type="button" className="user-menu-item" onClick={() => handleNavigate("profile")}>
                     <span>Tài khoản của tôi</span>
                   </button>
 
                   {user.role === "admin" && (
-                    <button
-                      type="button"
-                      className="user-menu-item"
-                      onClick={() => handleNavigate("admin")}
-                    >
+                    <button type="button" className="user-menu-item" onClick={() => handleNavigate("admin")}>
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}

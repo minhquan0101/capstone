@@ -58,6 +58,12 @@ const safeDate = (v?: any) => {
   return isNaN(d.getTime()) ? null : d;
 };
 
+// ✅ NEW: check sự kiện đã diễn ra
+const isEndedDate = (v?: any) => {
+  const d = safeDate(v);
+  return d ? d.getTime() < Date.now() : false;
+};
+
 const shufflePick = <T,>(arr: T[], n: number) => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -78,6 +84,11 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
   const [searchResults, setSearchResults] = useState<Event[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // ✅ NEW: price filter + sort state
+  const [priceMin, setPriceMin] = useState<string>("");
+  const [priceMax, setPriceMax] = useState<string>("");
+  const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
+
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
   // ✅ Nhận searchQuery từ Navbar (localStorage + event)
@@ -97,48 +108,68 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
     return () => window.removeEventListener("homeSearchQueryChanged", handler);
   }, []);
 
-  // Load Data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const formatVND = (digits: string) => {
+  const n = Number(digits || 0);
+  if (!digits) return "";
+  if (!Number.isFinite(n)) return "";
+  return n.toLocaleString("vi-VN"); // 100.000
+};
 
-        const [bannerData, eventsData] = await Promise.all([getBanner(), getEvents()]);
+const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
 
-        if (bannerData?.imageUrl) {
-          const bannerUrl = bannerData.imageUrl.startsWith("http")
-            ? bannerData.imageUrl
-            : `${backendBase}${bannerData.imageUrl}`;
-          setBanner(bannerUrl);
-        } else {
-          setBanner(null);
-        }
 
-        const processedEvents = (eventsData || []).map((e: Event) => {
-          const tags = Array.isArray(e.tags)
-            ? e.tags.filter((t) => t && String(t).trim().length > 0)
-            : e.tags
+  const normalizeMoneyInput = (v: string) => v.replace(/[^\d]/g, "");
+
+  // ✅ Load Data (tách thành function để “Áp dụng” / “Xoá lọc” gọi lại)
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [bannerData, eventsData] = await Promise.all([
+        getBanner(),
+        getEvents({
+          priceMin: priceMin.trim() ? priceMin.trim() : undefined,
+          priceMax: priceMax.trim() ? priceMax.trim() : undefined,
+          priceSort: priceSort || undefined,
+        }),
+      ]);
+
+      if (bannerData?.imageUrl) {
+        const bannerUrl = bannerData.imageUrl.startsWith("http")
+          ? bannerData.imageUrl
+          : `${backendBase}${bannerData.imageUrl}`;
+        setBanner(bannerUrl);
+      } else {
+        setBanner(null);
+      }
+
+      const processedEvents = (eventsData || []).map((e: Event) => {
+        const tags = Array.isArray(e.tags)
+          ? e.tags.filter((t) => t && String(t).trim().length > 0)
+          : e.tags
             ? [String(e.tags).trim()].filter((t) => t.length > 0)
             : [];
-          return { ...e, tags };
-        });
+        return { ...e, tags };
+      });
 
-        setAllEvents(processedEvents);
-        try {
-  const titles = processedEvents.map((e: any) => String(e.title || "")).filter(Boolean);
-  localStorage.setItem("homeEventTitles", JSON.stringify(titles));
-} catch {}
+      setAllEvents(processedEvents);
 
-      } catch (err: any) {
-        console.error("Error loading home data:", err);
-        setError("Không thể tải dữ liệu trang chủ");
-      } finally {
-        setLoading(false);
-      }
-    };
+      try {
+        const titles = processedEvents.map((e: any) => String(e.title || "")).filter(Boolean);
+        localStorage.setItem("homeEventTitles", JSON.stringify(titles));
+      } catch {}
+    } catch (err: any) {
+      console.error("Error loading home data:", err);
+      setError("Không thể tải dữ liệu trang chủ");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backendBase]);
 
   // Filter events by tags
@@ -254,6 +285,25 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
+  const onApplyPriceFilter = () => {
+    // validate nhẹ: min <= max
+    const mn = priceMin.trim() ? Number(priceMin) : null;
+    const mx = priceMax.trim() ? Number(priceMax) : null;
+    if (mn !== null && mx !== null && Number.isFinite(mn) && Number.isFinite(mx) && mn > mx) {
+      alert("Giá từ không được lớn hơn giá đến.");
+      return;
+    }
+    loadData();
+  };
+
+  const onClearPriceFilter = () => {
+    setPriceMin("");
+    setPriceMax("");
+    setPriceSort("");
+    // gọi lại sau khi setState
+    setTimeout(() => loadData(), 0);
+  };
+
   if (loading)
     return (
       <div className="loading-state">
@@ -308,6 +358,57 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
       ) : null}
 
       {error && <div className="global-message error">{error}</div>}
+
+      
+
+      {/* ✅ NEW: Price filter + sort bar (chỉ show khi không search và không tag filter) */}
+      {!isSearching && !hasActiveFilter ? (
+  <div className="content-wrapper" style={{ paddingTop: 10 }}>
+    <div className="price-filter-bar">
+      <div className="price-filter-fields">
+        <input
+  className="price-filter-input"
+  value={formatVND(priceMin)}
+  onChange={(e) => setPriceMin(toDigits(e.target.value))}
+  onBlur={(e) => setPriceMin(toDigits(e.target.value))} // đảm bảo sạch
+  placeholder="Giá từ"
+  inputMode="numeric"
+/>
+
+<span className="price-filter-sep">—</span>
+
+<input
+  className="price-filter-input"
+  value={formatVND(priceMax)}
+  onChange={(e) => setPriceMax(toDigits(e.target.value))}
+  onBlur={(e) => setPriceMax(toDigits(e.target.value))}
+  placeholder="Giá đến"
+  inputMode="numeric"
+/>
+
+        <select
+          className="price-filter-select"
+          value={priceSort}
+          onChange={(e) => setPriceSort(e.target.value as any)}
+        >
+          <option value="">Sắp xếp theo giá</option>
+          <option value="asc">Giá: tăng dần</option>
+          <option value="desc">Giá: giảm dần</option>
+        </select>
+      </div>
+
+      <div className="price-filter-actions">
+        <button className="btn small" onClick={onApplyPriceFilter}>
+          Áp dụng
+        </button>
+        <button className="btn outline small" onClick={onClearPriceFilter}>
+          Xoá lọc
+        </button>
+      </div>
+    </div>
+  </div>
+) : null}
+
 
       <div className="content-wrapper">
         {isSearching ? (
@@ -414,7 +515,25 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
                           backgroundPosition: "center",
                           backgroundRepeat: "no-repeat",
                         }}
-                      />
+                      >
+                        {isEndedDate((ev as any).date) ? (
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: 10,
+                              right: 10,
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              background: "rgba(249,115,22,0.95)",
+                              color: "#fff",
+                            }}
+                          >
+                            Đã diễn ra
+                          </span>
+                        ) : null}
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -526,63 +645,89 @@ const EventCard: React.FC<EventCardProps> = ({
   formatDate,
   onBooking,
   onOpenDetail,
-}) => (
-  <article
-    className="event-card special-card"
-    onClick={() => onOpenDetail(event._id)}
-    style={{ cursor: "pointer" }}
-    title="Xem chi tiết"
-  >
-    <div
-      className="event-thumb"
-      style={{
-        backgroundImage: `url(${getImageUrl((event as any).imageUrl)})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
+}) => {
+  const ended = (event as any).date ? isEndedDate((event as any).date) : false;
+
+  return (
+    <article
+      className="event-card special-card"
+      onClick={() => onOpenDetail(event._id)}
+      style={{ cursor: "pointer" }}
+      title="Xem chi tiết"
     >
-      <span className="event-tag">Event</span>
-    </div>
-
-    <div className="event-body">
-      <h3>{(event as any).title}</h3>
-      <p className="event-meta">{(event as any).location}</p>
-      <p className="event-meta">{formatDate((event as any).date)}</p>
-
-      {event.tags && event.tags.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
-          {event.tags.map((tag, idx) => (
-            <span
-              key={idx}
-              style={{
-                display: "inline-block",
-                padding: "2px 8px",
-                backgroundColor: "#eff6ff",
-                color: "#3b82f6",
-                borderRadius: "12px",
-                fontSize: "11px",
-                fontWeight: "500",
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <button
-        className="btn small full-width"
-        onClick={(e) => {
-          e.stopPropagation();
-          onBooking(event._id);
+      <div
+        className="event-thumb"
+        style={{
+          position: "relative",
+          backgroundImage: `url(${getImageUrl((event as any).imageUrl)})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}
       >
-        Đặt vé ngay
-      </button>
-    </div>
-  </article>
-);
+        <span className="event-tag">Event</span>
+
+        {ended ? (
+          <span
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 700,
+              background: "rgba(249,115,22,0.95)",
+              color: "#fff",
+            }}
+          >
+            Đã diễn ra
+          </span>
+        ) : null}
+      </div>
+
+      <div className="event-body">
+        <h3>{(event as any).title}</h3>
+        <p className="event-meta">{(event as any).location}</p>
+        <p className="event-meta">{formatDate((event as any).date)}</p>
+
+        {event.tags && event.tags.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
+            {event.tags.map((tag, idx) => (
+              <span
+                key={idx}
+                style={{
+                  display: "inline-block",
+                  padding: "2px 8px",
+                  backgroundColor: "#eff6ff",
+                  color: "#3b82f6",
+                  borderRadius: "12px",
+                  fontSize: "11px",
+                  fontWeight: "500",
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <button
+          className="btn small full-width"
+          disabled={ended}
+          style={ended ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (ended) return;
+            onBooking(event._id);
+          }}
+        >
+          {ended ? "Đã diễn ra" : "Đặt vé ngay"}
+        </button>
+      </div>
+    </article>
+  );
+};
 
 type RowEventCardProps = {
   event: Event;
@@ -597,17 +742,39 @@ const RowEventCard: React.FC<RowEventCardProps> = ({
   formatDate,
   onOpenDetail,
 }) => {
+  const ended = isEndedDate((event as any).date);
+
   return (
     <article className="home-row-card" onClick={() => onOpenDetail(event._id)} style={{ cursor: "pointer" }}>
       <div
         className="home-row-thumb"
         style={{
+          position: "relative",
           backgroundImage: `url(${getImageUrl((event as any).imageUrl)})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}
-      />
+      >
+        {ended ? (
+          <span
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              padding: "3px 8px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+              background: "rgba(249,115,22,0.95)",
+              color: "#fff",
+            }}
+          >
+            Đã diễn ra
+          </span>
+        ) : null}
+      </div>
+
       <div className="home-row-body">
         <div className="home-row-title">{(event as any).title}</div>
         <div className="home-row-price">

@@ -59,6 +59,11 @@ const remain = (total?: number, sold?: number, held?: number) => {
   return Math.max(0, t - s - h);
 };
 
+const safeDate = (v?: any) => {
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 export const EventDetail: React.FC<Props> = ({ user, setView }) => {
   const [event, setEvent] = useState<EventDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,7 +73,9 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
   const [tab, setTab] = useState<"intro" | "ticket" | "place">("intro");
   const [ticketTypeId, setTicketTypeId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [paymentMethod, setPaymentMethod] = useState<"momo" | "credit_card" | "bank_transfer">("momo");
+  const [paymentMethod, setPaymentMethod] = useState<"momo" | "credit_card" | "bank_transfer">(
+    "momo"
+  );
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -130,6 +137,14 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
     return (event.seatMapMode && event.seatMapMode !== "none") || Boolean(event.seatMapUrl);
   }, [event]);
 
+  // ✅ NEW: xác định sự kiện đã diễn ra
+  const isEnded = useMemo(() => {
+    if (!event?.date) return false;
+    const d = safeDate(event.date);
+    if (!d) return false;
+    return d.getTime() < Date.now();
+  }, [event?.date]);
+
   // auto chọn vé đầu tiên còn vé (chỉ dùng cho flow không seatmap)
   useEffect(() => {
     if (!event) return;
@@ -189,6 +204,11 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
 
   const goSeatMap = () => {
     if (!event) return;
+    if (isEnded) {
+      setToast("Sự kiện đã diễn ra, không thể đặt vé.");
+      setTimeout(() => setToast(null), 2000);
+      return;
+    }
     if (typeof window !== "undefined") {
       localStorage.setItem("selectedEventId", event._id);
     }
@@ -213,16 +233,23 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
   const canSubmit = useMemo(() => {
     if (!event) return false;
     if (!user) return false;
+    if (isEnded) return false; // ✅ NEW
     if (hasTicketTypes && !selectedType) return false;
     if (available <= 0) return false;
     if (qty > available) return false;
     return true;
-  }, [event, user, hasTicketTypes, selectedType, available, qty]);
+  }, [event, user, isEnded, hasTicketTypes, selectedType, available, qty]);
 
   const submitBooking = async () => {
     try {
       setErr(null);
       setToast(null);
+
+      if (isEnded) {
+        setToast("Sự kiện đã diễn ra, không thể đặt vé.");
+        setTimeout(() => setToast(null), 2000);
+        return;
+      }
 
       if (!user) {
         setToast("Bạn cần đăng nhập để đặt vé.");
@@ -275,13 +302,24 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
     }
   };
 
-  if (loading) return <div className="loading-state"><p>Đang tải...</p></div>;
+  if (loading)
+    return (
+      <div className="loading-state">
+        <p>Đang tải...</p>
+      </div>
+    );
 
   if (!event) {
     return (
       <div className="event-detail-page">
-        {err ? <div className="global-message error">{err}</div> : <div className="global-message error">Không tìm thấy sự kiện.</div>}
-        <button className="btn outline" onClick={back}>Quay lại</button>
+        {err ? (
+          <div className="global-message error">{err}</div>
+        ) : (
+          <div className="global-message error">Không tìm thấy sự kiện.</div>
+        )}
+        <button className="btn outline" onClick={back}>
+          Quay lại
+        </button>
       </div>
     );
   }
@@ -298,15 +336,42 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
 
         <div className="tkb-hero__container">
           <div className="tkb-hero__topbar">
-            <button className="btn outline" onClick={back}>← Trang chủ</button>
+            <button className="btn outline" onClick={back}>
+              ← Trang chủ
+            </button>
             <div className="tkb-hero__right">
-              <button className="btn outline" onClick={share}>Chia sẻ</button>
+              <button className="btn outline" onClick={share}>
+                Chia sẻ
+              </button>
             </div>
           </div>
 
           <div className="tkb-hero__grid">
-            <div className="tkb-poster">
-              {heroImage ? <img src={heroImage} alt={event.title} /> : <div className="tkb-poster__placeholder" />}
+            <div className="tkb-poster" style={{ position: "relative" }}>
+              {heroImage ? (
+                <img src={heroImage} alt={event.title} />
+              ) : (
+                <div className="tkb-poster__placeholder" />
+              )}
+
+              {/* ✅ Badge đã diễn ra */}
+              {isEnded ? (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 10,
+                    right: 10,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    background: "rgba(249,115,22,0.95)",
+                    color: "#fff",
+                  }}
+                >
+                  Đã diễn ra
+                </span>
+              ) : null}
             </div>
 
             <div className="tkb-hero__info">
@@ -316,8 +381,19 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
 
               <div className="tkb-badges">
                 {event.isFeatured ? <span className="tkb-badge">Nổi bật</span> : null}
-                {event.isTrending ? <span className="tkb-badge tkb-badge--ghost">Xu hướng</span> : null}
-                {minPrice > 0 ? <span className="tkb-badge tkb-badge--ghost">Giá từ {money(minPrice)}</span> : null}
+                {event.isTrending ? (
+                  <span className="tkb-badge tkb-badge--ghost">Xu hướng</span>
+                ) : null}
+                {minPrice > 0 ? (
+                  <span className="tkb-badge tkb-badge--ghost">Giá từ {money(minPrice)}</span>
+                ) : null}
+
+                {/* ✅ Badge text */}
+                {isEnded ? (
+                  <span className="tkb-badge" style={{ background: "rgba(249,115,22,0.95)" }}>
+                    Đã diễn ra
+                  </span>
+                ) : null}
               </div>
 
               {/* Display tags */}
@@ -333,7 +409,7 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                         color: "#3b82f6",
                         borderRadius: "16px",
                         fontSize: "13px",
-                        fontWeight: "500"
+                        fontWeight: "500",
                       }}
                     >
                       {tag}
@@ -353,23 +429,49 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                 </div>
               </div>
 
+              {/* ✅ Nếu đã diễn ra -> disable nút mua vé */}
               <div className="tkb-hero__actions">
                 <button
                   className="tkb-btn-primary"
-                  onClick={() => (hasSeatMap ? goSeatMap() : scrollToBuy())}
+                  disabled={isEnded}
+                  style={isEnded ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+                  onClick={() => {
+                    if (isEnded) return;
+                    return hasSeatMap ? goSeatMap() : scrollToBuy();
+                  }}
                 >
-                  {hasSeatMap ? "Mua vé (chọn ghế)" : "Mua vé"}
+                  {isEnded ? "Đã diễn ra" : hasSeatMap ? "Mua vé (chọn ghế)" : "Mua vé"}
                 </button>
-
-                {!hasSeatMap ? (
-                  <button className="btn outline" onClick={() => setView("booking")}>
-                    Mở trang đặt vé
-                  </button>
-                ) : null}
               </div>
 
+              {isEnded ? (
+  <div
+    style={{
+      marginTop: 12,
+      padding: "10px 14px",
+      borderRadius: 12,
+      background: "rgba(255,255,255,0.10)",   // nền xám nhẹ trên hero tối
+      border: "1px solid rgba(255,255,255,0.18)",
+      color: "rgba(255,255,255,0.82)",        // chữ sáng vừa đủ, không chói
+      fontWeight: 600,
+      lineHeight: 1.4,
+      position: "relative",
+      zIndex: 3,
+      backdropFilter: "blur(6px)",            // nhìn “mịn” hơn
+    }}
+  >
+    Sự kiện đã diễn ra — không thể đặt vé.
+  </div>
+) : null}
+
+
+
               {toast ? <div className="tkb-toast">{toast}</div> : null}
-              {err ? <div className="global-message error" style={{ marginTop: 10 }}>{err}</div> : null}
+              {err ? (
+                <div className="global-message error" style={{ marginTop: 10 }}>
+                  {err}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -382,15 +484,32 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
             {/* LEFT */}
             <main className="tkb-main">
               <div className="tkb-tabs">
-                <button className={`tkb-tab ${tab === "intro" ? "active" : ""}`} onClick={() => setTab("intro")}>Giới thiệu</button>
-                <button className={`tkb-tab ${tab === "ticket" ? "active" : ""}`} onClick={() => setTab("ticket")}>Thông tin vé</button>
-                <button className={`tkb-tab ${tab === "place" ? "active" : ""}`} onClick={() => setTab("place")}>Địa điểm</button>
+                <button
+                  className={`tkb-tab ${tab === "intro" ? "active" : ""}`}
+                  onClick={() => setTab("intro")}
+                >
+                  Giới thiệu
+                </button>
+                <button
+                  className={`tkb-tab ${tab === "ticket" ? "active" : ""}`}
+                  onClick={() => setTab("ticket")}
+                >
+                  Thông tin vé
+                </button>
+                <button
+                  className={`tkb-tab ${tab === "place" ? "active" : ""}`}
+                  onClick={() => setTab("place")}
+                >
+                  Địa điểm
+                </button>
               </div>
 
               {tab === "intro" ? (
                 <section className="tkb-card">
                   <h2 className="tkb-card__title">Giới thiệu</h2>
-                  <p className="tkb-card__text">{event.description?.trim() ? event.description : "Chưa có mô tả."}</p>
+                  <p className="tkb-card__text">
+                    {event.description?.trim() ? event.description : "Chưa có mô tả."}
+                  </p>
                 </section>
               ) : null}
 
@@ -406,11 +525,15 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                           <div key={t._id} className="tkb-ticketrow">
                             <div className="tkb-ticketrow__left">
                               <div className="tkb-ticketrow__name">{t.name}</div>
-                              <div className="tkb-ticketrow__sub">Còn {r} / {t.total}</div>
+                              <div className="tkb-ticketrow__sub">
+                                Còn {r} / {t.total}
+                              </div>
                             </div>
                             <div className="tkb-ticketrow__right">
                               <div className="tkb-ticketrow__price">{money(Number(t.price))}</div>
-                              <span className={`tkb-pill ${r <= 0 ? "bad" : "ok"}`}>{r <= 0 ? "Hết vé" : "Còn vé"}</span>
+                              <span className={`tkb-pill ${r <= 0 ? "bad" : "ok"}`}>
+                                {r <= 0 ? "Hết vé" : "Còn vé"}
+                              </span>
                             </div>
                           </div>
                         );
@@ -425,14 +548,14 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                         </div>
                       </div>
                       <div className="tkb-ticketrow__right">
-                        <div className="tkb-ticketrow__price">{money(Number(event.priceFrom ?? event.price ?? 0))}</div>
+                        <div className="tkb-ticketrow__price">
+                          {money(Number(event.priceFrom ?? event.price ?? 0))}
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="tkb-note">
-                    Vé được giữ chỗ 15 phút sau khi đặt (pending).
-                  </div>
+                  <div className="tkb-note">Vé được giữ chỗ 15 phút sau khi đặt (pending).</div>
                 </section>
               ) : null}
 
@@ -460,7 +583,11 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                   <div>
                     <div className="tkb-buycard__label">Giá</div>
                     <div className="tkb-buycard__price">
-                      {hasTicketTypes ? money(unitPrice) : (minPrice > 0 ? `Từ ${money(minPrice)}` : "—")}
+                      {hasTicketTypes
+                        ? money(unitPrice)
+                        : minPrice > 0
+                        ? `Từ ${money(minPrice)}`
+                        : "—"}
                     </div>
                   </div>
                   <div className="tkb-buycard__remain">
@@ -480,6 +607,23 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                   </div>
                 </div>
 
+                {/* ✅ NOTE: nếu đã diễn ra */}
+                {isEnded ? (
+                  <div
+                    className="tkb-buycard__block"
+                    style={{
+                      background: "rgba(249,115,22,0.10)",
+                      borderRadius: 14,
+                      padding: 14,
+                      marginTop: 10,
+                      color: "#9a3412",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Đã diễn ra — không thể đặt vé.
+                  </div>
+                ) : null}
+
                 {/* ✅ Nếu có seatmap: chỉ hiển thị nút Chọn ghế */}
                 {hasSeatMap ? (
                   <>
@@ -488,12 +632,19 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                       <div style={{ opacity: 0.85, marginBottom: 10 }}>
                         Sự kiện này có sơ đồ chỗ ngồi/khu vực. Bạn cần chọn chỗ trước khi thanh toán.
                       </div>
-                      <button className="tkb-btn-primary tkb-btn-full" onClick={goSeatMap}>
-                        {event.seatMapMode === "zone" ? "Chọn khu vực" : "Chọn ghế"}
+                      <button
+                        className="tkb-btn-primary tkb-btn-full"
+                        onClick={goSeatMap}
+                        disabled={isEnded}
+                        style={isEnded ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+                      >
+                        {isEnded ? "Đã diễn ra" : event.seatMapMode === "zone" ? "Chọn khu vực" : "Chọn ghế"}
                       </button>
                     </div>
 
-                    <div className="tkb-buycard__foot">* Vé sẽ được giữ chỗ 15 phút sau khi bạn chọn chỗ.</div>
+                    <div className="tkb-buycard__foot">
+                      * Vé sẽ được giữ chỗ 15 phút sau khi bạn chọn chỗ.
+                    </div>
                   </>
                 ) : (
                   <>
@@ -504,17 +655,21 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                           {ticketTypes.map((t) => {
                             const r = remain(t.total, t.sold, t.held);
                             const active = t._id === ticketTypeId;
+                            const disabled = isEnded || r <= 0;
                             return (
                               <button
                                 key={t._id}
-                                className={`tkb-ticketbtn ${active ? "active" : ""} ${r <= 0 ? "disabled" : ""}`}
+                                className={`tkb-ticketbtn ${active ? "active" : ""} ${
+                                  disabled ? "disabled" : ""
+                                }`}
                                 onClick={() => {
-                                  if (r <= 0) return;
+                                  if (disabled) return;
                                   setTicketTypeId(t._id);
                                   setQuantity(1);
                                   setToast(null);
                                 }}
                                 type="button"
+                                disabled={disabled}
                               >
                                 <div className="tkb-ticketbtn__row">
                                   <div className="tkb-ticketbtn__name">{t.name}</div>
@@ -531,23 +686,64 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                     <div className="tkb-buycard__block">
                       <div className="tkb-buycard__blockTitle">Số lượng</div>
                       <div className="tkb-qty">
-                        <button className="tkb-qty__btn" onClick={decQty} disabled={submitting || qty <= 1} type="button">−</button>
+                        <button
+                          className="tkb-qty__btn"
+                          onClick={decQty}
+                          disabled={submitting || qty <= 1 || isEnded}
+                          type="button"
+                        >
+                          −
+                        </button>
                         <input
                           className="tkb-qty__input"
                           value={qty}
-                          onChange={(e) => setQuantity(Number(e.target.value || 1))}
+                          onChange={(e) => {
+                            if (isEnded) return;
+                            setQuantity(Number(e.target.value || 1));
+                          }}
                           inputMode="numeric"
+                          disabled={isEnded}
                         />
-                        <button className="tkb-qty__btn" onClick={incQty} disabled={submitting || qty >= (available || 1)} type="button">+</button>
+                        <button
+                          className="tkb-qty__btn"
+                          onClick={incQty}
+                          disabled={submitting || qty >= (available || 1) || isEnded}
+                          type="button"
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
 
                     <div className="tkb-buycard__block">
                       <div className="tkb-buycard__blockTitle">Thanh toán</div>
                       <div className="tkb-pay">
-                        <button className={`tkb-pay__btn ${paymentMethod === "momo" ? "active" : ""}`} onClick={() => setPaymentMethod("momo")} type="button">MoMo</button>
-                        <button className={`tkb-pay__btn ${paymentMethod === "credit_card" ? "active" : ""}`} onClick={() => setPaymentMethod("credit_card")} type="button">Thẻ</button>
-                        <button className={`tkb-pay__btn ${paymentMethod === "bank_transfer" ? "active" : ""}`} onClick={() => setPaymentMethod("bank_transfer")} type="button">CK</button>
+                        <button
+                          className={`tkb-pay__btn ${paymentMethod === "momo" ? "active" : ""}`}
+                          onClick={() => !isEnded && setPaymentMethod("momo")}
+                          type="button"
+                          disabled={isEnded}
+                        >
+                          MoMo
+                        </button>
+                        <button
+                          className={`tkb-pay__btn ${paymentMethod === "credit_card" ? "active" : ""}`}
+                          onClick={() => !isEnded && setPaymentMethod("credit_card")}
+                          type="button"
+                          disabled={isEnded}
+                        >
+                          Thẻ
+                        </button>
+                        <button
+                          className={`tkb-pay__btn ${
+                            paymentMethod === "bank_transfer" ? "active" : ""
+                          }`}
+                          onClick={() => !isEnded && setPaymentMethod("bank_transfer")}
+                          type="button"
+                          disabled={isEnded}
+                        >
+                          CK
+                        </button>
                       </div>
                     </div>
 
@@ -557,8 +753,13 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                     </div>
 
                     {!user ? (
-                      <button className="tkb-btn-primary tkb-btn-full" onClick={() => setView("login")}>
-                        Đăng nhập để đặt vé
+                      <button
+                        className="tkb-btn-primary tkb-btn-full"
+                        onClick={() => setView("login")}
+                        disabled={isEnded}
+                        style={isEnded ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+                      >
+                        {isEnded ? "Đã diễn ra" : "Đăng nhập để đặt vé"}
                       </button>
                     ) : (
                       <button
@@ -566,7 +767,7 @@ export const EventDetail: React.FC<Props> = ({ user, setView }) => {
                         onClick={submitBooking}
                         disabled={!canSubmit || submitting}
                       >
-                        {submitting ? "Đang đặt..." : "Đặt vé"}
+                        {submitting ? "Đang đặt..." : isEnded ? "Đã diễn ra" : "Đặt vé"}
                       </button>
                     )}
 

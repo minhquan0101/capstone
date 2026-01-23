@@ -29,6 +29,9 @@ const App: React.FC = () => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  // ✅ NEW: search chung cho Navbar -> Showbiz/Blogs
+  const [searchTerm, setSearchTerm] = useState("");
+
   // ===== Helpers for URL <-> View =====
   const pathFor = (v: View, postId: string | null) => {
     const safe = (s?: string | null) => (s ? encodeURIComponent(s) : "");
@@ -252,6 +255,9 @@ const App: React.FC = () => {
             );
           }}
           onClearTags={() => setSelectedTags([])}
+          // ✅ NEW
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
       )}
 
@@ -266,13 +272,15 @@ const App: React.FC = () => {
         {/* ✅ TRANG THANH TOÁN */}
         {view === "payment" && <PaymentPage setView={setView} />}
 
-        {view === "showbiz" && <ShowbizPage onPostClick={openShowbizDetail} />}
+        {/* ✅ truyền searchTerm vào Showbiz */}
+        {view === "showbiz" && <ShowbizPage onPostClick={openShowbizDetail} searchTerm={searchTerm} />}
 
         {view === "showbizDetail" && selectedPostId && (
           <ShowbizDetailPage postId={selectedPostId} onBack={() => setView("showbiz")} />
         )}
 
-        {view === "blogs" && <BlogsPage onPostClick={openBlogDetail} />}
+        {/* ✅ truyền searchTerm vào Blogs */}
+        {view === "blogs" && <BlogsPage onPostClick={openBlogDetail} searchTerm={searchTerm} />}
 
         {view === "blogDetail" && selectedPostId && (
           <BlogDetailPage postId={selectedPostId} onBack={() => setView("blogs")} />
