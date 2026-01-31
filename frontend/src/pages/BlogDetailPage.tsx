@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import DOMPurify from "dompurify";
 import { API_BASE, getPost, getPosts, Post } from "../utils/api";
 import "../styles/showbiz.css";
 
@@ -41,6 +42,16 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
       month: "2-digit",
       year: "numeric",
     });
+  };
+
+  // ✅ click mở bài theo đúng route hiện tại của bạn
+  const openPostById = (id: string) => {
+    if (onOpenPost) return onOpenPost(id);
+
+    // app bạn đang chạy dạng /blogs/:id
+    const next = `/blogs/${id}`;
+    window.history.pushState({}, "", next);
+    window.dispatchEvent(new PopStateEvent("popstate"));
   };
 
   useEffect(() => {
@@ -91,7 +102,6 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
       const a = normalizeSrc(src);
       const b = normalizeSrc(heroUrl);
 
-      // nếu trùng (hoặc chứa nhau) => remove
       if (a && b && (a.includes(b) || b.includes(a))) {
         firstImg.remove();
         return doc.body.innerHTML;
@@ -102,23 +112,27 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
     }
   };
 
-  // ✅ fix ảnh trong content nếu src là "/uploads/..." + remove duplicate hero img
+  // ✅ render HTML + fix ảnh inline + sanitize + remove duplicate hero image
   const html = useMemo(() => {
     if (!post) return "";
-    const raw = post.content || "";
 
-    const isHtmlLike = /<\/?[a-z][\s\S]*>/i.test(raw);
-    const normalized = isHtmlLike ? raw : raw.replace(/\n/g, "<br/>");
+    let raw = post.content || "";
+    raw = raw.replace(/&nbsp;/g, " ").replace(/\u00A0/g, " ");
+    raw = raw.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "");
 
-    // fix /uploads
-    const fixed = normalized.replace(
-      /src=(["'])(\/uploads\/[^"']+)\1/g,
-      (_m, q, path) => `src=${q}${backendBase}${path}${q}`
-    );
+    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(raw);
+    if (!looksLikeHtml) raw = raw.replace(/\n/g, "<br/>");
 
-    // remove duplicate first image
+    // Fix src="/uploads/.." hoặc src="/..."
+    raw = raw.replace(/src="(\/[^"]+)"/g, `src="${backendBase}$1"`);
+
+    // ✅ bỏ style inline gây “ô trắng/viền”
+    const sanitized = DOMPurify.sanitize(raw, {
+      FORBID_ATTR: ["style"],
+    });
+
     const heroUrl = post.imageUrl ? getImageUrl(post.imageUrl) : "";
-    return removeDuplicateFirstImage(fixed, heroUrl);
+    return removeDuplicateFirstImage(sanitized, heroUrl);
   }, [post, backendBase]);
 
   const normalizedList = useMemo(() => {
@@ -137,7 +151,9 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
     return (
       <div className="ns-page">
         <div className="ns-container">
-          <div style={{ padding: 28, color: "#6b7280", fontWeight: 800 }}>Đang tải…</div>
+          <div style={{ padding: 28, color: "#6b7280", fontWeight: 800 }}>
+            Đang tải…
+          </div>
         </div>
       </div>
     );
@@ -177,14 +193,12 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
               <span>{(post.views || 0).toLocaleString()} lượt xem</span>
             </div>
 
-            {/* ✅ vẫn giữ hero img */}
             {post.imageUrl && (
               <div className="ns-heroImg">
                 <img src={getImageUrl(post.imageUrl)} alt={post.title} />
               </div>
             )}
 
-            {/* ✅ content đã được remove ảnh trùng ở đầu */}
             <div className="ns-content" dangerouslySetInnerHTML={{ __html: html }} />
 
             {related.length > 0 && (
@@ -195,12 +209,16 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
                     <div
                       key={p._id}
                       className="ns-related-item"
-                      onClick={() => (onOpenPost ? onOpenPost(p._id) : undefined)}
-                      style={{ opacity: onOpenPost ? 1 : 0.75 }}
-                      title={onOpenPost ? "Mở bài này" : "Cần truyền onOpenPost để mở"}
+                      onClick={() => openPostById(p._id)}
+                      style={{ cursor: "pointer" }}
+                      title="Mở bài này"
                     >
                       <div className="ns-related-thumb">
-                        {p.imageUrl ? <img src={getImageUrl(p.imageUrl)} alt={p.title} /> : <div />}
+                        {p.imageUrl ? (
+                          <img src={getImageUrl(p.imageUrl)} alt={p.title} />
+                        ) : (
+                          <div />
+                        )}
                       </div>
                       <div>
                         <div className="ns-meta">
@@ -238,8 +256,9 @@ export const BlogDetailPage: React.FC<BlogDetailPageProps> = ({
                   <div
                     key={p._id}
                     className="ns-rank"
-                    onClick={() => (onOpenPost ? onOpenPost(p._id) : undefined)}
-                    style={{ opacity: onOpenPost ? 1 : 0.75 }}
+                    onClick={() => openPostById(p._id)}
+                    style={{ cursor: "pointer" }}
+                    title="Mở bài này"
                   >
                     <div className="ns-rank-num">{idx + 1}</div>
                     <p className="ns-rank-title">{p.title}</p>

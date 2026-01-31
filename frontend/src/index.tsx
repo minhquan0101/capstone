@@ -7,6 +7,11 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+// Dark theme default
+document.documentElement.setAttribute("data-theme", "ticketbox");
+document.documentElement.style.colorScheme = "dark";
+
+
 root.render(
   <React.StrictMode>
     <App />

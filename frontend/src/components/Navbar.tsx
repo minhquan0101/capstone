@@ -229,17 +229,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right: User Menu */}
         <nav className="navbar-right">
           {user && user.role === "admin" && (
-            <button className="btn-create-event" onClick={() => setView("admin")}>
+            <button className="btn-create-event" type="button" onClick={() => setView("admin")}>
               Tạo sự kiện
             </button>
           )}
 
           {!user ? (
             <button
-              className={`btn outline ${currentView === "login" ? "active" : ""}`}
+              type="button"
+              className={`login-btn ${currentView === "login" ? "active" : ""}`}
               onClick={() => setView("login")}
             >
-              đăng nhập
+              Đăng nhập
             </button>
           ) : (
             <div
@@ -257,16 +258,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {menuOpen && (
                 <div className="user-menu-dropdown">
-                  <button type="button" className="user-menu-item" onClick={() => handleNavigate("booking")}>
+                  <button
+                    type="button"
+                    className="user-menu-item"
+                    onClick={() => handleNavigate("booking")}
+                  >
                     <span>Vé của tôi</span>
                   </button>
 
-                  <button type="button" className="user-menu-item" onClick={() => handleNavigate("profile")}>
+                  <button
+                    type="button"
+                    className="user-menu-item"
+                    onClick={() => handleNavigate("profile")}
+                  >
                     <span>Tài khoản của tôi</span>
                   </button>
 
                   {user.role === "admin" && (
-                    <button type="button" className="user-menu-item" onClick={() => handleNavigate("admin")}>
+                    <button
+                      type="button"
+                      className="user-menu-item"
+                      onClick={() => handleNavigate("admin")}
+                    >
                       <span>Quản trị hệ thống</span>
                     </button>
                   )}
@@ -291,6 +304,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Category nav */}
       <nav className="category-nav">
         <button
+          type="button"
           className={`category-link ${currentView === "showbiz" ? "active" : ""}`}
           onClick={() => setView("showbiz")}
         >
@@ -298,6 +312,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         <button
+          type="button"
           className={`category-link ${currentView === "blogs" ? "active" : ""}`}
           onClick={() => setView("blogs")}
         >
@@ -311,6 +326,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               return (
                 <button
                   key={tag}
+                  type="button"
                   className={`category-link ${isSelected ? "active" : ""}`}
                   onClick={() => onTagToggle?.(tag)}
                 >
@@ -320,7 +336,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
 
             {selectedTags.length > 0 && onClearTags && (
-              <button className="category-link" onClick={onClearTags}>
+              <button type="button" className="category-link" onClick={onClearTags}>
                 Xóa bộ lọc
               </button>
             )}
