@@ -978,3 +978,862 @@
   border-radius: 14px;
   margin: 14px 0;
 }
+
+/* =========================================================
+   SHOWBIZ (ns-page): dark theme đồng bộ web
+   ========================================================= */
+
+.ns-page{
+  background: #2b3036 !important;                 /* nền xám đen */
+  color: rgba(233,237,243,0.92) !important;       /* chữ sáng */
+}
+
+/* Nếu bên trong có container trắng */
+.ns-page .ns-container,
+.ns-page .container{
+  background: transparent !important;
+}
+
+/* Card/box trong showbiz */
+.ns-page .card,
+.ns-page .ns-card,
+.ns-page .box,
+.ns-page .panel,
+.ns-page .section{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* Tiêu đề */
+.ns-page h1,
+.ns-page h2,
+.ns-page h3,
+.ns-page .title{
+  color: #fff !important;
+}
+
+/* Text phụ */
+.ns-page p,
+.ns-page .meta,
+.ns-page .desc,
+.ns-page .sub{
+  color: rgba(233,237,243,0.72) !important;
+}
+
+/* Tabs/Pills filter */
+.ns-page .tab,
+.ns-page .pill,
+.ns-page .filter-btn{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: rgba(233,237,243,0.88) !important;
+  border-radius: 999px !important;
+}
+
+.ns-page .tab.active,
+.ns-page .pill.active,
+.ns-page .filter-btn.active{
+  background: #3b82f6 !important;
+  border-color: rgba(59,130,246,0.55) !important;
+  color: #fff !important;
+}
+
+/* List "Tin mới" bên phải */
+.ns-page .latest,
+.ns-page .hot-list,
+.ns-page .top-list,
+.ns-page .ranking{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+}
+
+.ns-page .headline,
+.ns-page .article-title,
+.ns-page .news-title{
+  color: rgba(233,237,243,0.96) !important;
+  opacity: 1 !important;
+}
+
+/* =========================================================
+   SHOWBIZ: FIX chữ bị mờ/ẩn sau khi đổi dark
+   ========================================================= */
+
+/* 1) Ép màu chữ mặc định trong showbiz */
+.ns-page{
+  --sb-text: rgba(233,237,243,0.92);
+  --sb-muted: rgba(233,237,243,0.70);
+  --sb-faint: rgba(233,237,243,0.55);
+  color: var(--sb-text) !important;
+}
+
+.ns-page *{
+  color: inherit; /* tránh chữ tự set nhạt quá */
+}
+
+/* 2) Những text phụ */
+.ns-page small,
+.ns-page .meta,
+.ns-page .sub,
+.ns-page .date,
+.ns-page .views,
+.ns-page .muted{
+  color: var(--sb-muted) !important;
+}
+
+/* 3) Tiêu đề bài/heading */
+.ns-page .headline,
+.ns-page .title,
+.ns-page .news-title,
+.ns-page .article-title{
+  color: rgba(255,255,255,0.96) !important;
+  opacity: 1 !important;
+  font-weight: 800;
+}
+
+/* =========================================================
+   4) FIX KHỐI "TIN MỚI" (bên phải)
+   ========================================================= */
+
+/* card tin mới đang trắng -> đổi về dark */
+.ns-page .hot-list,
+.ns-page .latest-list,
+.ns-page .top-list,
+.ns-page .ranking,
+.ns-page .right-list,
+.ns-page .news-right{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  color: var(--sb-text) !important;
+}
+
+/* từng dòng list */
+.ns-page .hot-list li,
+.ns-page .latest-list li,
+.ns-page .top-list li,
+.ns-page .ranking li{
+  color: var(--sb-text) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* số thứ tự 1..10 */
+.ns-page .hot-list li span,
+.ns-page .latest-list li span,
+.ns-page .top-list li span,
+.ns-page .ranking li span{
+  color: rgba(255,255,255,0.90) !important;
+}
+
+/* =========================================================
+   5) Các card nhỏ giữa đang trắng -> chữ phải tối
+   ========================================================= */
+
+/* Nếu bạn muốn GIỮ card trắng như hiện tại */
+.ns-page .mini-card,
+.ns-page .side-card,
+.ns-page .small-card{
+  background: #ffffff !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+}
+
+/* chữ bên trong card trắng phải đen */
+.ns-page .mini-card *,
+.ns-page .side-card *,
+.ns-page .small-card *{
+  color: rgba(15,23,42,0.92) !important;
+}
+.ns-page .mini-card .meta,
+.ns-page .side-card .meta,
+.ns-page .small-card .meta{
+  color: rgba(15,23,42,0.62) !important;
+}
+
+/* =========================================================
+   SHOWBIZ: đồng bộ DARK hoàn toàn (không card trắng)
+   ========================================================= */
+
+.ns-page{
+  background: #2b3036 !important;
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* tất cả text trong showbiz */
+.ns-page,
+.ns-page *{
+  color: rgba(233,237,243,0.90);
+}
+
+/* text phụ */
+.ns-page .meta,
+.ns-page .sub,
+.ns-page .date,
+.ns-page .views,
+.ns-page small{
+  color: rgba(233,237,243,0.70) !important;
+}
+
+/* link */
+.ns-page a{ color: rgba(233,237,243,0.92) !important; text-decoration: none; }
+.ns-page a:hover{ color: #93c5fd !important; }
+
+/* =========================================================
+   Card style chung (áp cho mọi khối trắng trong showbiz)
+   ========================================================= */
+.ns-page .card,
+.ns-page .box,
+.ns-page .panel,
+.ns-page .section,
+.ns-page .ns-card,
+.ns-page .news-card,
+.ns-page .article-card,
+.ns-page .mini-card,
+.ns-page .side-card,
+.ns-page .small-card{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+}
+
+/* heading */
+.ns-page h1, .ns-page h2, .ns-page h3,
+.ns-page .title, .ns-page .headline,
+.ns-page .news-title, .ns-page .article-title{
+  color: #fff !important;
+  opacity: 1 !important;
+  font-weight: 800;
+}
+
+/* =========================================================
+   Tabs / filter pill
+   ========================================================= */
+.ns-page .tab,
+.ns-page .pill,
+.ns-page .filter-btn{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: rgba(233,237,243,0.88) !important;
+  border-radius: 999px !important;
+}
+
+.ns-page .tab.active,
+.ns-page .pill.active,
+.ns-page .filter-btn.active{
+  background: #3b82f6 !important;
+  border-color: rgba(59,130,246,0.55) !important;
+  color: #fff !important;
+}
+
+/* =========================================================
+   Khối "Tin mới" (bên phải) -> dark + chữ rõ
+   ========================================================= */
+.ns-page .hot-list,
+.ns-page .latest-list,
+.ns-page .top-list,
+.ns-page .ranking,
+.ns-page .right-list,
+.ns-page .news-right{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+}
+
+.ns-page .hot-list li,
+.ns-page .latest-list li,
+.ns-page .top-list li,
+.ns-page .ranking li{
+  color: rgba(233,237,243,0.92) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.ns-page .hot-list li:last-child,
+.ns-page .latest-list li:last-child,
+.ns-page .top-list li:last-child,
+.ns-page .ranking li:last-child{
+  border-bottom: none !important;
+}
+
+/* số thứ tự 1..10 (nếu là badge) */
+.ns-page .hot-list li .num,
+.ns-page .latest-list li .num,
+.ns-page .top-list li .num,
+.ns-page .ranking li .num{
+  background: rgba(255,255,255,0.10) !important;
+  color: #fff !important;
+}
+
+/* ảnh */
+.ns-page img{
+  border-radius: 12px;
+}
+
+/* =========================================================
+   SHOWBIZ - DARK OVERRIDE (đúng class của bạn: ns-mini / ns-box)
+   Dán CUỐI styles/showbiz.css
+   ========================================================= */
+
+/* nền trang */
+.ns-page{
+  background: #2b3036 !important;
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* chữ mặc định */
+.ns-page,
+.ns-page *{
+  color: rgba(233,237,243,0.90);
+}
+
+/* tiêu đề */
+.ns-page h1, .ns-page h2, .ns-page h3,
+.ns-page .ns-title{
+  color: #fff !important;
+}
+
+/* text phụ: ngày/ lượt xem/ mô tả */
+.ns-page .ns-meta,
+.ns-page .ns-sub,
+.ns-page .ns-desc,
+.ns-page small{
+  color: rgba(233,237,243,0.68) !important;
+}
+
+/* =========================================================
+   1) 3 ô trắng giữa (class .ns-mini) -> dark
+   ========================================================= */
+.ns-mini{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+}
+
+/* nếu có đoạn nào bị set opacity thấp làm "mờ" */
+.ns-mini *{
+  opacity: 1 !important;
+  color: rgba(233,237,243,0.90) !important;
+}
+
+/* =========================================================
+   2) Cột phải "Tin mới" (ns-aside -> ns-box) -> dark + chữ rõ
+   ========================================================= */
+.ns-aside .ns-box{
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+}
+
+/* header trong box */
+.ns-aside .ns-box-head{
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+}
+.ns-aside .ns-box-head *{
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* list item trong "Tin mới" (nếu bạn dùng <li> hoặc row) */
+.ns-aside .ns-box li,
+.ns-aside .ns-box .ns-item,
+.ns-aside .ns-box .ns-row{
+  color: rgba(233,237,243,0.90) !important;
+  opacity: 1 !important;
+}
+
+/* chữ trong item bị mờ */
+.ns-aside .ns-box li *,
+.ns-aside .ns-box .ns-item *,
+.ns-aside .ns-box .ns-row *{
+  color: rgba(233,237,243,0.88) !important;
+  opacity: 1 !important;
+}
+
+/* số thứ tự 1..10 (nếu là badge nhỏ) */
+.ns-aside .ns-box .num,
+.ns-aside .ns-box .rank,
+.ns-aside .ns-box .index{
+  background: rgba(255,255,255,0.10) !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+/* ================================
+   FIX chữ mờ: filter + tab (Tin mới)
+   Dán CUỐI showbiz.css
+   ================================ */
+
+/* 1) Filter chips: Tất cả / Việt Nam / Châu Á / Âu Mỹ */
+.ns-subnav button,
+.ns-subnav .chip,
+.ns-subnav .pill,
+.ns-subnav a{
+  color: rgba(233,237,243,0.88) !important;
+  opacity: 1 !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+/* chip đang active (Tất cả) */
+.ns-subnav button.active,
+.ns-subnav .chip.active,
+.ns-subnav .pill.active,
+.ns-subnav a.active{
+  color: #fff !important;
+  opacity: 1 !important;
+  background: rgba(59,130,246,0.22) !important; /* xanh dương nhẹ */
+  border-color: rgba(59,130,246,0.35) !important;
+}
+
+/* 2) Tabs trong box Tin mới / Đọc nhiều */
+.ns-aside .ns-box-head button,
+.ns-aside .ns-box-head .tab,
+.ns-aside .ns-box-head a{
+  color: rgba(233,237,243,0.90) !important;
+  opacity: 1 !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+/* tab active (Tin mới) */
+.ns-aside .ns-box-head button.active,
+.ns-aside .ns-box-head .tab.active,
+.ns-aside .ns-box-head a.active{
+  color: #fff !important;
+  opacity: 1 !important;
+  background: rgba(59,130,246,0.22) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+}
+
+/* Nếu vẫn mờ do rule kiểu ".disabled" hoặc opacity trên wrapper */
+.ns-subnav,
+.ns-aside .ns-box-head{
+  opacity: 1 !important;
+}
+
+/* ================================
+   Làm rõ list "Tin mới"
+   ================================ */
+
+/* Wrapper list */
+.ns-aside .ns-box,
+.ns-aside .ns-box *{
+  text-rendering: optimizeLegibility;
+}
+
+/* Item trong list (li/a) */
+.ns-aside .ns-box ul li,
+.ns-aside .ns-box .ns-rank-item,
+.ns-aside .ns-box a{
+  color: rgba(255,255,255,0.88) !important;      /* chữ rõ hơn */
+  opacity: 1 !important;
+}
+
+/* Dòng tiêu đề từng tin */
+.ns-aside .ns-box ul li a,
+.ns-aside .ns-box .ns-rank-item__title{
+  font-weight: 600 !important;                   /* đậm hơn để nổi */
+  letter-spacing: 0.1px;
+}
+
+/* Nếu có meta/subtitle bị nhạt */
+.ns-aside .ns-box .muted,
+.ns-aside .ns-box small,
+.ns-aside .ns-box .sub{
+  color: rgba(255,255,255,0.72) !important;
+  opacity: 1 !important;
+}
+
+/* Đường kẻ ngăn cách item rõ vừa */
+.ns-aside .ns-box ul li{
+  border-bottom: 1px dashed rgba(255,255,255,0.18) !important;
+}
+
+/* Hover: làm nổi để người ta chú ý */
+.ns-aside .ns-box ul li:hover,
+.ns-aside .ns-box a:hover{
+  background: rgba(59,130,246,0.10) !important;  /* xanh dương nhẹ */
+  color: #fff !important;
+}
+
+/* Số thứ tự (1..10) nếu đang là badge */
+.ns-aside .ns-box .rank,
+.ns-aside .ns-box .index,
+.ns-aside .ns-box .num,
+.ns-aside .ns-box ul li span:first-child{
+  color: #fff !important;
+  background: rgba(59,130,246,0.30) !important;
+  border: 1px solid rgba(59,130,246,0.35) !important;
+  opacity: 1 !important;
+}
+
+/* =========================================
+   SHOWBIZ - Fix chữ mờ "Tin mới" + list rank
+   (dán cuối file showbiz.css)
+   ========================================= */
+
+/* 1) Tabs Tin mới / Đọc nhiều */
+.ns-aside .ns-box .ns-box-head button,
+.ns-aside .ns-box .ns-box-head .btn,
+.ns-aside .ns-box .ns-box-head .ns-tab {
+  color: rgba(255,255,255,0.88) !important;
+  opacity: 1 !important;
+}
+
+.ns-aside .ns-box .ns-box-head button.active,
+.ns-aside .ns-box .ns-box-head .active {
+  background: rgba(59,130,246,0.22) !important;
+  border: 1px solid rgba(59,130,246,0.35) !important;
+  color: #fff !important;
+}
+
+/* 2) Mỗi dòng tin trong box */
+.ns-aside .ns-box .ns-rank {
+  color: rgba(255,255,255,0.88) !important;
+  opacity: 1 !important;
+}
+
+/* Title (đang là p.ns-rank-title) */
+.ns-aside .ns-box .ns-rank .ns-rank-title,
+.ns-aside .ns-box .ns-rank .ns-rank-title a,
+.ns-aside .ns-box .ns-rank a {
+  color: rgba(255,255,255,0.90) !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
+}
+
+/* Meta nếu có (ngày/ lượt xem...) */
+.ns-aside .ns-box .ns-rank .ns-rank-meta,
+.ns-aside .ns-box .ns-rank small {
+  color: rgba(255,255,255,0.70) !important;
+  opacity: 1 !important;
+}
+
+/* 3) Số thứ tự (1..10) */
+.ns-aside .ns-box .ns-rank .ns-rank-num {
+  background: rgba(59,130,246,0.28) !important;
+  border: 1px solid rgba(59,130,246,0.35) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* 4) Hover: highlight xanh dương nhẹ */
+.ns-aside .ns-box .ns-rank:hover {
+  background: rgba(59,130,246,0.10) !important;
+}
+.ns-aside .ns-box .ns-rank:hover .ns-rank-title,
+.ns-aside .ns-box .ns-rank:hover a {
+  color: #fff !important;
+}
+
+/* 5) Divider rõ vừa (nếu bạn đang dùng dashed/solid) */
+.ns-aside .ns-box .ns-rank {
+  border-bottom: 1px dashed rgba(255,255,255,0.18) !important;
+}
+
+/* =========================================
+   BLOG/NEWS DETAIL - Fix chữ bị nền trắng/viền xấu
+   (dán CUỐI showbiz.css)
+   ========================================= */
+
+/* vùng nội dung bài viết */
+.ns-detailGrid .ns-content,
+article.ns-article .ns-content {
+  color: rgba(255,255,255,0.88) !important;
+}
+
+/* bỏ nền trắng / viền / shadow trên các tag trong content */
+.ns-detailGrid .ns-content *,
+article.ns-article .ns-content * {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* paragraph: không cho kiểu "ô trắng từng dòng" */
+.ns-detailGrid .ns-content p,
+article.ns-article .ns-content p {
+  background: transparent !important;
+  color: rgba(255,255,255,0.88) !important;
+  padding: 0 !important;
+  margin: 0 0 12px !important;
+  border-radius: 0 !important;
+}
+
+/* span: tẩy inline background-color / color kiểu copy từ web */
+.ns-detailGrid .ns-content span,
+article.ns-article .ns-content span {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* nếu có mark/highlight */
+.ns-detailGrid .ns-content mark,
+article.ns-article .ns-content mark {
+  background: rgba(59,130,246,0.18) !important; /* xanh dương nhẹ */
+  color: #fff !important;
+  padding: 0 4px !important;
+  border-radius: 6px !important;
+}
+
+/* link trong bài */
+.ns-detailGrid .ns-content a,
+article.ns-article .ns-content a {
+  color: rgba(96,165,250,0.95) !important;
+  text-decoration: none !important;
+}
+.ns-detailGrid .ns-content a:hover,
+article.ns-article .ns-content a:hover {
+  color: #fff !important;
+  text-decoration: underline !important;
+}
+
+/* ==============================
+   BLOG DETAIL - Fix nút "Quay lại" bị mờ
+   (dán CUỐI showbiz.css)
+   ============================== */
+
+/* nút quay lại trong trang blog/news detail */
+.ns-container .ns-back,
+.ns-container button.ns-back,
+button.ns-back {
+  opacity: 1 !important;
+  background: #2f6fe4 !important;        /* xanh dương đồng bộ */
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* hover */
+.ns-container .ns-back:hover,
+.ns-container button.ns-back:hover,
+button.ns-back:hover {
+  background: #245fd6 !important;
+}
+
+/* focus/active: tránh nhảy sang màu khác */
+.ns-container .ns-back:active,
+.ns-container button.ns-back:active,
+button.ns-back:active,
+.ns-container .ns-back:focus,
+.ns-container button.ns-back:focus,
+button.ns-back:focus {
+  background: #245fd6 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(47,111,228,0.25) !important;
+}
+
+/* nếu bên trong có icon/text span */
+.ns-container .ns-back *,
+button.ns-back * {
+  opacity: 1 !important;
+  color: #fff !important;
+}
+
+/* ==============================
+   BLOG DETAIL - Related news (Tin liên quan)
+   ============================== */
+
+/* Tiêu đề khu tin liên quan */
+.ns-related h3,
+.ns-related-title {
+  color: rgba(255,255,255,0.92) !important;
+  letter-spacing: .4px;
+}
+
+/* List */
+.ns-related-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* Item (đang bị inline style opacity:0.75 -> ép lại) */
+.ns-related-item {
+  opacity: 1 !important;
+  text-decoration: none !important;
+  color: rgba(255,255,255,0.9) !important;
+
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  padding: 12px;
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.ns-related-item:hover {
+  background: rgba(47,111,228,0.12) !important; /* xanh dương theme */
+  border-color: rgba(47,111,228,0.35) !important;
+  transform: translateY(-1px);
+}
+
+/* Thumb */
+.ns-related-thumb {
+  width: 74px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.ns-related-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text */
+.ns-related-item .ns-related-text,
+.ns-related-item p,
+.ns-related-item div {
+  color: rgba(255,255,255,0.88) !important;
+  line-height: 1.35;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .ns-related-list { grid-template-columns: 1fr; }
+}
+
+/* ===============================
+   DETAIL PAGE - sidebar (Tin mới / Đọc nhiều) FIX
+   =============================== */
+
+/* Card sidebar (showbiz detail) */
+.ns-detailSide .ns-sideCard{
+  background: rgba(15, 23, 42, 0.78) !important;   /* dark glass */
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+/* Tabs */
+.ns-detailSide .ns-sideTabs{
+  padding: 10px !important;
+  gap: 8px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.ns-detailSide .ns-sideTab{
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.88) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 999px !important;
+  padding: 8px 12px !important;
+  font-weight: 700 !important;
+}
+
+.ns-detailSide .ns-sideTab.active{
+  background: rgba(59,130,246,0.25) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+  color: #fff !important;
+}
+
+/* List item */
+.ns-detailSide .ns-sideList{
+  padding: 10px !important;
+}
+
+.ns-detailSide .ns-sideItem{
+  border-radius: 12px !important;
+  padding: 10px 10px !important;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.ns-detailSide .ns-sideItem:hover{
+  background: rgba(59,130,246,0.12) !important;
+}
+
+/* Rank pill */
+.ns-detailSide .ns-sideRank{
+  background: rgba(255,255,255,0.10) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+}
+
+/* Text */
+.ns-detailSide .ns-sideMeta{
+  color: rgba(255,255,255,0.62) !important;
+  font-weight: 700 !important;
+}
+
+.ns-detailSide .ns-sideTitle{
+  color: rgba(255,255,255,0.92) !important;
+  font-weight: 750 !important;
+  line-height: 1.25 !important;
+}
+
+/* ===============================
+   BLOG DETAIL (ns-box) sidebar cũng đồng bộ luôn
+   =============================== */
+
+.ns-aside .ns-box{
+  background: rgba(15, 23, 42, 0.78) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.ns-aside .ns-box-head{
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.ns-aside .ns-box-tab{
+  background: rgba(255,255,255,0.08) !important;
+  color: rgba(255,255,255,0.88) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+}
+
+.ns-aside .ns-box-tab.active{
+  background: rgba(59,130,246,0.25) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+  color: #fff !important;
+}
+
+.ns-aside .ns-rank:hover{
+  background: rgba(59,130,246,0.12) !important;
+}
+
+.ns-aside .ns-rank-title{
+  color: rgba(255,255,255,0.92) !important;
+  font-weight: 750 !important;
+  line-height: 1.25 !important;
+}
+
+/* ===============================
+   Nút Quay lại (detail) cho rõ, khỏi mờ
+   =============================== */
+.ns-back{
+  background: rgba(59,130,246,0.22) !important;
+  border: 1px solid rgba(59,130,246,0.35) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+.ns-back:hover{
+  background: rgba(59,130,246,0.30) !important;
+}

@@ -89,6 +89,11 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
   const [priceMax, setPriceMax] = useState<string>("");
   const [priceSort, setPriceSort] = useState<"" | "asc" | "desc">("");
 
+  // ✅ NEW: đang lọc theo giá không?
+  const isPriceFiltering = useMemo(() => {
+    return Boolean(priceMin.trim()) || Boolean(priceMax.trim()) || Boolean(priceSort);
+  }, [priceMin, priceMax, priceSort]);
+
   const backendBase = API_BASE.replace(/\/api\/?$/, "");
 
   // ✅ Nhận searchQuery từ Navbar (localStorage + event)
@@ -109,14 +114,13 @@ export const Home: React.FC<HomeProps> = ({ user, setView, selectedTags = [] }) 
   }, []);
 
   const formatVND = (digits: string) => {
-  const n = Number(digits || 0);
-  if (!digits) return "";
-  if (!Number.isFinite(n)) return "";
-  return n.toLocaleString("vi-VN"); // 100.000
-};
+    const n = Number(digits || 0);
+    if (!digits) return "";
+    if (!Number.isFinite(n)) return "";
+    return n.toLocaleString("vi-VN"); // 100.000
+  };
 
-const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
-
+  const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
 
   const normalizeMoneyInput = (v: string) => v.replace(/[^\d]/g, "");
 
@@ -148,8 +152,8 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
         const tags = Array.isArray(e.tags)
           ? e.tags.filter((t) => t && String(t).trim().length > 0)
           : e.tags
-            ? [String(e.tags).trim()].filter((t) => t.length > 0)
-            : [];
+          ? [String(e.tags).trim()].filter((t) => t.length > 0)
+          : [];
         return { ...e, tags };
       });
 
@@ -239,6 +243,11 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
     })).filter((sec) => sec.items.length > 0);
   }, [filteredEvents, hasActiveFilter]);
 
+  // ✅ NEW: list kết quả khi lọc giá (từ backend) => dùng filteredEvents luôn
+  const priceFilterResults = useMemo(() => {
+    return filteredEvents;
+  }, [filteredEvents]);
+
   // Search Logic
   useEffect(() => {
     const q = searchQuery.trim();
@@ -250,12 +259,7 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
         const location = (event.location || "").toLowerCase();
         const desc = (event.description || "").toLowerCase();
         const tags = (event.tags || []).join(" ").toLowerCase();
-        return (
-          title.includes(queryLower) ||
-          location.includes(queryLower) ||
-          desc.includes(queryLower) ||
-          tags.includes(queryLower)
-        );
+        return title.includes(queryLower) || location.includes(queryLower) || desc.includes(queryLower) || tags.includes(queryLower);
       });
       setSearchResults(filtered);
     } else {
@@ -286,7 +290,6 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
   };
 
   const onApplyPriceFilter = () => {
-    // validate nhẹ: min <= max
     const mn = priceMin.trim() ? Number(priceMin) : null;
     const mx = priceMax.trim() ? Number(priceMax) : null;
     if (mn !== null && mx !== null && Number.isFinite(mn) && Number.isFinite(mx) && mn > mx) {
@@ -300,7 +303,6 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
     setPriceMin("");
     setPriceMax("");
     setPriceSort("");
-    // gọi lại sau khi setState
     setTimeout(() => loadData(), 0);
   };
 
@@ -359,56 +361,53 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
 
       {error && <div className="global-message error">{error}</div>}
 
-      
-
-      {/* ✅ NEW: Price filter + sort bar (chỉ show khi không search và không tag filter) */}
+      {/* ✅ Price filter + sort bar (chỉ show khi không search và không tag filter) */}
       {!isSearching && !hasActiveFilter ? (
-  <div className="content-wrapper" style={{ paddingTop: 10 }}>
-    <div className="price-filter-bar">
-      <div className="price-filter-fields">
-        <input
-  className="price-filter-input"
-  value={formatVND(priceMin)}
-  onChange={(e) => setPriceMin(toDigits(e.target.value))}
-  onBlur={(e) => setPriceMin(toDigits(e.target.value))} // đảm bảo sạch
-  placeholder="Giá từ"
-  inputMode="numeric"
-/>
+        <div className="content-wrapper" style={{ paddingTop: 10 }}>
+          <div className="price-filter-bar">
+            <div className="price-filter-fields">
+              <input
+                className="price-filter-input"
+                value={formatVND(priceMin)}
+                onChange={(e) => setPriceMin(toDigits(e.target.value))}
+                onBlur={(e) => setPriceMin(toDigits(e.target.value))}
+                placeholder="Giá từ"
+                inputMode="numeric"
+              />
 
-<span className="price-filter-sep">—</span>
+              <span className="price-filter-sep">—</span>
 
-<input
-  className="price-filter-input"
-  value={formatVND(priceMax)}
-  onChange={(e) => setPriceMax(toDigits(e.target.value))}
-  onBlur={(e) => setPriceMax(toDigits(e.target.value))}
-  placeholder="Giá đến"
-  inputMode="numeric"
-/>
+              <input
+                className="price-filter-input"
+                value={formatVND(priceMax)}
+                onChange={(e) => setPriceMax(toDigits(e.target.value))}
+                onBlur={(e) => setPriceMax(toDigits(e.target.value))}
+                placeholder="Giá đến"
+                inputMode="numeric"
+              />
 
-        <select
-          className="price-filter-select"
-          value={priceSort}
-          onChange={(e) => setPriceSort(e.target.value as any)}
-        >
-          <option value="">Sắp xếp theo giá</option>
-          <option value="asc">Giá: tăng dần</option>
-          <option value="desc">Giá: giảm dần</option>
-        </select>
-      </div>
+              <select
+                className="price-filter-select"
+                value={priceSort}
+                onChange={(e) => setPriceSort(e.target.value as any)}
+              >
+                <option value="">Sắp xếp theo giá</option>
+                <option value="asc">Giá: tăng dần</option>
+                <option value="desc">Giá: giảm dần</option>
+              </select>
+            </div>
 
-      <div className="price-filter-actions">
-        <button className="btn small" onClick={onApplyPriceFilter}>
-          Áp dụng
-        </button>
-        <button className="btn outline small" onClick={onClearPriceFilter}>
-          Xoá lọc
-        </button>
-      </div>
-    </div>
-  </div>
-) : null}
-
+            <div className="price-filter-actions">
+              <button className="btn small" onClick={onApplyPriceFilter}>
+                Áp dụng
+              </button>
+              <button className="btn outline small" onClick={onClearPriceFilter}>
+                Xoá lọc
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="content-wrapper">
         {isSearching ? (
@@ -450,6 +449,32 @@ const toDigits = (s: string) => (s || "").replace(/[^\d]/g, "");
             ) : (
               <div className="event-grid special-grid">
                 {allFilteredEvents.map((ev) => (
+                  <EventCard
+                    key={ev._id}
+                    event={ev}
+                    getImageUrl={getImageUrl}
+                    formatDate={formatDate}
+                    onBooking={handleGoBooking}
+                    onOpenDetail={handleOpenDetail}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        ) : isPriceFiltering ? (
+          // ✅ NEW: Khi lọc giá => chỉ hiện kết quả (không đặc biệt/xu hướng/dành cho bạn...)
+          <section className="event-section filtered-results">
+            <div className="section-header">
+              <h2>Kết quả theo giá ({priceFilterResults.length})</h2>
+            </div>
+
+            {priceFilterResults.length === 0 ? (
+              <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
+                <p>Không có sự kiện nào trong khoảng giá này</p>
+              </div>
+            ) : (
+              <div className="event-grid special-grid">
+                {priceFilterResults.map((ev) => (
                   <EventCard
                     key={ev._id}
                     event={ev}
@@ -691,6 +716,12 @@ const EventCard: React.FC<EventCardProps> = ({
         <p className="event-meta">{(event as any).location}</p>
         <p className="event-meta">{formatDate((event as any).date)}</p>
 
+        {(event as any).price ? (
+  <p className="event-meta event-price">
+    Từ {Number((event as any).price).toLocaleString("vi-VN")}đ
+  </p>
+) : null}
+
         {event.tags && event.tags.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
             {event.tags.map((tag, idx) => (
@@ -745,7 +776,11 @@ const RowEventCard: React.FC<RowEventCardProps> = ({
   const ended = isEndedDate((event as any).date);
 
   return (
-    <article className="home-row-card" onClick={() => onOpenDetail(event._id)} style={{ cursor: "pointer" }}>
+    <article
+      className="home-row-card"
+      onClick={() => onOpenDetail(event._id)}
+      style={{ cursor: "pointer" }}
+    >
       <div
         className="home-row-thumb"
         style={{

@@ -1,3 +1,124 @@
+/* ========= THEME TOKENS ========= */
+:root {
+  /* Light (fallback) */
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+  --primary: #2563eb;
+  --primary-text: #ffffff;
+  --danger: #ef4444;
+
+  --radius: 14px;
+}
+
+/* Dark default via data-theme */
+[data-theme="dark"] {
+  --bg: #0b0f19;
+  --surface: #111827;
+  --surface-2: #0f172a;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border: #243244;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+
+  --primary: #3b82f6;
+  --primary-text: #0b0f19;
+  --danger: #f87171;
+}
+
+/* ========= GLOBAL BASE ========= */
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--text);
+}
+
+/* Scrollbar (optional) */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #1f2a3a;
+  border-radius: 999px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ========= COMMON UI ELEMENTS ========= */
+.card,
+.panel,
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+
+input,
+select,
+textarea {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+button,
+.btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+button:hover,
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+button:disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Primary button helper if bạn có class này */
+button.primary,
+.btn.primary {
+  background: var(--primary);
+  color: var(--primary-text);
+  border-color: transparent;
+}
+
+
 *,
 *::before,
 *::after {
@@ -4125,4 +4246,3285 @@ body {
   .price-filter-select {
     width: 100%;
   }
+}
+
+/* ========= DARK OVERRIDES FOR EXISTING LAYOUT ========= */
+/* Nếu bạn có container nền trắng cứng (#fff) */
+[data-theme="dark"] .container,
+[data-theme="dark"] .wrapper,
+[data-theme="dark"] .main,
+[data-theme="dark"] .content {
+  background: transparent;
+}
+
+/* Navbar / header / top bar (đổi selector theo project nếu khác) */
+[data-theme="dark"] .navbar,
+[data-theme="dark"] header,
+[data-theme="dark"] .topbar {
+  background: rgba(17, 24, 39, 0.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+/* Category pills (ShowBiz, Blogs/News...) */
+[data-theme="dark"] .category,
+[data-theme="dark"] .category-item,
+[data-theme="dark"] .pill {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+[data-theme="dark"] .category:hover,
+[data-theme="dark"] .category-item:hover,
+[data-theme="dark"] .pill:hover {
+  background: var(--surface-2);
+}
+
+/* Search bar area */
+[data-theme="dark"] .search,
+[data-theme="dark"] .search-bar {
+  background: transparent;
+}
+[data-theme="dark"] .search input {
+  background: var(--surface-2);
+}
+
+/* Dropdown / menu */
+[data-theme="dark"] .dropdown,
+[data-theme="dark"] .menu,
+[data-theme="dark"] .popover {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* Event cards / grids */
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .eventItem,
+[data-theme="dark"] .event-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+[data-theme="dark"] .event-card .meta,
+[data-theme="dark"] .eventItem .meta,
+[data-theme="dark"] .event-item .meta {
+  color: var(--muted);
+}
+
+/* Filter bar (Giá từ/đến, sắp xếp...) */
+[data-theme="dark"] .filter,
+[data-theme="dark"] .filter-bar,
+[data-theme="dark"] .filters {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* =========================
+   THEME: TICKETBOX-LIKE
+   ========================= */
+[data-theme="ticketbox"] {
+  --tb-green: #27ae60;          /* xanh header */
+  --tb-green-2: #2ecc71;        /* hover/nhấn */
+  --tb-black: #0b0f14;          /* menu đen */
+  --tb-bg: #2b2f34;             /* nền xám đậm */
+  --tb-surface: #1f242a;        /* card */
+  --tb-surface-2: #151a1f;      /* input nền tối */
+  --tb-text: #e9eef5;           /* chữ */
+  --tb-muted: #a9b3bf;          /* chữ phụ */
+  --tb-border: rgba(255,255,255,.10);
+  --tb-shadow: 0 10px 30px rgba(0,0,0,.40);
+  --tb-radius: 16px;
+}
+
+/* Nền tổng */
+[data-theme="ticketbox"] html,
+[data-theme="ticketbox"] body {
+  background: var(--tb-bg);
+  color: var(--tb-text);
+}
+
+/* ========== HEADER (xanh) ========== */
+/* Chỉnh selector .navbar/header theo project bạn (mình cover cả 2) */
+[data-theme="ticketbox"] .navbar,
+[data-theme="ticketbox"] header {
+  background: var(--tb-green);
+  border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+/* Logo/text trên header */
+[data-theme="ticketbox"] .navbar *,
+[data-theme="ticketbox"] header * {
+  color: #ffffff;
+}
+
+/* Search trên header: ô trắng + nút xanh */
+[data-theme="ticketbox"] .search input,
+[data-theme="ticketbox"] .navbar input[type="text"],
+[data-theme="ticketbox"] header input[type="text"],
+[data-theme="ticketbox"] .navbar input[type="search"],
+[data-theme="ticketbox"] header input[type="search"] {
+  background: #ffffff;
+  color: #111;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 999px;
+}
+
+[data-theme="ticketbox"] .search input::placeholder {
+  color: rgba(0,0,0,.55);
+}
+
+[data-theme="ticketbox"] .search button,
+[data-theme="ticketbox"] .navbar button,
+[data-theme="ticketbox"] header button {
+  background: var(--tb-green);
+  color: #fff;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 999px;
+}
+
+[data-theme="ticketbox"] .search button:hover,
+[data-theme="ticketbox"] .navbar button:hover,
+[data-theme="ticketbox"] header button:hover {
+  background: var(--tb-green-2);
+}
+
+/* ========== MENU BAR (đen) ========== */
+/* Thanh category/tabs phía dưới header */
+[data-theme="ticketbox"] .category-bar,
+[data-theme="ticketbox"] .categories,
+[data-theme="ticketbox"] .tabs,
+[data-theme="ticketbox"] .subnav {
+  background: var(--tb-black);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* Pill/tabs trên menu đen: chữ trắng, hover xanh */
+[data-theme="ticketbox"] .pill,
+[data-theme="ticketbox"] .chip,
+[data-theme="ticketbox"] .tab,
+[data-theme="ticketbox"] .category-item,
+[data-theme="ticketbox"] .categories button {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+[data-theme="ticketbox"] .pill:hover,
+[data-theme="ticketbox"] .chip:hover,
+[data-theme="ticketbox"] .tab:hover,
+[data-theme="ticketbox"] .category-item:hover,
+[data-theme="ticketbox"] .categories button:hover {
+  color: var(--tb-green-2);
+}
+
+/* ========== CONTENT SURFACE ========== */
+/* Wrapper content (tránh bị trắng) */
+[data-theme="ticketbox"] .App,
+[data-theme="ticketbox"] .app,
+[data-theme="ticketbox"] .main,
+[data-theme="ticketbox"] .content,
+[data-theme="ticketbox"] .container,
+[data-theme="ticketbox"] .home,
+[data-theme="ticketbox"] .homeContainer {
+  background: transparent;
+  color: var(--tb-text);
+}
+
+/* Filter bar: dark surface */
+[data-theme="ticketbox"] .filter,
+[data-theme="ticketbox"] .filters,
+[data-theme="ticketbox"] .filter-bar,
+[data-theme="ticketbox"] .filterContainer {
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  box-shadow: var(--tb-shadow);
+}
+
+/* Input/select trong filter */
+[data-theme="ticketbox"] .filter input,
+[data-theme="ticketbox"] .filter select,
+[data-theme="ticketbox"] .filters input,
+[data-theme="ticketbox"] .filters select {
+  background: var(--tb-surface-2);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  border-radius: 999px;
+}
+
+/* Buttons trong filter */
+[data-theme="ticketbox"] .filter button,
+[data-theme="ticketbox"] .filters button {
+  background: rgba(255,255,255,.06);
+  color: var(--tb-text);
+  border: 1px solid var(--tb-border);
+  border-radius: 999px;
+}
+[data-theme="ticketbox"] .filter button:hover,
+[data-theme="ticketbox"] .filters button:hover {
+  background: rgba(255,255,255,.10);
+}
+
+/* Nút chính (Áp dụng) nếu có class primary */
+[data-theme="ticketbox"] .primary,
+[data-theme="ticketbox"] .btn-primary {
+  background: var(--tb-green);
+  color: #fff;
+  border-color: transparent;
+}
+[data-theme="ticketbox"] .primary:hover,
+[data-theme="ticketbox"] .btn-primary:hover {
+  background: var(--tb-green-2);
+}
+
+/* Event cards */
+[data-theme="ticketbox"] .event-card,
+[data-theme="ticketbox"] .eventItem,
+[data-theme="ticketbox"] .event-item,
+[data-theme="ticketbox"] .card {
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-radius);
+  box-shadow: var(--tb-shadow);
+}
+
+[data-theme="ticketbox"] .meta,
+[data-theme="ticketbox"] .muted {
+  color: var(--tb-muted);
+}
+
+/* Title */
+[data-theme="ticketbox"] h1,
+[data-theme="ticketbox"] h2,
+[data-theme="ticketbox"] h3,
+[data-theme="ticketbox"] .section-title {
+  color: var(--tb-text);
+}
+
+/* FIX 1: Thanh category dưới header */
+[data-theme="ticketbox"] .categories,
+[data-theme="ticketbox"] .category-bar,
+[data-theme="ticketbox"] .tabs,
+[data-theme="ticketbox"] .subnav,
+[data-theme="ticketbox"] nav {
+  background: #0b0f14 !important;
+  border-bottom: 1px solid rgba(255,255,255,.06) !important;
+}
+
+/* FIX 2: Thanh filter */
+[data-theme="ticketbox"] .filter,
+[data-theme="ticketbox"] .filters,
+[data-theme="ticketbox"] .filter-bar,
+[data-theme="ticketbox"] .filterContainer,
+[data-theme="ticketbox"] .filter-container {
+  background: #1f242a !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35) !important;
+}
+
+/* input/select trong filter */
+[data-theme="ticketbox"] .filter input,
+[data-theme="ticketbox"] .filter select,
+[data-theme="ticketbox"] .filters input,
+[data-theme="ticketbox"] .filters select {
+  background: #151a1f !important;
+  color: #e9eef5 !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* button trong filter */
+[data-theme="ticketbox"] .filter button,
+[data-theme="ticketbox"] .filters button {
+  background: rgba(255,255,255,.06) !important;
+  color: #e9eef5 !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+[data-theme="ticketbox"] .filter button:hover,
+[data-theme="ticketbox"] .filters button:hover {
+  background: rgba(255,255,255,.10) !important;
+}
+
+[data-theme="ticketbox"] button:focus,
+[data-theme="ticketbox"] button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* FIX DỨT ĐIỂM: nút .btn.outline bị "2 miếng đen" */
+[data-theme="ticketbox"] button.btn.outline {
+  background: #27ae60 !important;
+  color: #fff !important;
+
+  border: 1px solid rgba(0,0,0,.18) !important;
+  border-radius: 999px !important;
+
+  /* quan trọng: tắt mọi hiệu ứng gây mảng đen */
+  background-image: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  filter: none !important;
+
+  /* cái này hay gây viền lạ */
+  background-clip: padding-box !important;
+}
+
+[data-theme="ticketbox"] button.btn.outline::before,
+[data-theme="ticketbox"] button.btn.outline::after {
+  content: none !important;
+  display: none !important;
+}
+
+[data-theme="ticketbox"] button.btn.outline {
+  mask: none !important;
+  clip-path: none !important;
+}
+
+/* ===== BLUE THEME OVERRIDE (navbar + buttons) ===== */
+:root{
+  --blue-900:#0b1220;
+  --blue-800:#0f1f3d;
+  --blue-700:#123a7a;
+  --blue-600:#1d4ed8;
+  --blue-500:#3b82f6;
+  --blue-100:#eaf2ff;
+}
+
+/* Thanh header (đổi xanh lá -> xanh dương gradient) */
+.navbar{
+  background: linear-gradient(90deg, var(--blue-900), var(--blue-700), var(--blue-600)) !important;
+}
+
+/* Logo chữ ticketfast */
+.navbar .logo,
+.navbar .logo-text,
+.navbar .brand,
+.navbar .navbar-logo{
+  color: var(--blue-100) !important;
+}
+
+/* Nút "Tìm kiếm" trong header (đổi xanh lá -> xanh dương) */
+.navbar button,
+.navbar .btn{
+  background: var(--blue-600);
+  border-color: transparent;
+}
+
+.navbar button:hover,
+.navbar .btn:hover{
+  background: var(--blue-500);
+}
+
+/* Fix nút Đăng nhập bị nền đen / sai style */
+.navbar .btn.outline,
+.navbar .login-btn{
+  background: transparent !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.75) !important;
+  border-radius: 10px !important;
+  padding: 8px 14px !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+.navbar .btn.outline:hover,
+.navbar .login-btn:hover{
+  background: rgba(59,130,246,0.22) !important;
+  border-color: rgba(255,255,255,0.95) !important;
+}
+
+/* Nếu có style chung đang ép button nền đen */
+button, .btn{
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* ===== BLUE POLISH (fix: search button + login + harmony) ===== */
+:root{
+  --nav-1:#0b1220;   /* navy rất đậm */
+  --nav-2:#123a7a;   /* xanh dương đậm */
+  --nav-3:#1d4ed8;   /* xanh dương */
+  --blue:#3b82f6;    /* xanh dương nhạt */
+  --text:#eaf2ff;
+}
+
+/* Header: bớt gắt, mượt hơn */
+.navbar{
+  background: linear-gradient(90deg, var(--nav-1), var(--nav-2), var(--nav-3)) !important;
+}
+
+/* Logo chữ */
+.navbar .logo,
+.navbar .logo-text{
+  color: var(--text) !important;
+}
+
+/* Input tìm kiếm cho "ăn" với header */
+.navbar input[type="text"],
+.navbar .search-input{
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  background: rgba(255,255,255,0.08) !important;
+  color: #fff !important;
+}
+.navbar input::placeholder{ color: rgba(255,255,255,0.7) !important; }
+
+/* Nút "Tìm kiếm": đổi xanh lá -> xanh dương */
+.navbar .search-btn,
+.navbar button.search-btn{
+  background: var(--blue) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  border-radius: 999px !important;
+}
+.navbar .search-btn:hover{
+  filter: brightness(1.05);
+}
+
+/* Nút "đăng nhập": bỏ khung đen, nhìn sang hơn */
+.navbar .login-btn,
+.navbar .btn.outline{
+  background: rgba(255,255,255,0.10) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  box-shadow: none !important;
+}
+.navbar .login-btn:hover,
+.navbar .btn.outline:hover{
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.40) !important;
+}
+
+/* Dải đen ngay dưới header: giảm cảm giác "cắt khúc" */
+.top-tabs,
+.category-bar,
+.nav-tabs{
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* =========================
+   BLUE THEME - NAVBAR POLISH
+   (paste at END of App.css)
+========================= */
+
+:root{
+  --nav-900:#0b1220;
+  --nav-800:#0f1f3d;
+  --nav-700:#123a7a;
+  --nav-600:#1d4ed8;
+  --nav-500:#3b82f6;
+  --nav-100:#eaf2ff;
+
+  --glass: rgba(255,255,255,0.10);
+  --glass-2: rgba(255,255,255,0.16);
+  --border: rgba(255,255,255,0.22);
+}
+
+/* 1) Header gradient mượt hơn */
+.navbar{
+  background: linear-gradient(90deg, var(--nav-900), var(--nav-700), var(--nav-600)) !important;
+}
+
+/* Logo */
+.navbar .logo-text{
+  color: var(--nav-100) !important;
+  font-weight: 700;
+}
+
+/* 2) Search box đồng bộ tone xanh dương */
+.navbar-search .tb-search{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  padding: 6px;
+}
+
+.tb-search-input{
+  background: transparent !important;
+  color: #fff !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.tb-search-input::placeholder{
+  color: rgba(255,255,255,0.72) !important;
+}
+
+/* Nút "Tìm kiếm" -> xanh dương (bỏ xanh lá) */
+.tb-search-btn{
+  background: var(--nav-500) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+  font-weight: 600;
+}
+
+.tb-search-btn:hover{
+  filter: brightness(1.06);
+}
+
+/* Nút clear */
+.tb-search-clear{
+  background: transparent !important;
+  border: 0 !important;
+  color: rgba(255,255,255,0.9) !important;
+  padding: 6px 10px !important;
+  border-radius: 999px !important;
+}
+.tb-search-clear:hover{
+  background: rgba(255,255,255,0.10) !important;
+}
+
+/* Dropdown gợi ý */
+.tb-search-dropdown{
+  background: rgba(10,18,32,0.96) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+.tb-drop-item{
+  background: transparent !important;
+  color: rgba(255,255,255,0.92) !important;
+  border: 0 !important;
+}
+.tb-drop-item:hover{
+  background: rgba(59,130,246,0.16) !important;
+}
+.tb-drop-empty{
+  color: rgba(255,255,255,0.75) !important;
+}
+
+/* 3) FIX nút đăng nhập: bỏ khung đen + sang hơn */
+.navbar-right .login-btn{
+  background: var(--glass) !important;
+  color: #fff !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Chặn rule cũ kiểu .btn.outline { background:#000 } */
+.navbar-right .btn.outline.login-btn{
+  background: var(--glass) !important;
+  border-color: var(--border) !important;
+}
+
+.navbar-right .login-btn:hover{
+  background: var(--glass-2) !important;
+  border-color: rgba(255,255,255,0.32) !important;
+}
+
+/* Active (đang ở /login) */
+.navbar-right .login-btn.active{
+  background: rgba(59,130,246,0.22) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+}
+
+/* 4) Category bar bớt “cắt khúc” */
+.category-nav{
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.category-link{
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.category-link.active{
+  background: rgba(59,130,246,0.18) !important;
+  border-color: rgba(59,130,246,0.28) !important;
+}
+
+/* FORCE FIX: Login button not black */
+header.navbar nav.navbar-right button.btn.outline.login-btn{
+  background-color: rgba(255,255,255,0.12) !important;
+  background: rgba(255,255,255,0.12) !important;
+  background-image: none !important;
+  color: #fff !important;
+
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  border-radius: 12px !important;
+
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+header.navbar nav.navbar-right button.btn.outline.login-btn:hover{
+  background-color: rgba(255,255,255,0.18) !important;
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.38) !important;
+}
+
+/* ===== BLUE THEME OVERRIDE (GLOBAL) ===== */
+:root{
+  --blue-900:#0b1220;
+  --blue-800:#0f1f3d;
+  --blue-700:#102a5a;
+  --blue-650:#173a86;
+  --blue-600:#1d4ed8;
+  --blue-500:#3b82f6;
+}
+
+/* Navbar gradient nhẹ (dịu) */
+.navbar{
+  background: linear-gradient(90deg, var(--blue-900) 0%, var(--blue-700) 60%, var(--blue-650) 100%) !important;
+}
+
+/* Login button (dùng class login-btn như file Navbar mình gửi) */
+header.navbar .login-btn{
+  background: rgba(255,255,255,0.12) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  box-shadow: none !important;
+}
+header.navbar .login-btn:hover{
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.40) !important;
+}
+header.navbar .login-btn.active{
+  background: rgba(59,130,246,0.22) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+}
+
+/* Search box button màu xanh dương */
+.tb-search-btn{
+  background: var(--blue-500) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  border-radius: 999px !important;
+}
+.tb-search-btn:hover{ filter: brightness(1.06); }
+
+/* ===== Search Modal: Green -> Blue ===== */
+.tf-search-input-wrapper{
+  border: 1px solid rgba(59,130,246,0.55) !important;   /* thay rgba(16,185,129,0.6) */
+}
+
+.tf-tab.active{
+  color: #3b82f6 !important;             /* thay #10b981 */
+  border-bottom: 2px solid #3b82f6 !important;
+}
+
+/* ===== FIX LOGIN BLACK + BLUE THEME (PASTE AT END) ===== */
+:root{
+  --blue-900:#0b1220;
+  --blue-700:#102a5a;
+  --blue-650:#173a86;
+  --blue-500:#3b82f6;
+}
+
+/* Gradient nhẹ cho header */
+.navbar{
+  background: linear-gradient(90deg, var(--blue-900) 0%, var(--blue-700) 60%, var(--blue-650) 100%) !important;
+}
+
+/* ✅ Hard override: mọi nút outline trong NAVBAR sẽ KHÔNG BAO GIỜ đen */
+header.navbar .btn.outline,
+header.navbar .btn.outline.login-btn{
+  background: rgba(255,255,255,0.12) !important;
+  background-color: rgba(255,255,255,0.12) !important;
+  background-image: none !important;
+
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  border-radius: 12px !important;
+
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+header.navbar .btn.outline:hover,
+header.navbar .btn.outline.login-btn:hover{
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.40) !important;
+}
+
+header.navbar .btn.outline.active,
+header.navbar .btn.outline.login-btn.active{
+  background: rgba(59,130,246,0.22) !important;
+  border-color: rgba(59,130,246,0.35) !important;
+}
+
+/* Nút Tìm kiếm xanh dương (đồng bộ) */
+.tb-search-btn{
+  background: var(--blue-500) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  border-radius: 999px !important;
+}
+.tb-search-btn:hover{ filter: brightness(1.06); }
+
+/* Search modal đổi xanh lá -> xanh dương (nếu bạn đang dùng) */
+.tf-search-input-wrapper{
+  border: 1px solid rgba(59,130,246,0.55) !important;
+}
+.tf-tab.active{
+  color: #3b82f6 !important;
+  border-bottom: 2px solid #3b82f6 !important;
+}
+
+/* Login button - visible & nice */
+header.navbar .login-btn{
+  background: rgba(255,255,255,0.22) !important;  /* tăng từ 0.12 -> 0.22 */
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.32) !important;
+  border-radius: 12px !important;
+  padding: 8px 14px !important;
+  box-shadow: none !important;
+}
+
+header.navbar .login-btn:hover{
+  background: rgba(255,255,255,0.30) !important;
+  border-color: rgba(255,255,255,0.45) !important;
+}
+
+/* Login button (A) - brighter glass */
+header.navbar .login-btn{
+  background: rgba(255,255,255,0.28) !important;  /* tăng sáng */
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.40) !important;
+  border-radius: 12px !important;
+  padding: 9px 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.25) !important;
+}
+
+header.navbar .login-btn:hover{
+  background: rgba(255,255,255,0.36) !important;
+  border-color: rgba(255,255,255,0.55) !important;
+}
+
+header.navbar .login-btn:active{
+  transform: translateY(1px);
+}
+
+header.navbar .login-btn.active{
+  background: rgba(59,130,246,0.28) !important;
+  border-color: rgba(59,130,246,0.42) !important;
+}
+
+/* Fix weird dark border on login button */
+header.navbar .login-btn{
+  border: 1px solid rgba(255,255,255,0.38) !important;  /* viền sáng */
+  box-shadow: none !important;                          /* bỏ bóng tối */
+  outline: none !important;                             /* bỏ outline */
+  -webkit-tap-highlight-color: transparent;
+  background-clip: padding-box;
+}
+
+/* Khi focus (bấm/Tab) dùng vòng xanh dương đẹp thay vì viền đen */
+header.navbar .login-btn:focus,
+header.navbar .login-btn:focus-visible{
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.45) !important;
+}
+
+/* Tránh browser tự thêm inner border (một số trình duyệt) */
+header.navbar .login-btn::-moz-focus-inner{
+  border: 0;
+}
+
+/* ===== FINAL FIX: remove weird dark border on login button ===== */
+/* thắng cả rule kiểu [data-theme="ticketbox"] .navbar button { ... } */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn{
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  border: none !important;                 /* bỏ hẳn border (nguồn viền đen) */
+  outline: none !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.42) !important;  /* viền sáng bằng shadow */
+
+  background: #3b82f6 !important;
+box-shadow: 0 8px 22px rgba(59,130,246,0.25) !important;
+
+  background-image: none !important;
+  color: #fff !important;
+
+  border-radius: 12px !important;
+  padding: 9px 16px !important;
+  font-weight: 600 !important;
+
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:hover{
+  background: rgba(255,255,255,0.34) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55) !important;
+}
+
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:focus,
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:focus-visible{
+  outline: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.55),
+    0 0 0 3px rgba(59,130,246,0.45) !important;
+}
+
+/* firefox inner border */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn::-moz-focus-inner{
+  border: 0 !important;
+}
+
+/* ===== LOGIN BUTTON FINAL STYLE (no ugly black ring) ===== */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn{
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  /* bỏ mọi viền/ring/shadow đen từ theme */
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+
+  /* style đẹp */
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  padding: 9px 16px !important;
+  font-weight: 600 !important;
+
+  /* viền sáng bằng inset shadow (không bao giờ “đen”) */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25) !important;
+}
+
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:hover{
+  background: #2563eb !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32) !important;
+}
+
+/* Khi click (active) KHÔNG đổi sang xám + KHÔNG hiện viền đen */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:active{
+  background: #1d4ed8 !important;
+  transform: translateY(1px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32) !important;
+}
+
+/* Focus ring: dùng vòng xanh dương mềm thay vì đen */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:focus,
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:focus-visible{
+  outline: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.32),
+    0 0 0 3px rgba(59,130,246,0.45) !important;
+}
+
+/* Firefox inner focus border */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn::-moz-focus-inner{
+  border: 0 !important;
+}
+
+/* ===== FORCE ALL FOCUS RING IN NAVBAR -> BLUE OUTLINE ===== */
+
+/* 1) Tắt mọi shadow/outline lạ trong navbar khi focus */
+html[data-theme] header.navbar *:focus,
+html[data-theme] header.navbar *:focus-visible{
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* 2) Ép focus ring thành outline xanh dương (cái “khung” sẽ đổi màu) */
+html[data-theme] header.navbar *:focus-visible{
+  outline: 2px solid rgba(59,130,246,0.95) !important;
+  outline-offset: 2px !important;
+  border-radius: 12px; /* mềm góc cho đẹp */
+}
+
+/* 3) Riêng nút login cho tròn đúng nút */
+html[data-theme] header.navbar nav.navbar-right > button.login-btn:focus-visible{
+  outline: 2px solid rgba(59,130,246,0.95) !important;
+  outline-offset: 3px !important;
+  border-radius: 14px !important;
+}
+
+/* ================================
+   BLUE THEME OVERRIDE (global)
+   Paste at END of App.css
+================================ */
+:root{
+  --blue-900:#0b1220;
+  --blue-800:#0f1f3d;
+  --blue-700:#102a5a;
+  --blue-650:#173a86;
+  --blue-600:#1d4ed8;
+  --blue-500:#3b82f6;
+  --blue-400:#60a5fa;
+  --text:#eaf2ff;
+}
+
+/* Header gradient nhẹ */
+.navbar{
+  background: linear-gradient(90deg, var(--blue-900) 0%, var(--blue-700) 60%, var(--blue-650) 100%) !important;
+}
+
+/* Search Modal: xanh lá -> xanh dương */
+.tf-search-input-wrapper{
+  border: 1px solid rgba(59,130,246,0.55) !important;
+}
+.tf-tab.active{
+  color: var(--blue-500) !important;
+  border-bottom: 2px solid var(--blue-500) !important;
+}
+
+/* Các accent xanh lá thường gặp -> xanh dương */
+.is-green, .success, .ok { color: var(--blue-500) !important; }
+
+/* ================================
+   FILTER BAR POLISH (dark UI)
+================================ */
+
+/* Container filter (nếu bạn có class riêng, thêm vào đây) */
+.filter-bar,
+.filters,
+.home-filters,
+.price-filter{
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 12px 12px;
+}
+
+/* Input/Select đẹp hơn trên nền tối */
+.filter-bar input,
+.filters input,
+.home-filters input,
+.price-filter input,
+.filter-bar select,
+.filters select,
+.home-filters select,
+.price-filter select{
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  outline: none !important;
+}
+
+.filter-bar input::placeholder,
+.filters input::placeholder,
+.home-filters input::placeholder,
+.price-filter input::placeholder{
+  color: rgba(255,255,255,0.55) !important;
+}
+
+.filter-bar input:focus,
+.filters input:focus,
+.home-filters input:focus,
+.price-filter input:focus,
+.filter-bar select:focus,
+.filters select:focus,
+.home-filters select:focus,
+.price-filter select:focus{
+  border-color: rgba(59,130,246,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.20) !important;
+}
+
+/* Buttons: Áp dụng / Xóa lọc về xanh dương */
+.filter-bar button,
+.filters button,
+.home-filters button,
+.price-filter button{
+  border-radius: 999px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+
+/* Button dạng primary (áp dụng) */
+.filter-apply, .btn-apply, .apply-btn{
+  background: var(--blue-500) !important;
+  color: #fff !important;
+}
+.filter-apply:hover, .btn-apply:hover, .apply-btn:hover{
+  background: var(--blue-600) !important;
+}
+
+/* Button dạng secondary (xóa lọc) */
+.filter-clear, .btn-clear, .clear-btn{
+  background: rgba(255,255,255,0.10) !important;
+  color: #fff !important;
+}
+.filter-clear:hover, .btn-clear:hover, .clear-btn:hover{
+  background: rgba(255,255,255,0.16) !important;
+}
+
+/* Disabled nhìn “đúng” */
+.filter-bar button:disabled,
+.filters button:disabled,
+.home-filters button:disabled,
+.price-filter button:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== Price filter (select + actions) ===== */
+.price-filter-select{
+  background: rgba(255,255,255,0.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  outline: none !important;
+}
+
+.price-filter-select:focus{
+  border-color: rgba(59,130,246,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.20) !important;
+}
+
+/* Buttons */
+.price-filter-actions .btn-apply,
+.price-filter-actions .btn-clear{
+  border-radius: 999px !important;
+  padding: 10px 14px !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+}
+
+/* Apply = primary blue */
+.price-filter-actions .btn-apply{
+  background: #3b82f6 !important;
+  color: #fff !important;
+}
+.price-filter-actions .btn-apply:hover{
+  background: #2563eb !important;
+}
+
+/* Clear = secondary glass */
+.price-filter-actions .btn-clear{
+  background: rgba(255,255,255,0.10) !important;
+  color: #fff !important;
+}
+.price-filter-actions .btn-clear:hover{
+  background: rgba(255,255,255,0.16) !important;
+}
+
+/* keep your .small if it exists; if not, define it */
+.price-filter-actions .small{
+  height: 36px;
+  line-height: 1;
+}
+
+/* ===== HOME FILTER BAR: force blue buttons ===== */
+/* bắt theo cái khối filter màu trắng (thường nằm trong .main-content) */
+.main-content .filter-bar button,
+.main-content .filters button,
+.main-content .price-filter button,
+.main-content .price-filter-actions button,
+.main-content .price-filter-wrap button{
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: none !important;
+}
+
+/* Nút có chữ "Áp dụng" -> xanh dương */
+.main-content .filter-bar button:nth-last-child(2),
+.main-content .filters button:nth-last-child(2),
+.main-content .price-filter-actions button:nth-child(1){
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.18) !important;
+}
+.main-content .price-filter-actions button:nth-child(1):hover{
+  background: #2563eb !important;
+}
+
+/* Nút cuối (thường là "Xóa lọc") -> secondary xám trong suốt */
+.main-content .filter-bar button:last-child,
+.main-content .filters button:last-child,
+.main-content .price-filter-actions button:nth-child(2){
+  background: rgba(15,31,61,0.10) !important;
+  color: #0f1f3d !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+.main-content .filter-bar button:last-child:hover,
+.main-content .filters button:last-child:hover,
+.main-content .price-filter-actions button:nth-child(2):hover{
+  background: rgba(15,31,61,0.16) !important;
+}
+
+/* ===== Fix text too faint on "Xem chi tiết" / "Đặt vé" buttons ===== */
+
+/* 1) Nút trong hero/banner (tb-hero-btn) */
+.tb-hero-btn{
+  color: #111 !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+
+  background: rgba(255,255,255,0.96) !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.20) !important;
+}
+
+.tb-hero-btn:hover{
+  background: #fff !important;
+  border-color: rgba(0,0,0,0.14) !important;
+  transform: translateY(-1px);
+}
+
+/* 2) Nếu bạn có các nút/label "pill" overlay trên card/ảnh */
+.event-card .btn,
+.event-card button,
+.hero button,
+.hero a,
+[class*="detail"],
+[class*="book"]{
+  opacity: 1;
+}
+
+/* 3) Fix riêng các “pill trắng” hay dùng cho "Xem chi tiết" */
+.tb-hero-gradient .tb-hero-btn,
+.hero-banner a,
+.hero-banner button,
+.event-card a,
+.event-card button{
+  text-shadow: none !important;
+}
+
+/* 4) Nếu "Xem chi tiết" đang là link dạng pill (thường bị opacity/rgba) */
+a.view-detail,
+button.view-detail,
+.xem-chi-tiet,
+.book-now,
+.dat-ve{
+  color: #111 !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+
+  background: rgba(255,255,255,0.96) !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.20) !important;
+}
+
+/* Hover */
+a.view-detail:hover,
+button.view-detail:hover,
+.xem-chi-tiet:hover,
+.book-now:hover,
+.dat-ve:hover{
+  background: #fff !important;
+}
+
+/* ===== Fix input text/placeholder too faint (price filter) ===== */
+
+/* Input trong filter bar (nền trắng) */
+.price-filter input,
+.price-filter .price-input,
+.filter-bar input,
+.home-filters input{
+  color: #111 !important;                 /* chữ nhập */
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+/* Placeholder đậm hơn */
+.price-filter input::placeholder,
+.price-filter .price-input::placeholder,
+.filter-bar input::placeholder,
+.home-filters input::placeholder{
+  color: rgba(0,0,0,0.45) !important;     /* placeholder */
+  opacity: 1 !important;
+}
+
+/* Focus state */
+.price-filter input:focus,
+.price-filter .price-input:focus,
+.filter-bar input:focus,
+.home-filters input:focus{
+  border-color: rgba(59,130,246,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18) !important;
+  outline: none !important;
+}
+
+/* ===== FIX: Price filter input text invisible on white background ===== */
+.price-filter-input{
+  color: #111 !important;
+  -webkit-text-fill-color: #111 !important;
+  background: #fff !important;
+}
+
+.price-filter-input::placeholder{
+  color: rgba(0,0,0,0.55) !important;
+  opacity: 1 !important;
+}
+
+/* Focus cho đẹp */
+.price-filter-input:focus{
+  border-color: rgba(59,130,246,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18) !important;
+  outline: none !important;
+}
+
+.price-filter-select{
+  color: #111 !important;
+  background: #fff !important;
+}
+
+/* ===== Make "Đặt vé ngay" aligned across event cards ===== */
+
+/* 1) Card body thành flex để đẩy nút xuống đáy */
+.event-card .event-body{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 2) Cụm actions/nút luôn nằm cuối */
+.event-card .event-actions,
+.event-card .event-cta,
+.event-card .event-footer{
+  margin-top: auto;
+}
+
+/* 3) Nếu bạn đang render nút trực tiếp trong body (không có wrapper actions)
+      thì bắt theo button full-width */
+.event-card .event-body > button.btn.full-width,
+.event-card .event-body > a.btn.full-width{
+  margin-top: auto;
+}
+
+/* 4) Chuẩn chiều cao nút để nhìn đều */
+.event-card .btn.full-width{
+  height: 40px;
+  border-radius: 999px;
+}
+
+/* Ensure all cards have same height so buttons align perfectly */
+.event-card{
+  height: 100%;
+}
+.event-card.special-card{
+  height: 100%;
+}
+
+/* ===== Fix "Đặt vé ngay" text too faint ===== */
+
+/* Nút đặt vé trong event card */
+.event-card button.btn.full-width,
+.event-card a.btn.full-width{
+  opacity: 1 !important;
+  color: #111 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+/* Nếu có class small */
+.event-card button.btn.small.full-width,
+.event-card a.btn.small.full-width{
+  color: #111 !important;
+  font-weight: 700 !important;
+}
+
+/* Disabled: vẫn nhìn rõ chữ (nhưng vẫn khác trạng thái) */
+.event-card button.btn.full-width:disabled,
+.event-card button.btn.small.full-width:disabled{
+  opacity: 0.85 !important;              /* tăng từ 0.3-0.5 lên */
+  color: rgba(0,0,0,0.55) !important;    /* chữ vẫn thấy */
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+}
+
+/* Hover cho nút đang enabled */
+.event-card button.btn.full-width:not(:disabled):hover,
+.event-card a.btn.full-width:hover{
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+}
+
+/* ===== FIX: Login page bị chồng 2 khung ===== */
+
+/* ép trang login chỉ canh giữa 1 khung */
+.auth-page, .login-page, .auth-container{
+  display: grid !important;
+  place-items: center !important;
+}
+
+/* nếu có 2 lớp card, tắt lớp ngoài */
+.auth-card .auth-card,
+.login-card .login-card,
+.auth-box .auth-box{
+  display: none !important;
+}
+
+/* ép form bên trong không bị position nổi lên chồng */
+.auth-form, .login-form, .auth-card form{
+  position: static !important;
+  transform: none !important;
+}
+
+/* nếu khung nhỏ đang bị absolute/fixed */
+.auth-card > .auth-form,
+.login-card > .auth-form{
+  position: static !important;
+}
+
+/* ===== LOGIN: center + blue button + clear title (minimal) ===== */
+
+/* 1) Canh giữa màn hình */
+body:has(#root) .auth-container,
+body:has(#root) .login-container,
+body:has(#root) .auth-wrapper,
+body:has(#root) .login-wrapper{
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px 16px !important;
+}
+
+/* Nếu không có các class trên thì fallback: trang login thường chỉ có 1 card */
+body:has(#root) .auth-card,
+body:has(#root) .login-card{
+  margin: 0 auto !important;
+}
+
+/* 2) Chữ tiêu đề "Đăng nhập" rõ */
+body:has(#root) .auth-card h1,
+body:has(#root) .login-card h1,
+body:has(#root) .auth-card h2,
+body:has(#root) .login-card h2{
+  color: #111 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+/* 3) Nút đăng nhập xanh dương */
+body:has(#root) .auth-card button,
+body:has(#root) .login-card button{
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+body:has(#root) .auth-card button:hover,
+body:has(#root) .login-card button:hover{
+  background: #2563eb !important;
+}
+
+/* ===== LOGIN: only title + submit button + center (no touch links) ===== */
+
+/* Canh form login ra giữa */
+.login-container, .auth-container, .login-wrapper, .auth-wrapper{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+/* Tiêu đề Đăng nhập rõ (không mờ) */
+.login-card h1, .auth-card h1,
+.login-card h2, .auth-card h2{
+  opacity: 1 !important;
+  color: #111 !important;
+  font-weight: 800 !important;
+}
+
+/* CHỈ đổi màu nút submit (nút Đăng nhập) */
+.login-card button[type="submit"],
+.auth-card button[type="submit"],
+.login-card form button[type="submit"],
+.auth-card form button[type="submit"]{
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 999px !important;
+}
+
+.login-card button[type="submit"]:hover,
+.auth-card button[type="submit"]:hover{
+  background: #2563eb !important;
+}
+
+/* Giữ nguyên link "Khôi phục mật khẩu / Đăng ký ngay" (không pill) */
+.login-card a, .auth-card a{
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
+.login-card button[type="button"], .auth-card button[type="button"]{
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* =========================================================
+   TicketFast - Event Detail PATCH (CHARCOAL / BLACK-GRAY)
+   DÁN Ở CUỐI FILE CSS - XÓA PATCH NAVY CŨ NẾU CÓ
+   ========================================================= */
+
+/* nền tổng thể giống home */
+.tkb-detail{ color:#e9edf3; }
+.tkb-detail .tkb-body{ background:#2b2f34 !important; } /* xám đen */
+
+/* HERO: bỏ xanh lá -> xám đen */
+.tkb-detail .tkb-hero{ background:#2b2f34 !important; }
+
+/* ảnh blur giữ lại nhưng giảm ám màu */
+.tkb-detail .tkb-hero__bg{
+  background-image: var(--tkb-hero) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  filter: blur(24px) saturate(1.0) !important;
+  transform: scale(1.12);
+  opacity: 0.55 !important;
+}
+
+/* overlay: ép xám đen (đây là phần đang gây xanh lá) */
+.tkb-detail .tkb-hero__overlay{
+  background: linear-gradient(
+    90deg,
+    rgba(24,26,29,0.92) 0%,
+    rgba(24,26,29,0.70) 55%,
+    rgba(24,26,29,0.45) 100%
+  ) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* nút Trang chủ / Chia sẻ: đen xám, không xanh lá */
+.tkb-detail .btn.outline{
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  color: #e9edf3 !important;
+}
+.tkb-detail .btn.outline:hover{
+  background: rgba(255,255,255,0.12) !important;
+}
+
+/* badge: xám, không xanh */
+.tkb-detail .tkb-badge{
+  background: rgba(255,255,255,0.10) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  color:#e9edf3 !important;
+}
+.tkb-detail .tkb-badge--ghost{
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* tag chip: xám + viền (tone chung), không cyan */
+.tkb-detail .tkb-tags{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.tkb-detail .tkb-tag{
+  display:inline-block;
+  padding:4px 12px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  color:#e9edf3;
+}
+
+/* meta box thời gian/địa điểm: xám đậm */
+.tkb-detail .tkb-meta__item{
+  background: rgba(0,0,0,0.28) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+.tkb-detail .tkb-meta__label{ color: rgba(233,237,243,0.72) !important; }
+.tkb-detail .tkb-meta__value{ color: #e9edf3 !important; }
+
+/* nút chính: giữ xanh dương giống header */
+.tkb-detail .tkb-btn-primary{
+  background: #3b82f6 !important;   /* xanh dương */
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(59,130,246,0.20) !important;
+}
+.tkb-detail .tkb-btn-primary:hover{ opacity: 0.95; }
+.tkb-detail .tkb-btn-primary.disabled,
+.tkb-detail .tkb-btn-primary:disabled{
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+}
+
+/* Card + Buycard: nền xám đậm đồng bộ */
+.tkb-detail .tkb-card,
+.tkb-detail .tkb-buycard{
+  background: rgba(0,0,0,0.22) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+/* Tabs: xám, active hơi xanh dương */
+.tkb-detail .tkb-tab{
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color:#e9edf3 !important;
+}
+.tkb-detail .tkb-tab:hover{ background: rgba(255,255,255,0.12) !important; }
+.tkb-detail .tkb-tab.active{
+  background: rgba(59,130,246,0.18) !important;
+  border-color: rgba(59,130,246,0.30) !important;
+  color:#e9edf3 !important;
+}
+
+/* Ticket rows / block trong buycard */
+.tkb-detail .tkb-ticketrow,
+.tkb-detail .tkb-buycard__meta,
+.tkb-detail .tkb-total,
+.tkb-detail .tkb-buycard__block{
+  background: rgba(0,0,0,0.18) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* pill trạng thái: ok xanh lá nhẹ (chỉ trạng thái), bad đỏ */
+.tkb-detail .tkb-pill.ok{
+  background: rgba(34,197,94,0.12) !important;
+  border: 1px solid rgba(34,197,94,0.20) !important;
+  color: #a7f3d0 !important;
+}
+.tkb-detail .tkb-pill.bad{
+  background: rgba(239,68,68,0.12) !important;
+  border: 1px solid rgba(239,68,68,0.20) !important;
+  color: #fecaca !important;
+}
+
+/* qty/payment buttons */
+.tkb-detail .tkb-qty__btn,
+.tkb-detail .tkb-qty__input,
+.tkb-detail .tkb-pay__btn,
+.tkb-detail .tkb-ticketbtn{
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color:#e9edf3 !important;
+}
+.tkb-detail .tkb-pay__btn.active,
+.tkb-detail .tkb-ticketbtn.active{
+  background: rgba(59,130,246,0.14) !important;
+  border-color: rgba(59,130,246,0.26) !important;
+}
+
+/* ended badge/note nếu bạn đang dùng class ở TSX */
+.tkb-ended-badge{
+  position:absolute; top:10px; right:10px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background: rgba(249,115,22,0.95);
+  color:#fff;
+}
+.tkb-badge--ended{
+  background: rgba(249,115,22,0.95) !important;
+  color:#fff !important;
+}
+.tkb-ended-note{
+  margin-top:12px;
+  padding:10px 14px;
+  border-radius:12px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(233,237,243,0.88);
+  font-weight:600;
+}
+.tkb-buycard__ended{
+  margin-top:10px;
+  padding:14px;
+  border-radius:14px;
+  background: rgba(249,115,22,0.10);
+  border: 1px solid rgba(249,115,22,0.20);
+  color: rgba(233,237,243,0.92);
+  font-weight:800;
+}
+
+/* =========================================================
+   FIX TEXT INVISIBLE (đen trên nền đen)
+   DÁN Ở CUỐI FILE CSS
+   ========================================================= */
+
+.tkb-detail,
+.tkb-detail *{
+  -webkit-font-smoothing: antialiased;
+}
+
+/* tiêu đề + nội dung trong card */
+.tkb-detail .tkb-card__title{
+  color: #e9edf3 !important;
+}
+.tkb-detail .tkb-card__text{
+  color: rgba(233,237,243,0.90) !important;
+}
+
+/* breadcrumb + title trên hero */
+.tkb-detail .tkb-breadcrumb{
+  color: rgba(233,237,243,0.70) !important;
+}
+.tkb-detail .tkb-title{
+  color: #ffffff !important;
+}
+
+/* label/value trong meta */
+.tkb-detail .tkb-meta__label,
+.tkb-detail .tkb-buycard__label,
+.tkb-detail .tkb-buymeta__label,
+.tkb-detail .tkb-kv__label,
+.tkb-detail .tkb-total__label{
+  color: rgba(233,237,243,0.68) !important;
+}
+
+.tkb-detail .tkb-meta__value,
+.tkb-detail .tkb-buycard__price,
+.tkb-detail .tkb-buycard__remainNum,
+.tkb-detail .tkb-buymeta__value,
+.tkb-detail .tkb-kv__value,
+.tkb-detail .tkb-total__value{
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* ticket list row text */
+.tkb-detail .tkb-ticketrow__name,
+.tkb-detail .tkb-ticketrow__price,
+.tkb-detail .tkb-ticketbtn__name,
+.tkb-detail .tkb-ticketbtn__p{
+  color: rgba(233,237,243,0.92) !important;
+}
+.tkb-detail .tkb-ticketrow__sub,
+.tkb-detail .tkb-ticketbtn__sub,
+.tkb-detail .tkb-note,
+.tkb-detail .tkb-buycard__foot{
+  color: rgba(233,237,243,0.70) !important;
+}
+
+/* tab text */
+.tkb-detail .tkb-tab{
+  color: rgba(233,237,243,0.85) !important;
+}
+.tkb-detail .tkb-tab.active{
+  color: #ffffff !important;
+}
+
+/* input text */
+.tkb-detail .tkb-qty__input{
+  color: #ffffff !important;
+}
+.tkb-detail .tkb-qty__input::placeholder{
+  color: rgba(233,237,243,0.55) !important;
+}
+
+/* =========================
+   FIX: Buycard "Chọn chỗ" block
+   ========================= */
+
+/* Khối block trong buycard */
+.tkb-detail .tkb-buycard__block{
+  background: rgba(0,0,0,0.22) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  border-radius: 14px !important;
+  padding: 14px !important;
+  color: rgba(233,237,243,0.92) !important;
+}
+
+/* Tiêu đề "Chọn chỗ" (nếu có) */
+.tkb-detail .tkb-buycard__blockTitle{
+  color: #e9edf3 !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Nội dung mô tả trong block */
+.tkb-detail .tkb-buycard__block,
+.tkb-detail .tkb-buycard__block *{
+  opacity: 1 !important; /* tránh bị mờ do rule cũ */
+}
+
+/* Nút "Chọn ghế" */
+.tkb-detail .tkb-buycard__block .tkb-btn-primary,
+.tkb-detail .tkb-buycard__block .tkb-btn-full{
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px;
+}
+
+/* Dòng chú thích bên dưới nút */
+.tkb-detail .tkb-buycard__foot{
+  margin-top: 10px !important;
+  color: rgba(233,237,243,0.70) !important;
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+  opacity: 1 !important;
+}
+
+/* Nếu có dấu * nằm sát trái làm xấu -> canh lại nhẹ */
+.tkb-detail .tkb-buycard__foot::before{
+  content: "" !important;
+}
+
+.tkb-detail .tkb-buycard__block{
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18) !important;
+}
+
+/* =========================
+   HERO TOP BUTTONS -> BLUE
+   (Trang chủ / Chia sẻ)
+   ========================= */
+
+.tkb-detail .tkb-hero__topbar .btn.outline{
+  background: #3b82f6 !important;
+  border: 1px solid rgba(59,130,246,0.55) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+  box-shadow: 0 10px 22px rgba(59,130,246,0.22) !important;
+}
+
+.tkb-detail .tkb-hero__topbar .btn.outline:hover{
+  filter: brightness(1.05);
+}
+
+.tkb-detail .tkb-hero__topbar .btn.outline:active{
+  transform: translateY(1px);
+}
+
+/* ===== Login layout: center card ===== */
+.auth-section {
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px 16px !important;
+}
+
+/* Card giữ nguyên đẹp */
+.auth-card {
+  margin: 0 auto !important;
+}
+
+/* ===== Login title: stop being faded ===== */
+.auth-card h1,
+.auth-card .auth-title {
+  color: #111827 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+/* ===== Submit button: blue (only submit) ===== */
+.auth-card .auth-form button[type="submit"],
+.auth-card form button[type="submit"] {
+  background: #3b82f6 !important;
+  border: 1px solid rgba(59, 130, 246, 0.65) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* hover */
+.auth-card .auth-form button[type="submit"]:hover,
+.auth-card form button[type="submit"]:hover {
+  background: #2563eb !important;
+}
+
+/* ===== Keep "Khôi phục mật khẩu" & "Đăng ký ngay" as plain text links ===== */
+.auth-card .link-button,
+.auth-card button.link-button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+
+  color: #2563eb !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.auth-card .link-button:hover,
+.auth-card button.link-button:hover {
+  text-decoration: underline !important;
+}
+
+/* remove weird focus ring/outline that may look like a "box" */
+.auth-card .link-button:focus,
+.auth-card button.link-button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   THEME ticketbox: đồng bộ xanh dương toàn web
+   ========================================================= */
+html[data-theme="ticketbox"]{
+  --tb-green: #3b82f6;         /* xanh dương giống header */
+  --tb-green-hover: #2563eb;   /* hover xanh đậm hơn */
+}
+
+/* outline buttons (Trở về, -, 100%, +) -> xanh dương */
+html[data-theme="ticketbox"] button.btn.outline{
+  background: #3b82f6 !important;
+  color: #fff !important;
+  border: 1px solid rgba(59,130,246,0.55) !important;
+  box-shadow: 0 10px 22px rgba(59,130,246,0.18) !important;
+}
+html[data-theme="ticketbox"] button.btn.outline:hover{
+  filter: brightness(1.06);
+}
+
+/* =========================================================
+   FIX: click vào bị xanh lá (active/focus)
+   ========================================================= */
+
+/* Đè tất cả trạng thái focus/active của outline */
+html[data-theme="ticketbox"] button.btn.outline:active,
+html[data-theme="ticketbox"] button.btn.outline:focus,
+html[data-theme="ticketbox"] button.btn.outline:focus-visible{
+  background: #3b82f6 !important;
+  border-color: rgba(59,130,246,0.70) !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.28) !important;
+}
+
+/* Đè tất cả trạng thái focus/active của primary (Tiếp tục) */
+html[data-theme="ticketbox"] .btn.primary:active,
+html[data-theme="ticketbox"] .btn.primary:focus,
+html[data-theme="ticketbox"] .btn.primary:focus-visible,
+html[data-theme="ticketbox"] button.btn.primary.full-width:active,
+html[data-theme="ticketbox"] button.btn.primary.full-width:focus,
+html[data-theme="ticketbox"] button.btn.primary.full-width:focus-visible{
+  background: #3b82f6 !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.28) !important;
+}
+
+/* Nếu có class "active/selected" trên button cũng đè luôn */
+html[data-theme="ticketbox"] button.btn.outline.active,
+html[data-theme="ticketbox"] button.btn.outline.selected,
+html[data-theme="ticketbox"] .btn.primary.active,
+html[data-theme="ticketbox"] .btn.primary.selected{
+  background: #3b82f6 !important;
+  border-color: rgba(59,130,246,0.70) !important;
+  color: #fff !important;
+}
+
+/* =========================================================
+   FIX: hover/active còn xanh lá vì --tb-green-2
+   ========================================================= */
+html[data-theme="ticketbox"]{
+  --tb-green:   #3b82f6;  /* primary */
+  --tb-green-2: #2563eb;  /* hover */
+  --tb-green-3: #1d4ed8;  /* active (nếu có dùng) */
+}
+
+html[data-theme="ticketbox"] button.btn.outline:hover,
+html[data-theme="ticketbox"] button.btn.outline:active,
+html[data-theme="ticketbox"] button.btn.outline:focus,
+html[data-theme="ticketbox"] button.btn.outline:focus-visible{
+  background: #2563eb !important;
+  border-color: rgba(37,99,235,0.65) !important;
+  color: #fff !important;
+}
+
+/* =========================================================
+   SEATSELECT: bỏ scroll bên trong, chỉ dùng scroll trang
+   ========================================================= */
+
+/* Tắt scroll trong cột phải (sidebar) */
+html[data-theme="ticketbox"] .seatselect-side{
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Tắt scroll của body layout nếu đang set overflow */
+html[data-theme="ticketbox"] .seatselect-body{
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Nếu map wrapper có scroll riêng thì tắt luôn */
+html[data-theme="ticketbox"] .seatselect-mapwrap{
+  overflow: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Nếu có card nào trong sidebar set overflow */
+html[data-theme="ticketbox"] .seatselect-card{
+  overflow: visible !important;
+}
+
+html[data-theme="ticketbox"] .seatselect-page,
+html[data-theme="ticketbox"] .main-content{
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* =========================================================
+   SEATMAP: làm rõ chữ VIP A / VIP B / STANDARD
+   ========================================================= */
+
+/* 1) Nếu label là text trực tiếp trong mapwrap */
+html[data-theme="ticketbox"] .seatselect-mapwrap{
+  color: rgba(233,237,243,0.9);
+}
+
+/* 2) Nếu label có class (phổ biến) */
+html[data-theme="ticketbox"] .seat-label,
+html[data-theme="ticketbox"] .zone-label,
+html[data-theme="ticketbox"] .section-label,
+html[data-theme="ticketbox"] .area-label,
+html[data-theme="ticketbox"] .vip-label{
+  color: rgba(233,237,243,0.78) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  opacity: 1 !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.55);
+}
+
+/* 3) Nếu nó là SVG text (rất hay dùng) */
+html[data-theme="ticketbox"] svg text{
+  fill: rgba(233,237,243,0.72) !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.55);
+  stroke-width: 2px;
+}
+
+html[data-theme="ticketbox"] svg text{
+  fill: rgba(233,237,243,0.78) !important;
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
+}
+
+/* ===== Login: remove blue focus outline/box on link buttons ===== */
+.auth-card .switch-text .link-button,
+.auth-card .switch-text button.link-button {
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.auth-card .switch-text .link-button:focus,
+.auth-card .switch-text .link-button:focus-visible,
+.auth-card .switch-text button.link-button:focus,
+.auth-card .switch-text button.link-button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* (tuỳ chọn) bỏ luôn highlight xanh khi click trên Chrome/mobile */
+.auth-card .switch-text .link-button,
+.auth-card .switch-text button.link-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== FIX: bỏ viền xanh (focus outline) ở Khôi phục mật khẩu / Đăng ký ngay ===== */
+.auth-card .link-button,
+.auth-card button.link-button {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  text-decoration: underline; /* nếu muốn giống link, không muốn thì xoá dòng này */
+}
+
+/* Khi click/focus */
+.auth-card .link-button:focus,
+.auth-card .link-button:focus-visible,
+.auth-card .link-button:active,
+.auth-card button.link-button:focus,
+.auth-card button.link-button:focus-visible,
+.auth-card button.link-button:active {
+  outline: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Tránh tap highlight xanh trên mobile/chrome */
+.auth-card .link-button,
+.auth-card button.link-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== FIX: bỏ viền xanh (focus outline) ở Khôi phục mật khẩu / Đăng ký ngay ===== */
+.auth-card .link-button,
+.auth-card button.link-button {
+  background: transparent !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  text-decoration: underline; /* nếu muốn giống link, không muốn thì xoá dòng này */
+}
+
+/* Khi click/focus */
+.auth-card .link-button:focus,
+.auth-card .link-button:focus-visible,
+.auth-card .link-button:active,
+.auth-card button.link-button:focus,
+.auth-card button.link-button:focus-visible,
+.auth-card button.link-button:active {
+  outline: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+/* Tránh tap highlight xanh trên mobile/chrome */
+.auth-card .link-button,
+.auth-card button.link-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Price filter: làm gạch ngang (separator) rõ hơn ===== */
+.price-filter-sep {
+  display: inline-block !important;
+  width: 18px !important;      /* dài hơn */
+  height: 2px !important;      /* dày hơn */
+  background: rgba(15, 23, 42, 0.75) !important; /* xám đậm nhẹ */
+  border-radius: 999px !important;
+  margin: 0 10px !important;
+  transform: translateY(0px) !important; /* nếu bị lệch, thử 1px */
+}
+
+/* nếu vẫn mờ do bị opacity/filter của cha */
+.price-filter-bar,
+.price-filter-fields {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.event-price{
+  color: #22c55e;          /* xanh lá */
+  font-weight: 700;
+}
+
+/* card cao bằng nhau */
+.event-card.special-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ảnh cố định */
+.event-card .event-thumb {
+  height: 170px;          /* bạn chỉnh 160-190 tuỳ đẹp */
+  flex: 0 0 auto;
+}
+
+/* phần body tự giãn */
+.event-card .event-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* nút luôn ở đáy */
+.event-card .event-body .btn.full-width {
+  margin-top: auto;
+}
+
+/* giới hạn title 2 dòng */
+.event-card .event-body h3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 44px; /* giữ đều chiều cao tiêu đề */
+}
+
+/* meta (địa điểm + ngày) giới hạn 2 dòng */
+.event-card .event-meta {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* vùng tag cố định chiều cao, quá thì ẩn */
+.event-card .event-body .tag-wrap {
+  max-height: 22px;   /* 1 dòng tag */
+  overflow: hidden;
+}
+
+/* 1) Card luôn là cột và cao bằng nhau */
+.event-card.special-card{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+
+/* 2) Ảnh cố định chiều cao */
+.event-card.special-card .event-thumb{
+  height:170px;
+  flex:0 0 auto;
+}
+
+/* 3) Body chia layout: nội dung + nút đáy */
+.event-card.special-card .event-body{
+  display:flex;
+  flex-direction:column;
+  flex:1 1 auto;
+  min-height:0;
+}
+
+/* 4) Title cố định 2 dòng (dài thì ...) */
+.event-card.special-card .event-body h3{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  min-height:44px;        /* giữ đều chiều cao title */
+}
+
+/* 5) Location/Date: cố định 2 dòng tổng (để card nào cũng như nhau) */
+.event-card.special-card .event-meta{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+
+/* 6) Giá: giữ 1 dòng cố định (đỡ nhảy) */
+.event-card.special-card .event-price{
+  min-height:22px;        /* 1 dòng */
+}
+
+/* 7) Tag: chỉ cho tối đa 1 dòng (2 tag vẫn không làm card cao hơn) */
+.event-card.special-card .event-tags{
+  max-height:22px;        /* 1 dòng */
+  overflow:hidden;
+}
+
+/* 8) Nút luôn nằm đáy */
+.event-card.special-card .btn.full-width{
+  margin-top:auto;
+}
+
+/* ===== FIX: chữ input bị mờ (login) ===== */
+.auth-card input,
+.auth-card textarea,
+.auth-card select {
+  color: #111827 !important;          /* chữ khi gõ */
+  caret-color: #111827 !important;    /* con trỏ */
+  opacity: 1 !important;
+}
+
+/* Placeholder rõ hơn */
+.auth-card input::placeholder,
+.auth-card textarea::placeholder {
+  color: #6b7280 !important;
+  opacity: 1 !important;
+}
+
+/* Nếu input bị inherit màu trắng/xám do theme dark */
+.auth-card label,
+.auth-card .auth-subtitle {
+  color: #374151;
+}
+
+/* Chrome autofill hay làm chữ nhạt/đổi nền */
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827 !important;
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0px 1000px #f3f4f6 inset !important; /* nền giống input */
+}
+
+/* ===== Link buttons in login: text-only, no pill/outline ===== */
+.auth-card .switch-text .link-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+
+  color: #2563eb !important;           /* xanh link */
+  font-weight: 600;
+  text-decoration: underline;          /* nếu bạn thích link rõ */
+  text-underline-offset: 2px;
+
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* bỏ viền xanh khi focus */
+.auth-card .switch-text .link-button:focus,
+.auth-card .switch-text .link-button:focus-visible,
+.auth-card .switch-text .link-button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* hover đẹp nhẹ */
+.auth-card .switch-text .link-button:hover {
+  opacity: 0.9;
+}
+
+.auth-card .switch-text .link-button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* =========================
+   NAVBAR THEME SAFE (không đè layout dropdown)
+   ========================= */
+:root{
+  --tb-blue:#2f6fe4;
+  --tb-blue-2:#3b82f6;
+  --tb-blue-3:#245fd3;
+  --tb-border: rgba(255,255,255,.14);
+  --tb-text: rgba(255,255,255,.92);
+}
+
+/* Chỉ style nút ở cấp 1 (direct child) trong navbar-right
+   => KHÔNG ăn vào button ở trong dropdown */
+[data-theme="ticketbox"] .navbar-right > button,
+[data-theme="ticketbox"] .navbar-right > .btn{
+  border:1px solid var(--tb-border) !important;
+  background: var(--tb-blue) !important;
+  color:#fff !important;
+  border-radius:999px !important;
+  padding:10px 16px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,.25) !important;
+}
+
+[data-theme="ticketbox"] .navbar-right > button:hover,
+[data-theme="ticketbox"] .navbar-right > .btn:hover{
+  background: var(--tb-blue-2) !important;
+}
+
+[data-theme="ticketbox"] .navbar-right > button:active,
+[data-theme="ticketbox"] .navbar-right > .btn:active{
+  background: var(--tb-blue-3) !important;
+}
+
+/* Avatar tròn */
+[data-theme="ticketbox"] .navbar-right .avatar,
+[data-theme="ticketbox"] .navbar-right .nav-avatar{
+  background: rgba(255,255,255,.14) !important;
+  color:#fff !important;
+  border:1px solid var(--tb-border) !important;
+}
+
+/* Dropdown: chỉ chỉnh nền/viền/độ rõ — KHÔNG set position/top/right */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu,
+[data-theme="ticketbox"] .navbar-right .menu{
+  background: rgba(15,23,42,.96) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.38) !important;
+}
+
+/* Item dropdown: bỏ mờ, nhìn rõ */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu button,
+[data-theme="ticketbox"] .navbar-right .dropdown-menu a,
+[data-theme="ticketbox"] .navbar-right .user-menu button,
+[data-theme="ticketbox"] .navbar-right .user-menu a,
+[data-theme="ticketbox"] .navbar-right .menu button,
+[data-theme="ticketbox"] .navbar-right .menu a{
+  opacity: 1 !important;
+  filter: none !important;
+  background: transparent !important;
+  color: var(--tb-text) !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="ticketbox"] .navbar-right .dropdown-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .dropdown-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .menu button:hover,
+[data-theme="ticketbox"] .navbar-right .menu a:hover{
+  background: rgba(59,130,246,.16) !important;
+  border-color: rgba(59,130,246,.35) !important;
+}
+
+/* ===========================
+   FIX NAVBAR USER MENU (ticketbox)
+   =========================== */
+[data-theme="ticketbox"] .navbar-right .user-menu {
+  position: relative;
+}
+
+/* Nút "Tài khoản" */
+[data-theme="ticketbox"] .navbar-right .user-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  height: 40px;
+  padding: 0 14px;
+
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(59, 130, 246, 0.92); /* xanh đồng bộ */
+  color: #fff !important;
+
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+  cursor: pointer;
+
+  outline: none;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button:hover {
+  background: rgba(59, 130, 246, 1);
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button:active {
+  transform: translateY(1px);
+}
+
+/* Avatar tròn chữ M */
+[data-theme="ticketbox"] .navbar-right .user-menu-button .user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(255,255,255,0.18);
+  color: #fff !important;
+  font-weight: 900;
+}
+
+/* Chữ "Tài khoản" luôn rõ */
+[data-theme="ticketbox"] .navbar-right .user-menu-button .user-menu-label {
+  color: #fff !important;
+  opacity: 1 !important;
+  font-weight: 800;
+}
+
+/* ===== Dropdown: hỗ trợ nhiều class khác nhau ===== */
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown,
+[data-theme="ticketbox"] .navbar-right .user-menu [class*="dropdown-menu"],
+[data-theme="ticketbox"] .navbar-right .user-menu [class*="menu-list"] {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 9999;
+
+  min-width: 220px;
+  padding: 10px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(15, 23, 42, 0.96) !important; /* nền tối */
+  color: rgba(255,255,255,0.92) !important;
+
+  box-shadow: 0 16px 36px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Item trong dropdown (nút / link) */
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a {
+  display: block;
+  width: 100%;
+
+  padding: 10px 12px;
+  margin: 6px 0;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: transparent;
+  color: rgba(255,255,255,0.92) !important;
+  text-align: left;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a:hover {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+/* Chặn “khung đen” do focus mặc định */
+[data-theme="ticketbox"] .navbar-right .user-menu button:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu a:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+/* ===========================
+   NAV USER MENU – softer / no black frame
+   =========================== */
+
+/* Nút "Tài khoản" hài hoà hơn (navy glass) */
+[data-theme="ticketbox"] .navbar-right .user-menu-button {
+  border: 0 !important;                       /* bỏ viền đen */
+  background: rgba(15, 23, 42, 0.72) !important; /* navy trong suốt */
+  color: rgba(255,255,255,0.92) !important;
+
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22) !important; /* nhẹ hơn */
+  backdrop-filter: blur(10px);
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button:hover {
+  background: rgba(30, 64, 175, 0.75) !important;   /* hover xanh dương nhẹ */
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button .user-avatar {
+  background: rgba(59,130,246,0.28) !important;
+  color: #fff !important;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button .user-menu-label {
+  color: rgba(255,255,255,0.92) !important;
+}
+
+/* Dropdown: bỏ khung đen + làm màu hài hoà */
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown,
+[data-theme="ticketbox"] .navbar-right .user-menu [class*="dropdown-menu"],
+[data-theme="ticketbox"] .navbar-right .user-menu [class*="menu-list"] {
+  border: 0 !important; /* ✅ bỏ viền khung */
+  background: rgba(15, 23, 42, 0.78) !important; /* navy glass */
+  color: rgba(255,255,255,0.90) !important;
+
+  box-shadow: 0 10px 26px rgba(0,0,0,0.28) !important; /* ✅ nhẹ hơn */
+  backdrop-filter: blur(12px);
+}
+
+/* Item dropdown: nền trong + hover xanh nhẹ */
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a {
+  background: transparent !important;
+  color: rgba(255,255,255,0.90) !important;
+  border: 0 !important;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a:hover {
+  background: rgba(59,130,246,0.14) !important; /* xanh hài hoà */
+}
+
+/* ✅ Tắt “khung đen” do focus/outline mặc định */
+[data-theme="ticketbox"] .navbar-right .user-menu-button:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu-button:focus-visible,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================
+   FIX NAVBAR RIGHT (CREATE + USER MENU)
+   ========================= */
+
+/* Nút bên phải đồng bộ pill */
+[data-theme="ticketbox"] .navbar-right .btn-create-event,
+[data-theme="ticketbox"] .navbar-right .user-menu-button {
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+
+  background: linear-gradient(180deg, rgba(59,130,246,0.95), rgba(37,99,235,0.95)) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;  /* không khung đen */
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22) !important;     /* nhẹ hơn */
+
+  color: #fff !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+[data-theme="ticketbox"] .navbar-right .btn-create-event:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu-button:hover {
+  background: linear-gradient(180deg, rgba(96,165,250,0.98), rgba(59,130,246,0.98)) !important;
+}
+
+/* Avatar trong nút tài khoản */
+[data-theme="ticketbox"] .navbar-right .user-avatar {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.22) !important;
+  color: #fff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Chữ "Tài khoản" luôn hiện rõ */
+[data-theme="ticketbox"] .navbar-right .user-menu-label {
+  color: #fff !important;
+  opacity: 1 !important;
+}
+
+/* Bỏ viền/outline đen khi focus */
+[data-theme="ticketbox"] .navbar-right .btn-create-event:focus,
+[data-theme="ticketbox"] .navbar-right .btn-create-event:focus-visible,
+[data-theme="ticketbox"] .navbar-right .user-menu-button:focus,
+[data-theme="ticketbox"] .navbar-right .user-menu-button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.25) !important;
+}
+
+/* =========================
+   USER DROPDOWN – clean white card
+   ========================= */
+
+/* Bắt nhiều kiểu class dropdown khác nhau */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu [class*="dropdown"] {
+  background: rgba(255,255,255,0.98) !important;
+  color: #0f172a !important;
+
+  border: 1px solid rgba(15,23,42,0.12) !important; /* ✅ không khung đen */
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.25) !important;
+
+  padding: 8px !important;
+  overflow: hidden !important;
+
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Item trong dropdown */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu a,
+[data-theme="ticketbox"] .navbar-right .dropdown-menu button,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button {
+  width: 100% !important;
+  border: 0 !important;
+  background: transparent !important;
+
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+
+  cursor: pointer !important;
+}
+
+/* Hover item */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .dropdown-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button:hover {
+  background: rgba(59,130,246,0.12) !important;
+}
+
+/* Nếu có divider/line bị đậm quá */
+[data-theme="ticketbox"] .navbar-right .dropdown-menu hr,
+[data-theme="ticketbox"] .navbar-right .user-menu-dropdown hr {
+  border: 0 !important;
+  height: 1px !important;
+  background: rgba(15,23,42,0.10) !important;
+}
+
+/* =========================
+   FIX MENU TÀI KHOẢN (ĐÚNG CLASS)
+   ========================= */
+
+[data-theme="ticketbox"] .navbar-right .user-menu{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* nút Tài khoản */
+[data-theme="ticketbox"] .navbar-right .user-menu-button{
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  background: rgba(59, 130, 246, 0.22);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button:hover{
+  background: rgba(59, 130, 246, 0.30);
+}
+
+/* avatar M */
+[data-theme="ticketbox"] .navbar-right .user-avatar{
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+  font-weight: 900;
+}
+
+/* chữ "Tài khoản" */
+[data-theme="ticketbox"] .navbar-right .user-menu-label{
+  color: #fff !important;
+  opacity: 1 !important;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* =========================
+   DROPDOWN: bạn đang render 1 div menu nào đó bên dưới user-menu
+   => Ta style theo con trực tiếp dạng panel
+   ========================= */
+
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu,
+[data-theme="ticketbox"] .navbar-right .user-menu .menu-panel{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+
+  width: 220px;
+  background: rgba(15, 23, 42, 0.92);     /* xanh đen đẹp, không “khung đen” */
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.30);
+
+  padding: 10px;
+  z-index: 9999;
+}
+
+/* item trong dropdown */
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button,
+[data-theme="ticketbox"] .navbar-right .user-menu .menu-panel a,
+[data-theme="ticketbox"] .navbar-right .user-menu .menu-panel button{
+  width: 100%;
+  text-align: left;
+
+  background: transparent;
+  border: 0;
+
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  color: rgba(255,255,255,0.92);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .user-menu-dropdown button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .dropdown-menu button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .menu-panel a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu .menu-panel button:hover{
+  background: rgba(59,130,246,0.18);
+}
+
+/* =========================================================
+   PATCH: FIX NÚT "Tài khoản" + DROPDOWN (không lòi khung đen)
+   Áp dụng riêng cho user-menu để không phá chỗ khác
+   ========================================================= */
+
+[data-theme="ticketbox"] .navbar-right .user-menu{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* NÚT TÀI KHOẢN: trả về style xanh, bỏ khung đen */
+[data-theme="ticketbox"] .navbar-right .user-menu-button{
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  background: rgba(59,130,246,0.22) !important;   /* xanh nhạt như header */
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  outline: none !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18) !important;
+
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu-button:hover{
+  background: rgba(59,130,246,0.30) !important;
+}
+
+/* avatar M */
+[data-theme="ticketbox"] .navbar-right .user-avatar{
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  background: rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+
+  border: 1px solid rgba(255,255,255,0.14) !important;
+}
+
+/* chữ "Tài khoản" (đang bị “đen/ẩn”) */
+[data-theme="ticketbox"] .navbar-right .user-menu-label{
+  color: #fff !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================
+   DROPDOWN: hiện tại nó đang thành "khung trắng + chữ trắng"
+   -> ép nền dropdown về dark + chữ sáng
+   (target rộng nhưng CHỈ trong .user-menu nên an toàn)
+   ========================================================= */
+
+/* Panel dropdown: thường là div con thứ 2 trong user-menu */
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button){
+  background: rgba(15, 23, 42, 0.92) !important;  /* xanh-đen hài hòa */
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.32) !important;
+  color: rgba(255,255,255,0.92) !important;
+
+  /* bỏ “khung đen” kiểu outline/border thừa */
+  outline: none !important;
+}
+
+/* Nếu dropdown bị kéo sang màu trắng do rule chung */
+[data-theme="ticketbox"] .navbar-right .user-menu *{
+  border-color: rgba(255,255,255,0.12);
+}
+
+/* Item trong dropdown: a / button / div clickable */
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) a,
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) button,
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) [role="menuitem"],
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) .menu-item{
+  display: block;
+  width: 100%;
+
+  background: transparent !important;
+  border: 0 !important;
+
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+
+  color: rgba(255,255,255,0.92) !important;
+  font-weight: 800 !important;
+
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) a:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) button:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) [role="menuitem"]:hover,
+[data-theme="ticketbox"] .navbar-right .user-menu > :not(button) .menu-item:hover{
+  background: rgba(59,130,246,0.18) !important;
+}
+
+/* nếu dropdown render ra body/portal */
+[data-theme="ticketbox"] .dropdown-menu,
+[data-theme="ticketbox"] .user-dropdown,
+[data-theme="ticketbox"] .menu-panel{
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.32) !important;
+}
+
+/* =========================================
+   HARD FIX USER MENU (đè chết mọi style cũ)
+   ========================================= */
+
+/* Nút "Tài khoản" */
+.user-menu-button{
+  background: rgba(59, 130, 246, 0.22) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18) !important;
+  color: #fff !important;
+  outline: none !important;
+}
+
+.user-menu-button:hover{
+  background: rgba(59, 130, 246, 0.30) !important;
+}
+
+.user-menu-label{
+  color: #fff !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.user-avatar{
+  background: rgba(255,255,255,0.18) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  color: #fff !important;
+}
+
+/* Dropdown (cái khung đang trắng + chữ mờ) */
+.user-menu-dropdown{
+  background: rgba(15, 23, 42, 0.96) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.32) !important;
+
+  /* quan trọng: đập chết mờ chữ */
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* NHIỀU TRƯỜNG HỢP: nền trắng nằm ở DIV con => đè luôn con */
+.user-menu-dropdown > *{
+  background: transparent !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Chữ trong dropdown */
+.user-menu-dropdown,
+.user-menu-dropdown *{
+  color: rgba(255,255,255,0.92) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Item trong dropdown (nếu là a/button/div) */
+.user-menu-dropdown a,
+.user-menu-dropdown button,
+.user-menu-dropdown [role="menuitem"],
+.user-menu-dropdown .menu-item{
+  background: transparent !important;
+  border: 0 !important;
+  width: 100% !important;
+  text-align: left !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.user-menu-dropdown a:hover,
+.user-menu-dropdown button:hover,
+.user-menu-dropdown [role="menuitem"]:hover,
+.user-menu-dropdown .menu-item:hover{
+  background: rgba(59,130,246,0.18) !important;
+}
+
+/* ===== FIX dropdown tài khoản (user-menu-dropdown) ===== */
+
+.user-menu-dropdown{
+  background: rgba(15, 23, 42, 0.96) !important;  /* xanh đen */
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35) !important;
+  color: rgba(255,255,255,0.92) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* reset tất cả thứ đang làm chữ bị mờ / nền bị trắng */
+.user-menu-dropdown *{
+  opacity: 1 !important;
+  filter: none !important;
+  background: transparent !important;
+  color: rgba(255,255,255,0.92) !important;
+}
+
+/* item */
+.user-menu-dropdown a,
+.user-menu-dropdown button{
+  display: flex !important;
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+/* hover */
+.user-menu-dropdown a:hover,
+.user-menu-dropdown button:hover{
+  background: rgba(59,130,246,0.18) !important;
+}
+
+/* nếu có “khung lạ” do pseudo-element */
+.user-menu-dropdown::before,
+.user-menu-dropdown::after{
+  content: none !important;
+}
+
+/* ===== FIX HARD: Account pill + dropdown (override all variants) ===== */
+
+/* nút "Tài khoản" */
+html[data-theme="ticketbox"] .navbar-right .user-menu-button,
+html[data-theme="ticketbox"] .navbar-right .user-menu > button,
+html[data-theme="ticketbox"] .navbar-right button.user-menu-button{
+  background: rgba(59,130,246,0.22) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+html[data-theme="ticketbox"] .navbar-right .user-menu-button:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu > button:hover{
+  background: rgba(59,130,246,0.32) !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+
+html[data-theme="ticketbox"] .navbar-right .user-avatar{
+  background: rgba(255,255,255,0.16) !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+html[data-theme="ticketbox"] .navbar-right .user-menu-label{
+  color: rgba(255,255,255,0.95) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* dropdown: cover cả 2 kiểu class */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu{
+  background: rgba(15,23,42,0.96) !important; /* xanh đen */
+  border: 0 !important;                        /* BỎ KHUNG ĐEN */
+  outline: 0 !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.38) !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* reset toàn bộ chữ bên trong (trị bệnh chữ mờ/trắng) */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown *,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu *{
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* item trong dropdown */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu a,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu button{
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 10px 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 12px !important;
+
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button:hover,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu a:hover,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu button:hover{
+  background: rgba(59,130,246,0.22) !important;
+}
+
+/* nếu có pseudo tạo viền/khung */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown::before,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown::after,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu::before,
+html[data-theme="ticketbox"] .navbar-right .dropdown-menu::after{
+  content: none !important;
+}
+
+/* ==============================
+   FIX USER MENU (HARD OVERRIDE)
+   ============================== */
+
+/* Nút "Tài khoản" (pill) */
+html[data-theme="ticketbox"] .user-menu-button,
+html[data-theme="ticketbox"] .user-menu > button,
+html[data-theme="ticketbox"] button.user-menu-button {
+  background: rgba(59,130,246,0.22) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+html[data-theme="ticketbox"] .user-menu-button:hover,
+html[data-theme="ticketbox"] .user-menu > button:hover {
+  background: rgba(59,130,246,0.32) !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+
+html[data-theme="ticketbox"] .user-avatar {
+  background: rgba(255,255,255,0.16) !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+html[data-theme="ticketbox"] .user-menu-label {
+  color: rgba(255,255,255,0.95) !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* BỎ “khung đen” nếu nó là wrapper */
+html[data-theme="ticketbox"] .user-menu,
+html[data-theme="ticketbox"] .menu,
+html[data-theme="ticketbox"] .dropdown {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Dropdown: bắt TẤT CẢ các kiểu (portal cũng dính) */
+html[data-theme="ticketbox"] .user-menu-dropdown,
+html[data-theme="ticketbox"] .dropdown-menu,
+html[data-theme="ticketbox"] [role="menu"],
+html[data-theme="ticketbox"] [data-user-menu="dropdown"] {
+  background: rgba(15,23,42,0.96) !important; /* xanh đen */
+  border: 0 !important;                        /* bỏ khung */
+  outline: 0 !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.38) !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* Trị bệnh chữ mờ/trắng + opacity bị set linh tinh */
+html[data-theme="ticketbox"] .user-menu-dropdown *,
+html[data-theme="ticketbox"] .dropdown-menu *,
+html[data-theme="ticketbox"] [role="menu"] * {
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(255,255,255,0.95) !important;
+}
+
+/* Item */
+html[data-theme="ticketbox"] .user-menu-dropdown a,
+html[data-theme="ticketbox"] .user-menu-dropdown button,
+html[data-theme="ticketbox"] .dropdown-menu a,
+html[data-theme="ticketbox"] .dropdown-menu button,
+html[data-theme="ticketbox"] [role="menu"] a,
+html[data-theme="ticketbox"] [role="menu"] button {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+html[data-theme="ticketbox"] .user-menu-dropdown a:hover,
+html[data-theme="ticketbox"] .user-menu-dropdown button:hover,
+html[data-theme="ticketbox"] .dropdown-menu a:hover,
+html[data-theme="ticketbox"] .dropdown-menu button:hover,
+html[data-theme="ticketbox"] [role="menu"] a:hover,
+html[data-theme="ticketbox"] [role="menu"] button:hover {
+  background: rgba(59,130,246,0.22) !important;
+}
+
+/* Nếu có pseudo tạo viền/khung */
+html[data-theme="ticketbox"] .user-menu-dropdown::before,
+html[data-theme="ticketbox"] .user-menu-dropdown::after,
+html[data-theme="ticketbox"] .dropdown-menu::before,
+html[data-theme="ticketbox"] .dropdown-menu::after,
+html[data-theme="ticketbox"] [role="menu"]::before,
+html[data-theme="ticketbox"] [role="menu"]::after {
+  content: none !important;
+}
+
+/* FIX: Dropdown tài khoản bị chữ trắng/mờ trên nền trắng */
+html[data-theme="ticketbox"] .user-menu-dropdown,
+html[data-theme="ticketbox"] .dropdown-menu,
+html[data-theme="ticketbox"] [role="menu"] {
+  background: #ffffff !important;           /* nền trắng */
+  color: #0f172a !important;                /* chữ đen xanh */
+  border: 1px solid rgba(0,0,0,.08) !important; /* bỏ khung đen, chỉ viền nhẹ */
+  box-shadow: 0 18px 44px rgba(0,0,0,.18) !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Ép tất cả chữ trong dropdown hiện rõ */
+html[data-theme="ticketbox"] .user-menu-dropdown *,
+html[data-theme="ticketbox"] .dropdown-menu *,
+html[data-theme="ticketbox"] [role="menu"] * {
+  color: #0f172a !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+/* Item */
+html[data-theme="ticketbox"] .user-menu-dropdown a,
+html[data-theme="ticketbox"] .user-menu-dropdown button,
+html[data-theme="ticketbox"] .dropdown-menu a,
+html[data-theme="ticketbox"] .dropdown-menu button,
+html[data-theme="ticketbox"] [role="menu"] a,
+html[data-theme="ticketbox"] [role="menu"] button {
+  background: transparent !important;
+  border: 0 !important;
+  width: 100% !important;
+  text-align: left !important;
+  font-weight: 800 !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+}
+
+/* Hover + active (màu hài hòa với xanh trên header) */
+html[data-theme="ticketbox"] .user-menu-dropdown a:hover,
+html[data-theme="ticketbox"] .user-menu-dropdown button:hover,
+html[data-theme="ticketbox"] .dropdown-menu a:hover,
+html[data-theme="ticketbox"] .dropdown-menu button:hover,
+html[data-theme="ticketbox"] [role="menu"] a:hover,
+html[data-theme="ticketbox"] [role="menu"] button:hover {
+  background: rgba(59,130,246,0.14) !important;
+}
+
+/* ===== FIX dropdown Tài khoản (TicketFast) ===== */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown{
+  background: #fff !important;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important; /* bỏ viền đen, viền nhẹ */
+  box-shadow: 0 18px 44px rgba(0,0,0,0.18) !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  color: #0f172a !important; /* ép chữ đen */
+}
+
+/* Ép toàn bộ text bên trong dropdown về màu đen + rõ */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown *{
+  color: #0f172a !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+/* Item trong dropdown (phòng trường hợp bạn dùng div/a/button) */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown .item,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown .menu-item,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown > div{
+  background: transparent !important;
+  border: 0 !important;
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+/* Hover hài hoà với xanh header */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown > div:hover{
+  background: rgba(59,130,246,0.14) !important;
+}
+
+/* ===== Typography cho dropdown Tài khoản ===== */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown > div{
+  font-size: 14px !important;        /* gọn, hiện đại */
+  font-weight: 600 !important;       /* bớt đậm */
+  line-height: 1.35 !important;      /* dễ đọc */
+  letter-spacing: 0.2px !important;  /* nhìn “mượt” hơn */
+  padding: 11px 14px !important;     /* cân lại khoảng cách */
+}
+
+/* Hover mượt hơn */
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown a:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown button:hover,
+html[data-theme="ticketbox"] .navbar-right .user-menu-dropdown > div:hover{
+  background: rgba(59,130,246,0.12) !important;
 }

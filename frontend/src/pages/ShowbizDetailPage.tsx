@@ -45,6 +45,15 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
     });
   };
 
+  // ✅ click mở bài theo đúng route showbiz của bạn
+  const openPostById = (id: string) => {
+    if (onOpenPost) return onOpenPost(id);
+
+    const next = `/showbiz/${id}`;
+    window.history.pushState({}, "", next);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
+
   useEffect(() => {
     const run = async () => {
       try {
@@ -83,14 +92,12 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
     run();
   }, [postId]);
 
-  // ✅ helper: so sánh src để detect trùng ảnh hero
   const normalizeSrc = (s: string) =>
     (s || "")
       .trim()
       .replace(/^https?:\/\//, "")
       .replace(/\/+$/g, "");
 
-  // ✅ remove ảnh đầu tiên trong content nếu trùng với post.imageUrl
   const removeDuplicateFirstImage = (rawHtml: string, heroUrl: string) => {
     if (!rawHtml || !heroUrl) return rawHtml;
     try {
@@ -112,7 +119,6 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
     }
   };
 
-  // ✅ render HTML + fix ảnh inline + sanitize + remove duplicate hero image
   const html = useMemo(() => {
     if (!post) return "";
 
@@ -126,22 +132,22 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
     // Fix src="/uploads/.." hoặc src="/..."
     raw = raw.replace(/src="(\/[^"]+)"/g, `src="${backendBase}$1"`);
 
-    const sanitized = DOMPurify.sanitize(raw);
+    // ✅ bỏ style inline gây “ô trắng/viền”
+    const sanitized = DOMPurify.sanitize(raw, {
+      FORBID_ATTR: ["style"],
+    });
 
     const heroUrl = post.imageUrl ? getImageUrl(post.imageUrl) : "";
     return removeDuplicateFirstImage(sanitized, heroUrl);
   }, [post, backendBase]);
 
-  const canOpen = !!onOpenPost;
-  const handleOpen = (id: string) => {
-    if (onOpenPost) onOpenPost(id);
-  };
-
   if (loading) {
     return (
       <div className="ns-page">
         <div className="ns-container">
-          <div style={{ padding: 28, color: "#6b7280", fontWeight: 800 }}>Đang tải…</div>
+          <div style={{ padding: 28, color: "#6b7280", fontWeight: 800 }}>
+            Đang tải…
+          </div>
         </div>
       </div>
     );
@@ -189,14 +195,12 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
               )}
             </div>
 
-            {/* ✅ vẫn giữ hero img */}
             {post.imageUrl && (
               <div className="ns-heroImg">
                 <img src={getImageUrl(post.imageUrl)} alt={post.title} />
               </div>
             )}
 
-            {/* ✅ content đã remove ảnh trùng ở đầu */}
             <div className="ns-content" dangerouslySetInnerHTML={{ __html: html }} />
 
             {related.length > 0 && (
@@ -208,15 +212,16 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
                     <div
                       key={p._id}
                       className="ns-related-item"
-                      onClick={() => handleOpen(p._id)}
-                      style={{
-                        opacity: canOpen ? 1 : 0.75,
-                        cursor: canOpen ? "pointer" : "default",
-                      }}
-                      title={canOpen ? "Mở bài này" : "Cần truyền onOpenPost từ App.tsx để mở"}
+                      onClick={() => openPostById(p._id)}
+                      style={{ cursor: "pointer" }}
+                      title="Mở bài này"
                     >
                       <div className="ns-related-thumb">
-                        {p.imageUrl ? <img src={getImageUrl(p.imageUrl)} alt={p.title} /> : <div />}
+                        {p.imageUrl ? (
+                          <img src={getImageUrl(p.imageUrl)} alt={p.title} />
+                        ) : (
+                          <div />
+                        )}
                       </div>
 
                       <div>
@@ -256,18 +261,17 @@ export const ShowbizDetailPage: React.FC<ShowbizDetailPageProps> = ({
                   <div
                     key={p._id}
                     className="ns-sideItem"
-                    onClick={() => handleOpen(p._id)}
-                    style={{
-                      cursor: canOpen ? "pointer" : "default",
-                      opacity: canOpen ? 1 : 0.75,
-                    }}
-                    title={canOpen ? "Mở bài này" : "Cần truyền onOpenPost từ App.tsx để mở"}
+                    onClick={() => openPostById(p._id)}
+                    style={{ cursor: "pointer" }}
+                    title="Mở bài này"
                   >
                     <div className="ns-sideRank">{idx + 1}</div>
                     <div className="ns-sideText">
                       <div className="ns-sideMeta">
                         {fmtFull(p.createdAt)}
-                        {sideTab === "views" && typeof p.views === "number" ? ` • ${p.views} xem` : ""}
+                        {sideTab === "views" && typeof p.views === "number"
+                          ? ` • ${p.views} xem`
+                          : ""}
                       </div>
                       <div className="ns-sideTitle">{p.title}</div>
                     </div>

@@ -5,30 +5,32 @@ import { TicketType } from "@/models/TicketType";
 import { SeatLock } from "@/models/SeatLock";
 import { Event } from "@/models/Event";
 
+// ✅ quan trọng để Mongoose chạy ổn (đặc biệt khi deploy)
+export const runtime = "nodejs";
+
 /**
- * SePay gửi header:
- *   Authorization: Apikey <API_KEY_CUA_BAN>
- * Bạn đã set: ticketfast_sepay_secret_2026
+ * SePay thường gửi header Authorization theo dạng API key.
+ * Thực tế có thể gặp các biến thể:
+ *  - "Apikey <KEY>"
+ *  - "APIkey_<KEY>"
+ *  - "apikey:<KEY>"
+ *  - "apikey-<KEY>"
  */
 function isAuthorized(req: NextRequest) {
-  const expected = process.env.SEPAY_WEBHOOK_API_KEY || "";
+  const expected = (process.env.SEPAY_WEBHOOK_API_KEY || "").trim();
   if (!expected) return false;
 
-  const auth = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  // chấp nhận vài biến thể viết hoa/thường
-  // chuẩn SePay: "Apikey <key>"
-  const norm = auth.trim();
+  const auth = (req.headers.get("authorization") || "").trim();
+  // match: "apikey <key>" | "apikey_<key>" | "apikey:<key>" | "apikey-<key>"
+  const m = auth.match(/^apikey[\s_:-]+(.+)$/i);
+  if (!m) return false;
 
-  if (norm.toLowerCase() === `apikey ${expected}`.toLowerCase()) return true;
-  if (norm === `Apikey ${expected}`) return true;
-  if (norm === `APIKEY ${expected}`) return true;
-
-  return false;
+  return m[1].trim() === expected;
 }
 
 function extractBookingIdFromContent(content: string) {
-  // Bạn đang dùng: "BOOKING <24hex>"
-  const m = content.match(/BOOKING\s+([0-9a-f]{24})/i);
+  // tolerant: BOOKING <24hex> | BOOKING:<id> | BOOKING_<id> | BOOKING-<id>
+  const m = content.match(/BOOKING[\s_:-]+([0-9a-f]{24})/i);
   return m ? m[1] : null;
 }
 
@@ -49,6 +51,15 @@ function pickFirstNumber(obj: any, keys: string[]) {
   return 0;
 }
 
+function normalizeTransferType(x: string) {
+  const s = (x || "").toLowerCase().trim();
+  if (!s) return "";
+  // phổ biến: "in", "out"
+  if (s === "in" || s === "income" || s === "credit" || s === "receive") return "in";
+  if (s === "out" || s === "expense" || s === "debit" || s === "send") return "out";
+  return s;
+}
+
 export async function POST(req: NextRequest) {
   try {
     // ✅ verify API key
@@ -59,11 +70,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     /**
-     * SePay payload có thể khác tuỳ cấu hình.
-     * Mình parse theo kiểu "best effort":
-     * - content/description: nội dung chuyển khoản
-     * - amount: số tiền
-     * - transactionId: mã giao dịch (nếu có)
+     * Payload SePay có thể khác tuỳ cấu hình.
+     * Parse theo "best effort"
      */
     const content = pickFirstString(body, [
       "content",
@@ -89,7 +97,20 @@ export async function POST(req: NextRequest) {
       "ref",
       "id",
       "tid",
+      "referenceCode",
     ]);
+
+    const transferTypeRaw = pickFirstString(body, [
+      "transferType",
+      "type",
+      "direction",
+    ]);
+    const transferType = normalizeTransferType(transferTypeRaw);
+
+    // Nếu payload có transferType => chỉ xử lý giao dịch tiền vào
+    if (transferType && transferType !== "in") {
+      return NextResponse.json({ ok: true, ignored: true, reason: `transferType=${transferType}` });
+    }
 
     const bookingId = extractBookingIdFromContent(content);
     if (!bookingId) {
@@ -99,52 +120,53 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const booking = await Booking.findById(bookingId);
+    const now = new Date();
+
+    /**
+     * ✅ CHỐNG DOUBLE CONFIRM:
+     * Chỉ 1 request được phép đổi trạng thái pending -> paid.
+     * Các request khác (retry / gửi 2 lần) sẽ không update được => không trừ vé 2 lần.
+     */
+    const filter: any = {
+      _id: bookingId,
+      status: "pending",
+      $or: [
+        { expiresAt: null },
+        { expiresAt: { $exists: false } },
+        { expiresAt: { $gt: now } },
+      ],
+    };
+
+    // nếu webhook có amount, buộc khớp tiền để tránh confirm sai
+    if (amount > 0) {
+      filter.totalAmount = Math.round(amount);
+    }
+
+    const update: any = {
+      $set: {
+        status: "paid",
+        paidAt: now,
+        paymentProvider: "sepay",
+      },
+    };
+    if (transactionId) {
+      update.$set.paymentRef = transactionId;
+    }
+
+    const booking = await Booking.findOneAndUpdate(filter, update, { new: true });
+
     if (!booking) {
-      return NextResponse.json({ ok: true, ignored: true, reason: "booking_not_found" });
-    }
-
-    // idempotent: nếu đã paid thì OK
-    if (booking.status === "paid") {
-      return NextResponse.json({ ok: true, bookingStatus: "paid" });
-    }
-
-    // chỉ auto-confirm cho pending
-    if (booking.status !== "pending") {
-      return NextResponse.json({ ok: true, ignored: true, reason: `status=${booking.status}` });
-    }
-
-    // check expire
-    if (booking.expiresAt && booking.expiresAt.getTime() <= Date.now()) {
-      booking.status = "expired";
-      await booking.save();
-      return NextResponse.json({ ok: true, ignored: true, reason: "booking_expired" });
-    }
-
-    // check amount khớp (nếu payload có amount)
-    // Nếu amount=0 (không có trong payload) thì không chặn — nhưng thường SePay có amount
-    const expectedAmount = Math.round(Number((booking as any).totalAmount || 0));
-    if (amount > 0 && expectedAmount > 0 && Math.round(amount) !== expectedAmount) {
-      // trả 200 nhưng không confirm để tránh confirm sai
+      // đã paid rồi / hết hạn / lệch tiền / không tồn tại / không pending
+      // trả 200 để SePay không retry vô hạn
       return NextResponse.json({
         ok: true,
         ignored: true,
-        reason: "amount_mismatch",
-        expectedAmount,
-        amount,
+        reason: "already_processed_or_not_match",
+        bookingId,
       });
     }
 
-    // ✅ MARK PAID
-    booking.status = "paid";
-
-    // (optional) lưu trace nếu schema cho phép (nếu schema strict và không có field, Mongoose sẽ bỏ qua)
-    (booking as any).paymentProvider = "sepay";
-    if (transactionId) (booking as any).paymentRef = transactionId;
-
-    await booking.save();
-
-    // ✅ HELD -> SOLD (y hệt admin mark-paid)
+    // ✅ HELD -> SOLD (chỉ chạy khi vừa update pending -> paid thành công)
     if ((booking as any).mode === "seat") {
       await SeatLock.updateMany(
         { bookingId: booking._id, status: "held" },
@@ -158,7 +180,11 @@ export async function POST(req: NextRequest) {
       }
 
       for (const [ticketTypeId, n] of countByType.entries()) {
-        await TicketType.updateOne({ _id: ticketTypeId }, { $inc: { held: -n, sold: +n } });
+        if (n <= 0) continue;
+        await TicketType.updateOne(
+          { _id: ticketTypeId },
+          { $inc: { held: -n, sold: +n } }
+        );
       }
     } else {
       if ((booking as any).ticketTypeId) {
@@ -176,7 +202,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true, bookingId, bookingStatus: "paid" });
   } catch (e: any) {
-    // Trả 500 để SePay retry (vì bạn đã bật retry khi != 2xx)
+    // Bạn muốn SePay retry khi != 2xx
+    // Bây giờ đã idempotent nên retry cũng không sợ double-sold nữa
     return NextResponse.json({ message: e?.message || "Server error" }, { status: 500 });
   }
 }
