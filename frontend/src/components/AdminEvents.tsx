@@ -403,6 +403,7 @@ export const AdminEvents: React.FC = () => {
                       setTags([...tags, tag]);
                     }
                   }}
+<<<<<<< Updated upstream
                   style={{
                     padding: "6px 12px",
                     border: isSelected ? "2px solid #3b82f6" : "1px solid #d1d5db",
@@ -418,6 +419,136 @@ export const AdminEvents: React.FC = () => {
                 </button>
               );
             })}
+=======
+                />
+                {creatingImagePreview && (
+                  <img className="upload-preview" src={creatingImagePreview} alt="preview" />
+                )}
+              </div>
+            </div>
+
+            <div className="admin-field span-2">
+              <div className="toggle-row">
+                <label className="inline">
+                  <input
+                    type="checkbox"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                  />
+                  <span>Đặc biệt</span>
+                </label>
+
+                <label className="inline">
+                  <input
+                    type="checkbox"
+                    checked={isTrending}
+                    onChange={(e) => setIsTrending(e.target.checked)}
+                  />
+                  <span>Xu hướng</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="admin-field span-2">
+              <label>Tags (nhãn phân loại)</label>
+              <div style={{ 
+                display: "flex", 
+                flexWrap: "wrap", 
+                gap: "12px", 
+                marginBottom: "12px",
+                padding: "12px",
+                backgroundColor: "#f9fafb",
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb"
+              }}>
+                {availableTags.map((tag) => {
+                  const isSelected = tags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setTags(tags.filter((t) => t !== tag));
+                        } else {
+                          setTags([...tags, tag]);
+                        }
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        border: isSelected ? "1px solid #93c5fd" : "1px solid #d1d5db",
+                        borderRadius: "20px",
+                        backgroundColor: isSelected ? "#eaf2ff" : "#fff",
+                        color: isSelected ? "#1d4ed8" : "#374151",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: isSelected ? "600" : "400",
+                        transition: "all 0.2s",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        boxShadow: isSelected ? "0 6px 14px rgba(59, 130, 246, 0.12)" : "none",
+                        userSelect: "none",
+                        WebkitUserSelect: "none"
+                      }}
+                    >
+                      {isSelected && <span>✓</span>}
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+              {tags.length > 0 && (
+                <div style={{ marginTop: "8px" }}>
+                  <p style={{ fontSize: "12px", color: "#6b7280", marginBottom: "8px" }}>
+                    Đã chọn ({tags.length}):
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "4px 12px",
+                          backgroundColor: "#eaf2ff",
+                          color: "#1d4ed8",
+                          border: "1px solid #bfdbfe",
+                          borderRadius: "16px",
+                          fontSize: "13px",
+                          gap: "6px",
+                          fontWeight: "500",
+                          boxShadow: "0 4px 10px rgba(59, 130, 246, 0.12)",
+                          userSelect: "none",
+                          WebkitUserSelect: "none"
+                        }}
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => setTags(tags.filter((_, i) => i !== idx))}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#1d4ed8",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            padding: 0,
+                            lineHeight: 1,
+                            display: "flex",
+                            alignItems: "center"
+                          }}
+                          title="Xóa tag"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+>>>>>>> Stashed changes
           </div>
           {tags.length > 0 && (
             <div style={{ marginTop: 8, fontSize: "12px", color: "#6b7280" }}>

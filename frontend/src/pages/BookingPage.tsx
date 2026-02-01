@@ -246,6 +246,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({ user }) => {
                   const held = Number(t.held ?? 0);
                   const remain = Math.max(0, total - sold - held);
 
+<<<<<<< Updated upstream
                   return (
                     <option key={t._id} value={t._id}>
                       {t.name} - {Number(t.price ?? 0).toLocaleString()}đ (còn {remain}/{total})
@@ -253,6 +254,66 @@ export const BookingPage: React.FC<BookingPageProps> = ({ user }) => {
                   );
                 })}
               </select>
+=======
+          {myBookings.length === 0 ? (
+            <p className="booking-subtitle" style={{ marginTop: 8 }}>
+              Bạn chưa có đơn đặt vé nào.
+            </p>
+          ) : (
+            <div className="mybooking-list" style={{ marginTop: 12 }}>
+              {myBookings.map((b) => (
+                <div key={b._id} className="mybooking-item">
+                  <div className="mybooking-top">
+                    <div className="mybooking-title">
+                      {b.eventTitle}
+                      {b.ticketTypeName ? (
+                        <span className="mybooking-type"> • {b.ticketTypeName}</span>
+                      ) : null}
+                    </div>
+                    <span className={`status-pill ${statusClass(b.status)}`}>
+                      {statusLabel(b.status)}
+                    </span>
+                  </div>
+
+                  <div className="mybooking-meta">
+                    <span>
+                      SL: <b>{b.quantity}</b>
+                    </span>
+                    <span className="dot">•</span>
+                    <span>
+                      Tổng: <b>{Number(b.totalAmount ?? 0).toLocaleString()}đ</b>
+                    </span>
+                  </div>
+
+                  <div className="mybooking-sub">
+                    {b.expiresAt ? (
+                      <span>Hết hạn: {new Date(b.expiresAt).toLocaleString("vi-VN")}</span>
+                    ) : (
+                      <span>Tạo lúc: {new Date(b.createdAt).toLocaleString("vi-VN")}</span>
+                    )}
+                  </div>
+
+                  {/* ✅ pending thì cho tiếp tục thanh toán */}
+                  {b.status === "pending" && (
+                    <div
+                      style={{
+                        marginTop: 10,
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => continuePayment(b._id)}
+                      >
+                        Tiếp tục thanh toán
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+>>>>>>> Stashed changes
             </div>
           )}
 

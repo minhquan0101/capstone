@@ -10,29 +10,45 @@ export const AdminPage: React.FC = () => {
     <section className="auth-section">
       <div className="auth-card" style={{ maxWidth: 900, width: "100%" }}>
         <h1>Khu vực quản trị</h1>
+<<<<<<< Updated upstream
         <p className="subtitle">Quản lý sự kiện, bài đăng và banner.</p>
         <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+=======
+        <p className="subtitle">Quản lý sự kiện, bài đăng, banner và thanh toán.</p>
+
+        <div className="admin-tabs">
+>>>>>>> Stashed changes
           <button
-            className={`btn outline ${tab === "events" ? "active" : ""}`}
+            className={`btn admin-tab ${tab === "events" ? "active" : ""}`}
             type="button"
             onClick={() => setTab("events")}
           >
             Sự kiện
           </button>
           <button
-            className={`btn outline ${tab === "posts" ? "active" : ""}`}
+            className={`btn admin-tab ${tab === "posts" ? "active" : ""}`}
             type="button"
             onClick={() => setTab("posts")}
           >
             Bài đăng
           </button>
           <button
-            className={`btn outline ${tab === "banner" ? "active" : ""}`}
+            className={`btn admin-tab ${tab === "banner" ? "active" : ""}`}
             type="button"
             onClick={() => setTab("banner")}
           >
             Banner
           </button>
+<<<<<<< Updated upstream
+=======
+          <button
+            className={`btn admin-tab ${tab === "payments" ? "active" : ""}`}
+            type="button"
+            onClick={() => setTab("payments")}
+          >
+            Thanh toán
+          </button>
+>>>>>>> Stashed changes
         </div>
         {tab === "events" && <AdminEvents />}
         {tab === "posts" && <AdminPosts />}
